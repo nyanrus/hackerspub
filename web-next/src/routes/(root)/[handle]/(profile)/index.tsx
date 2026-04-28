@@ -36,6 +36,7 @@ export const route = {
 const ProfilePageQuery = graphql`
   query ProfilePageQuery($handle: String!) {
     actorByHandle(handle: $handle, allowLocalHandle: true) {
+      isViewer
       rawName
       username
       url
@@ -120,6 +121,8 @@ export default function ProfilePage() {
     const connectionId = pinConnectionId();
     return connectionId == null ? [] : [connectionId];
   };
+  const viewerPinConnections = () =>
+    data()?.actorByHandle?.isViewer ? pinConnections() : [];
   const postsActor = () => {
     const actor = postsData()?.actorByHandle;
     return actor == null || pinConnectionId() == null ? undefined : actor;
@@ -167,7 +170,7 @@ export default function ProfilePage() {
                               {(edge) => (
                                 <PostCard
                                   $post={edge.node}
-                                  pinConnections={pinConnections()}
+                                  pinConnections={viewerPinConnections()}
                                 />
                               )}
                             </For>
@@ -180,7 +183,7 @@ export default function ProfilePage() {
                     {(postsActor) => (
                       <ActorPostList
                         $posts={postsActor()}
-                        pinConnections={pinConnections()}
+                        pinConnections={viewerPinConnections()}
                       />
                     )}
                   </Show>
