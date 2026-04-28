@@ -3,6 +3,7 @@ import test from "node:test";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
 import { follow } from "@hackerspub/models/following";
+import { pinTable } from "@hackerspub/models/schema";
 import { schema } from "./mod.ts";
 import {
   createFedCtx,
@@ -30,6 +31,20 @@ const actorByHandleQuery = parse(`
     actorByHandle(handle: $handle, allowLocalHandle: $allowLocalHandle) {
       id
       handle
+    }
+  }
+`);
+
+const actorPinsQuery = parse(`
+  query ActorPins($handle: String!) {
+    actorByHandle(handle: $handle, allowLocalHandle: true) {
+      pins(first: 10) {
+        edges {
+          node {
+            id
+          }
+        }
+      }
     }
   }
 `);
@@ -97,6 +112,115 @@ test("actorByUuid and actorByHandle resolve local actors", async () => {
       actorByHandle: {
         id: encodeGlobalID("Actor", actor.actor.id),
         handle: "@actorlookupgraphql@localhost",
+      },
+    });
+  });
+});
+
+test("actor pins hide posts that are not visible to the viewer", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "actorpinsauthor",
+      name: "Actor Pins Author",
+      email: "actorpinsauthor@example.com",
+    });
+    const viewer = await insertAccountWithActor(tx, {
+      username: "actorpinsviewer",
+      name: "Actor Pins Viewer",
+      email: "actorpinsviewer@example.com",
+    });
+    const { post: publicPost } = await insertNotePost(tx, {
+      account: author.account,
+      content: "Visible pinned post",
+    });
+    const { post: hiddenPost } = await insertNotePost(tx, {
+      account: author.account,
+      content: "Hidden pinned post",
+      visibility: "followers",
+    });
+    await tx.insert(pinTable).values([
+      { actorId: author.actor.id, postId: publicPost.id },
+      { actorId: author.actor.id, postId: hiddenPost.id },
+    ]);
+
+    const result = await execute({
+      schema,
+      document: actorPinsQuery,
+      variableValues: { handle: author.account.username },
+      contextValue: makeUserContext(tx, viewer.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByHandle: {
+        pins: {
+          edges: [
+            {
+              node: {
+                id: encodeGlobalID("Note", publicPost.id),
+              },
+            },
+          ],
+        },
+      },
+    });
+  });
+});
+
+test("actor pins are ordered by newest pin first", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "actorpinorder",
+      name: "Actor Pin Order",
+      email: "actorpinorder@example.com",
+    });
+    const { post: olderPinnedPost } = await insertNotePost(tx, {
+      account: author.account,
+      content: "Older pin",
+    });
+    const { post: newerPinnedPost } = await insertNotePost(tx, {
+      account: author.account,
+      content: "Newer pin",
+    });
+    await tx.insert(pinTable).values([
+      {
+        actorId: author.actor.id,
+        postId: olderPinnedPost.id,
+        created: new Date("2026-04-15T00:00:00.000Z"),
+      },
+      {
+        actorId: author.actor.id,
+        postId: newerPinnedPost.id,
+        created: new Date("2026-04-16T00:00:00.000Z"),
+      },
+    ]);
+
+    const result = await execute({
+      schema,
+      document: actorPinsQuery,
+      variableValues: { handle: author.account.username },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByHandle: {
+        pins: {
+          edges: [
+            {
+              node: {
+                id: encodeGlobalID("Note", newerPinnedPost.id),
+              },
+            },
+            {
+              node: {
+                id: encodeGlobalID("Note", olderPinnedPost.id),
+              },
+            },
+          ],
+        },
       },
     });
   });

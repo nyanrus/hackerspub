@@ -285,6 +285,11 @@
     "deleteConfirm": "你确定要删除此内容吗？",
     "deleting": "正在删除……",
     "deleted": "已经删除",
+    "pin": "置顶到个人资料",
+    "unpin": "从个人资料取消置顶",
+    "pinning": "正在置顶……",
+    "unpinning": "正在取消置顶……",
+    "pinned": "已置顶",
     "quotes": "引用",
     "reactions": {
       "title": "反应",

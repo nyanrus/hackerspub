@@ -46,6 +46,7 @@ builder
           }),
           following: ctx.getFollowingUri(identifier),
           followers: ctx.getFollowersUri(identifier),
+          featured: ctx.getFeaturedUri(identifier),
           icon: new Image({
             url: new URL("/favicon.svg", ctx.canonicalOrigin),
           }),
@@ -92,6 +93,7 @@ builder
         attachments: renderAccountLinks(account.links),
         following: ctx.getFollowingUri(identifier),
         followers: ctx.getFollowersUri(identifier),
+        featured: ctx.getFeaturedUri(identifier),
         url: new URL(`/@${account.username}`, ctx.canonicalOrigin),
       });
     },

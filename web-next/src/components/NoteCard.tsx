@@ -9,6 +9,7 @@ export interface NoteCardProps {
   $note: NoteCard_note$key;
   connections?: string[];
   bookmarkListConnections?: string[];
+  pinConnections?: string[];
   onDeleted?: () => void;
 }
 
@@ -39,6 +40,7 @@ export function NoteCard(props: NoteCardProps) {
                 $note={displayPost()}
                 connections={props.connections}
                 bookmarkListConnections={props.bookmarkListConnections}
+                pinConnections={props.pinConnections}
                 onDeleted={props.onDeleted}
               />
             </div>

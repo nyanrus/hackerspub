@@ -10,6 +10,7 @@ import { VisibilityTag } from "./VisibilityTag.tsx";
 export interface NoteHeaderProps {
   $note: NoteHeader_note$key;
   connections?: string[];
+  pinConnections?: string[];
   onDeleted?: () => void;
 }
 
@@ -68,6 +69,7 @@ export function NoteHeader(props: NoteHeaderProps) {
             <PostActionMenu
               $post={n()}
               connections={props.connections}
+              pinConnections={props.pinConnections}
               onDeleted={props.onDeleted}
             />
           </span>

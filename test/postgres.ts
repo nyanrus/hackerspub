@@ -1,5 +1,6 @@
 import { assert } from "@std/assert/assert";
 import type { RequestContext } from "@fedify/fedify";
+import { sql } from "drizzle-orm";
 import type { ContextData } from "@hackerspub/models/context";
 import type { Transaction } from "@hackerspub/models/db";
 import type { Transport } from "@upyo/core";
@@ -37,6 +38,8 @@ export async function withRollback(
 
   try {
     await db.transaction(async (tx) => {
+      // Parallel rollback tests share fixture keys such as localhost.
+      await tx.execute(sql`select pg_advisory_xact_lock(914441, 1)`);
       await run(tx);
       rolledBack = true;
       tx.rollback();
@@ -390,6 +393,9 @@ export function createFedCtx(
     },
     getFollowingUri(identifier: string) {
       return new URL(`/actors/${identifier}/following`, "http://localhost/");
+    },
+    getFeaturedUri(identifier: string) {
+      return new URL(`/actors/${identifier}/featured`, "http://localhost/");
     },
     getObjectUri(_type: unknown, values: Record<string, string>) {
       if ("id" in values) {

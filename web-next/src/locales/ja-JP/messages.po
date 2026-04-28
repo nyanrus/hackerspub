@@ -189,7 +189,7 @@ msgid "Add"
 msgstr "追加"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:293
+#: src/components/EmojiReactionPopover.tsx:312
 msgid "Add {0}"
 msgstr "{0}を追加"
 
@@ -306,7 +306,7 @@ msgstr "ブックマーク"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:137
+#: src/components/PostActionMenu.tsx:284
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -436,8 +436,8 @@ msgstr "投稿のデフォルト公開範囲"
 msgid "Default share privacy"
 msgstr "共有のデフォルト公開範囲"
 
-#: src/components/PostActionMenu.tsx:123
-#: src/components/PostActionMenu.tsx:143
+#: src/components/PostActionMenu.tsx:270
+#: src/components/PostActionMenu.tsx:290
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +447,7 @@ msgstr "削除"
 msgid "Delete Draft"
 msgstr "下書きを削除"
 
-#: src/components/PostActionMenu.tsx:131
+#: src/components/PostActionMenu.tsx:278
 msgid "Delete post?"
 msgstr "コンテンツを削除しますか？"
 
@@ -596,8 +596,8 @@ msgstr "招待リンクの作成に失敗しました"
 msgid "Failed to delete invitation link"
 msgstr "招待リンクの削除に失敗しました"
 
-#: src/components/PostActionMenu.tsx:88
-#: src/components/PostActionMenu.tsx:95
+#: src/components/PostActionMenu.tsx:218
+#: src/components/PostActionMenu.tsx:225
 msgid "Failed to delete post"
 msgstr "コンテンツの削除に失敗しました"
 
@@ -641,7 +641,7 @@ msgstr "通知の読み込みに失敗しました。クリックして再試行
 msgid "Failed to load more passkeys; click to retry"
 msgstr "パスキーの読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/ActorPostList.tsx:76
+#: src/components/ActorPostList.tsx:81
 #: src/components/ActorSharedPostList.tsx:81
 #: src/components/PersonalTimeline.tsx:98
 #: src/components/PublicTimeline.tsx:100
@@ -657,10 +657,15 @@ msgstr "引用コンテンツの読み込みに失敗しました"
 msgid "Failed to look up user."
 msgstr "ユーザーの検索に失敗しました。"
 
-#: src/components/EmojiReactionPopover.tsx:159
-#: src/components/EmojiReactionPopover.tsx:168
-#: src/components/EmojiReactionPopover.tsx:237
-#: src/components/EmojiReactionPopover.tsx:246
+#: src/components/PostActionMenu.tsx:188
+#: src/components/PostActionMenu.tsx:195
+msgid "Failed to pin post"
+msgstr "コンテンツを固定できませんでした"
+
+#: src/components/EmojiReactionPopover.tsx:163
+#: src/components/EmojiReactionPopover.tsx:172
+#: src/components/EmojiReactionPopover.tsx:254
+#: src/components/EmojiReactionPopover.tsx:263
 msgid "Failed to react"
 msgstr "リアクションに失敗しました"
 
@@ -711,6 +716,11 @@ msgstr "ログアウトに失敗：{0}"
 #: src/components/FollowButton.tsx:131
 msgid "Failed to unfollow"
 msgstr "フォロー解除に失敗しました"
+
+#: src/components/PostActionMenu.tsx:164
+#: src/components/PostActionMenu.tsx:171
+msgid "Failed to unpin post"
+msgstr "コンテンツの固定を解除できませんでした"
 
 #: src/components/PostControls.tsx:139
 msgid "Failed to unshare post"
@@ -995,7 +1005,7 @@ msgstr "通知をもっと読み込む"
 msgid "Load more passkeys"
 msgstr "パスキーを読み込む"
 
-#: src/components/ActorPostList.tsx:79
+#: src/components/ActorPostList.tsx:84
 #: src/components/ActorSharedPostList.tsx:84
 #: src/components/PersonalTimeline.tsx:101
 #: src/components/PublicTimeline.tsx:103
@@ -1039,7 +1049,7 @@ msgstr "通知を読み込み中…"
 msgid "Loading more passkeys…"
 msgstr "パスキーを読み込み中…"
 
-#: src/components/ActorPostList.tsx:73
+#: src/components/ActorPostList.tsx:78
 #: src/components/ActorSharedPostList.tsx:78
 #: src/components/PersonalTimeline.tsx:95
 #: src/components/PublicTimeline.tsx:97
@@ -1162,7 +1172,7 @@ msgstr "記事はありません"
 msgid "No notes found"
 msgstr "投稿はありません"
 
-#: src/components/ActorPostList.tsx:86
+#: src/components/ActorPostList.tsx:91
 #: src/components/ActorSharedPostList.tsx:91
 #: src/components/PersonalTimeline.tsx:108
 #: src/components/PublicTimeline.tsx:110
@@ -1266,6 +1276,14 @@ msgstr "パスキー"
 msgid "Permission Denied"
 msgstr "アクセスが拒否されました"
 
+#: src/components/PostActionMenu.tsx:260
+msgid "Pin to profile"
+msgstr "プロフィールに固定"
+
+#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+msgid "Pinned posts"
+msgstr "固定されたコンテンツ"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:209
 msgid "Please choose an image file smaller than 5 MiB."
 msgstr "5 MiB未満の画像ファイルを選択してください。"
@@ -1290,9 +1308,17 @@ msgstr "フェディバースのハンドルを入力してください。"
 msgid "Please sign in to access this page"
 msgstr "このページにアクセスするにはログインしてください"
 
-#: src/components/PostActionMenu.tsx:84
+#: src/components/PostActionMenu.tsx:214
 msgid "Post deleted"
 msgstr "コンテンツを削除しました"
+
+#: src/components/PostActionMenu.tsx:185
+msgid "Post pinned"
+msgstr "コンテンツを固定しました"
+
+#: src/components/PostActionMenu.tsx:161
+msgid "Post unpinned"
+msgstr "コンテンツの固定を解除しました"
 
 #: src/components/ProfileTabs.tsx:38
 msgid "Posts"
@@ -1363,26 +1389,26 @@ msgid "Quiet public"
 msgstr "ひかえめな公開"
 
 #: src/components/NoteComposeModal.tsx:26
-#: src/components/PostControls.tsx:198
+#: src/components/PostControls.tsx:218
 #: src/components/ui/markdown-editor.tsx:289
 msgid "Quote"
 msgstr "引用"
 
-#: src/components/PostControls.tsx:236
+#: src/components/PostControls.tsx:256
 msgid "React"
 msgstr "リアクション"
 
-#: src/components/EmojiReactionPopover.tsx:338
+#: src/components/EmojiReactionPopover.tsx:357
 msgid "React with {emoji}"
 msgstr "{emoji}でリアクション"
 
-#: src/components/EmojiReactionPopover.tsx:291
-#: src/components/EmojiReactionPopover.tsx:294
+#: src/components/EmojiReactionPopover.tsx:310
+#: src/components/EmojiReactionPopover.tsx:313
 msgid "reaction"
 msgstr "リアクション"
 
-#: src/components/ArticleCard.tsx:353
-#: src/components/ArticleCard.tsx:373
+#: src/components/ArticleCard.tsx:358
+#: src/components/ArticleCard.tsx:378
 msgid "Read full article"
 msgstr "記事全文を読む"
 
@@ -1425,7 +1451,7 @@ msgid "Remove"
 msgstr "削除"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:290
+#: src/components/EmojiReactionPopover.tsx:309
 msgid "Remove {0}"
 msgstr "{0}を削除"
 
@@ -1438,7 +1464,7 @@ msgstr "ブックマークを削除"
 msgid "Remove quote"
 msgstr "引用を削除"
 
-#: src/components/PostControls.tsx:187
+#: src/components/PostControls.tsx:207
 msgid "Reply"
 msgstr "返信"
 
@@ -1519,7 +1545,7 @@ msgstr "個人の環境設定を設定してください。"
 msgid "Settings"
 msgstr "設定"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostControls.tsx:236
 msgid "Share"
 msgstr "共有"
 
@@ -1602,8 +1628,8 @@ msgstr "環境設定を正常に保存しました"
 msgid "Successfully saved settings"
 msgstr "設定を正常に保存しました"
 
-#: src/components/ArticleCard.tsx:306
-#: src/components/ArticleCard.tsx:325
+#: src/components/ArticleCard.tsx:311
+#: src/components/ArticleCard.tsx:330
 msgid "Summarized by LLM"
 msgstr "LLMによる要約"
 
@@ -1691,7 +1717,7 @@ msgstr "このウェブサイトのソースコードは{1}ライセンスで{0}
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "リンクのURL。（例：https://github.com/yourhandle）"
 
-#: src/components/PostActionMenu.tsx:133
+#: src/components/PostActionMenu.tsx:280
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "この操作は取り消せません。このコンテンツは完全に削除されます。"
 
@@ -1751,7 +1777,7 @@ msgid "Toggle sidebar"
 msgstr "サイドバーを切り替える"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:189
+#: src/components/ArticleCard.tsx:194
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:403
 msgid "Translated from {0}"
 msgstr "{0}から翻訳"
@@ -1765,13 +1791,13 @@ msgstr "翻訳中…"
 msgid "Type tags separated by spaces"
 msgstr "スペースで区切ってタグを入力"
 
-#: src/components/EmojiReactionPopover.tsx:238
-#: src/components/EmojiReactionPopover.tsx:247
+#: src/components/EmojiReactionPopover.tsx:255
+#: src/components/EmojiReactionPopover.tsx:264
 msgid "Unable to add reaction. Please try again."
 msgstr "リアクションを追加できませんでした。もう一度お試しください。"
 
-#: src/components/EmojiReactionPopover.tsx:160
-#: src/components/EmojiReactionPopover.tsx:169
+#: src/components/EmojiReactionPopover.tsx:164
+#: src/components/EmojiReactionPopover.tsx:173
 msgid "Unable to remove reaction. Please try again."
 msgstr "リアクションを削除できませんでした。もう一度お試しください。"
 
@@ -1779,7 +1805,11 @@ msgstr "リアクションを削除できませんでした。もう一度お試
 msgid "Unfollow"
 msgstr "フォロー解除"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostActionMenu.tsx:261
+msgid "Unpin from profile"
+msgstr "プロフィールから固定解除"
+
+#: src/components/PostControls.tsx:236
 msgid "Unshare"
 msgstr "共有を取り消す"
 

@@ -189,7 +189,7 @@ msgid "Add"
 msgstr "新增"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:293
+#: src/components/EmojiReactionPopover.tsx:312
 msgid "Add {0}"
 msgstr "新增{0}"
 
@@ -306,7 +306,7 @@ msgstr "收藏"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:137
+#: src/components/PostActionMenu.tsx:284
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -436,8 +436,8 @@ msgstr "預設貼文隱私設定"
 msgid "Default share privacy"
 msgstr "預設轉貼隱私設定"
 
-#: src/components/PostActionMenu.tsx:123
-#: src/components/PostActionMenu.tsx:143
+#: src/components/PostActionMenu.tsx:270
+#: src/components/PostActionMenu.tsx:290
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +447,7 @@ msgstr "刪除"
 msgid "Delete Draft"
 msgstr "刪除草稿"
 
-#: src/components/PostActionMenu.tsx:131
+#: src/components/PostActionMenu.tsx:278
 msgid "Delete post?"
 msgstr "刪除內容？"
 
@@ -596,8 +596,8 @@ msgstr "建立邀請連結失敗"
 msgid "Failed to delete invitation link"
 msgstr "刪除邀請連結失敗"
 
-#: src/components/PostActionMenu.tsx:88
-#: src/components/PostActionMenu.tsx:95
+#: src/components/PostActionMenu.tsx:218
+#: src/components/PostActionMenu.tsx:225
 msgid "Failed to delete post"
 msgstr "刪除內容失敗"
 
@@ -641,7 +641,7 @@ msgstr "無法載入更多通知；點擊重試"
 msgid "Failed to load more passkeys; click to retry"
 msgstr "載入更多通行金鑰失敗；點擊重試"
 
-#: src/components/ActorPostList.tsx:76
+#: src/components/ActorPostList.tsx:81
 #: src/components/ActorSharedPostList.tsx:81
 #: src/components/PersonalTimeline.tsx:98
 #: src/components/PublicTimeline.tsx:100
@@ -657,10 +657,15 @@ msgstr "無法載入引用內容"
 msgid "Failed to look up user."
 msgstr "查找使用者失敗。"
 
-#: src/components/EmojiReactionPopover.tsx:159
-#: src/components/EmojiReactionPopover.tsx:168
-#: src/components/EmojiReactionPopover.tsx:237
-#: src/components/EmojiReactionPopover.tsx:246
+#: src/components/PostActionMenu.tsx:188
+#: src/components/PostActionMenu.tsx:195
+msgid "Failed to pin post"
+msgstr "無法釘選內容"
+
+#: src/components/EmojiReactionPopover.tsx:163
+#: src/components/EmojiReactionPopover.tsx:172
+#: src/components/EmojiReactionPopover.tsx:254
+#: src/components/EmojiReactionPopover.tsx:263
 msgid "Failed to react"
 msgstr "反應失敗"
 
@@ -711,6 +716,11 @@ msgstr "登出失敗：{0}"
 #: src/components/FollowButton.tsx:131
 msgid "Failed to unfollow"
 msgstr "取消關注失敗"
+
+#: src/components/PostActionMenu.tsx:164
+#: src/components/PostActionMenu.tsx:171
+msgid "Failed to unpin post"
+msgstr "無法取消釘選內容"
 
 #: src/components/PostControls.tsx:139
 msgid "Failed to unshare post"
@@ -995,7 +1005,7 @@ msgstr "載入更多通知"
 msgid "Load more passkeys"
 msgstr "載入更多通行金鑰"
 
-#: src/components/ActorPostList.tsx:79
+#: src/components/ActorPostList.tsx:84
 #: src/components/ActorSharedPostList.tsx:84
 #: src/components/PersonalTimeline.tsx:101
 #: src/components/PublicTimeline.tsx:103
@@ -1039,7 +1049,7 @@ msgstr "正在載入更多通知…"
 msgid "Loading more passkeys…"
 msgstr "正在載入更多通行金鑰…"
 
-#: src/components/ActorPostList.tsx:73
+#: src/components/ActorPostList.tsx:78
 #: src/components/ActorSharedPostList.tsx:78
 #: src/components/PersonalTimeline.tsx:95
 #: src/components/PublicTimeline.tsx:97
@@ -1162,7 +1172,7 @@ msgstr "未找到文章"
 msgid "No notes found"
 msgstr "未找到貼文"
 
-#: src/components/ActorPostList.tsx:86
+#: src/components/ActorPostList.tsx:91
 #: src/components/ActorSharedPostList.tsx:91
 #: src/components/PersonalTimeline.tsx:108
 #: src/components/PublicTimeline.tsx:110
@@ -1266,6 +1276,14 @@ msgstr "通行金鑰"
 msgid "Permission Denied"
 msgstr "權限被拒絕"
 
+#: src/components/PostActionMenu.tsx:260
+msgid "Pin to profile"
+msgstr "釘選到個人資料"
+
+#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+msgid "Pinned posts"
+msgstr "已釘選內容"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:209
 msgid "Please choose an image file smaller than 5 MiB."
 msgstr "請選擇小於 5 MiB 的圖片檔案。"
@@ -1290,9 +1308,17 @@ msgstr "請輸入你的聯邦宇宙使用者名稱。"
 msgid "Please sign in to access this page"
 msgstr "請登入以存取此頁面"
 
-#: src/components/PostActionMenu.tsx:84
+#: src/components/PostActionMenu.tsx:214
 msgid "Post deleted"
 msgstr "內容已刪除"
+
+#: src/components/PostActionMenu.tsx:185
+msgid "Post pinned"
+msgstr "內容已釘選"
+
+#: src/components/PostActionMenu.tsx:161
+msgid "Post unpinned"
+msgstr "已取消釘選內容"
 
 #: src/components/ProfileTabs.tsx:38
 msgid "Posts"
@@ -1363,26 +1389,26 @@ msgid "Quiet public"
 msgstr "悄悄公開"
 
 #: src/components/NoteComposeModal.tsx:26
-#: src/components/PostControls.tsx:198
+#: src/components/PostControls.tsx:218
 #: src/components/ui/markdown-editor.tsx:289
 msgid "Quote"
 msgstr "引用"
 
-#: src/components/PostControls.tsx:236
+#: src/components/PostControls.tsx:256
 msgid "React"
 msgstr "反應"
 
-#: src/components/EmojiReactionPopover.tsx:338
+#: src/components/EmojiReactionPopover.tsx:357
 msgid "React with {emoji}"
 msgstr "用{emoji}反應"
 
-#: src/components/EmojiReactionPopover.tsx:291
-#: src/components/EmojiReactionPopover.tsx:294
+#: src/components/EmojiReactionPopover.tsx:310
+#: src/components/EmojiReactionPopover.tsx:313
 msgid "reaction"
 msgstr "反應"
 
-#: src/components/ArticleCard.tsx:353
-#: src/components/ArticleCard.tsx:373
+#: src/components/ArticleCard.tsx:358
+#: src/components/ArticleCard.tsx:378
 msgid "Read full article"
 msgstr "閱讀完整文章"
 
@@ -1425,7 +1451,7 @@ msgid "Remove"
 msgstr "移除"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:290
+#: src/components/EmojiReactionPopover.tsx:309
 msgid "Remove {0}"
 msgstr "移除{0}"
 
@@ -1438,7 +1464,7 @@ msgstr "取消收藏"
 msgid "Remove quote"
 msgstr "移除引用"
 
-#: src/components/PostControls.tsx:187
+#: src/components/PostControls.tsx:207
 msgid "Reply"
 msgstr "回覆"
 
@@ -1519,7 +1545,7 @@ msgstr "設定您的個人偏好設定。"
 msgid "Settings"
 msgstr "設定"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostControls.tsx:236
 msgid "Share"
 msgstr "分享"
 
@@ -1602,8 +1628,8 @@ msgstr "設定已成功儲存"
 msgid "Successfully saved settings"
 msgstr "設定儲存成功"
 
-#: src/components/ArticleCard.tsx:306
-#: src/components/ArticleCard.tsx:325
+#: src/components/ArticleCard.tsx:311
+#: src/components/ArticleCard.tsx:330
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
@@ -1691,7 +1717,7 @@ msgstr "可在 {0} 上以 {1} 授權取得該網站的原始碼。"
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "該連結的 URL，例如 https://github.com/你的使用者名稱 。"
 
-#: src/components/PostActionMenu.tsx:133
+#: src/components/PostActionMenu.tsx:280
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "此操作無法復原。這將永久刪除該內容。"
 
@@ -1751,7 +1777,7 @@ msgid "Toggle sidebar"
 msgstr "切換側邊欄"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:189
+#: src/components/ArticleCard.tsx:194
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:403
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
@@ -1765,13 +1791,13 @@ msgstr "正在翻譯…"
 msgid "Type tags separated by spaces"
 msgstr "輸入標籤，用空格分隔"
 
-#: src/components/EmojiReactionPopover.tsx:238
-#: src/components/EmojiReactionPopover.tsx:247
+#: src/components/EmojiReactionPopover.tsx:255
+#: src/components/EmojiReactionPopover.tsx:264
 msgid "Unable to add reaction. Please try again."
 msgstr "無法新增反應。請重試。"
 
-#: src/components/EmojiReactionPopover.tsx:160
-#: src/components/EmojiReactionPopover.tsx:169
+#: src/components/EmojiReactionPopover.tsx:164
+#: src/components/EmojiReactionPopover.tsx:173
 msgid "Unable to remove reaction. Please try again."
 msgstr "無法移除反應。請重試。"
 
@@ -1779,7 +1805,11 @@ msgstr "無法移除反應。請重試。"
 msgid "Unfollow"
 msgstr "取消關注"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostActionMenu.tsx:261
+msgid "Unpin from profile"
+msgstr "從個人資料取消釘選"
+
+#: src/components/PostControls.tsx:236
 msgid "Unshare"
 msgstr "取消轉貼"
 

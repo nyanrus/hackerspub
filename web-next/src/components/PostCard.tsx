@@ -9,6 +9,7 @@ export interface PostCardProps {
   $post: PostCard_post$key;
   connections?: string[];
   bookmarkListConnections?: string[];
+  pinConnections?: string[];
 }
 
 export function PostCard(props: PostCardProps) {
@@ -31,11 +32,13 @@ export function PostCard(props: PostCardProps) {
     <Show when={post()}>
       {(post) => (
         <Switch>
+          {/* TODO(#259): Render Question/poll posts; tracked separately from pinning. */}
           <Match when={post().__typename === "Note"}>
             <NoteCard
               $note={post()}
               connections={props.connections}
               bookmarkListConnections={props.bookmarkListConnections}
+              pinConnections={props.pinConnections}
             />
           </Match>
           <Match when={post().__typename === "Article"}>
@@ -43,6 +46,7 @@ export function PostCard(props: PostCardProps) {
               $article={post()}
               connections={props.connections}
               bookmarkListConnections={props.bookmarkListConnections}
+              pinConnections={props.pinConnections}
             />
           </Match>
         </Switch>

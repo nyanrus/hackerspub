@@ -7,6 +7,7 @@ import { PostCard } from "./PostCard.tsx";
 
 export interface ActorPostListProps {
   $posts: ActorPostList_posts$key;
+  pinConnections?: string[];
 }
 
 export function ActorPostList(props: ActorPostListProps) {
@@ -60,7 +61,11 @@ export function ActorPostList(props: ActorPostListProps) {
           <>
             <For each={data().posts.edges}>
               {(edge) => (
-                <PostCard $post={edge.node} connections={[data().posts.__id]} />
+                <PostCard
+                  $post={edge.node}
+                  connections={[data().posts.__id]}
+                  pinConnections={props.pinConnections}
+                />
               )}
             </For>
             <Show when={posts.hasNext}>

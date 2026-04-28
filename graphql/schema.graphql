@@ -311,6 +311,7 @@ type Article implements Node & Post & Reactable {
   url: URL
   uuid: UUID!
   viewerHasBookmarked: Boolean!
+  viewerHasPinned: Boolean!
   viewerHasShared: Boolean!
   visibility: PostVisibility!
 }
@@ -693,6 +694,7 @@ type Mutation {
   Marks all notifications as read up to the current time. Returns the timestamp.
   """
   markNotificationsAsRead: DateTime!
+  pinPost(input: PinPostInput!): PinPostResult!
   publishArticleDraft(input: PublishArticleDraftInput!): PublishArticleDraftResult!
   redeemInvitationLink(email: Email!, id: UUID!, locale: Locale!, verifyUrl: URITemplate!): RedeemInvitationLinkResult!
   registerApnsDeviceToken(input: RegisterApnsDeviceTokenInput!): RegisterApnsDeviceTokenResult!
@@ -711,6 +713,7 @@ type Mutation {
   unblockActor(input: UnblockActorInput!): UnblockActorResult!
   unbookmarkPost(input: UnbookmarkPostInput!): UnbookmarkPostResult!
   unfollowActor(input: UnfollowActorInput!): UnfollowActorResult!
+  unpinPost(input: UnpinPostInput!): UnpinPostResult!
   unregisterApnsDeviceToken(input: UnregisterApnsDeviceTokenInput!): UnregisterApnsDeviceTokenResult!
   unregisterFcmDeviceToken(input: UnregisterFcmDeviceTokenInput!): UnregisterFcmDeviceTokenResult!
   unsharePost(input: UnsharePostInput!): UnsharePostResult!
@@ -755,6 +758,7 @@ type Note implements Node & Post & Reactable {
   url: URL
   uuid: UUID!
   viewerHasBookmarked: Boolean!
+  viewerHasPinned: Boolean!
   viewerHasShared: Boolean!
   visibility: PostVisibility!
 }
@@ -804,6 +808,18 @@ type PasskeyRegistrationResult {
   passkey: Passkey
   verified: Boolean!
 }
+
+input PinPostInput {
+  clientMutationId: ID
+  postId: ID!
+}
+
+type PinPostPayload {
+  clientMutationId: ID
+  post: Post!
+}
+
+union PinPostResult = InvalidInputError | NotAuthenticatedError | PinPostPayload
 
 type Poll implements Node {
   ends: DateTime!
@@ -888,6 +904,7 @@ interface Post implements Node & Reactable {
   url: URL
   uuid: UUID!
   viewerHasBookmarked: Boolean!
+  viewerHasPinned: Boolean!
   viewerHasShared: Boolean!
   visibility: PostVisibility!
 }
@@ -1144,6 +1161,7 @@ type Question implements Node & Post & Reactable {
   url: URL
   uuid: UUID!
   viewerHasBookmarked: Boolean!
+  viewerHasPinned: Boolean!
   viewerHasShared: Boolean!
   visibility: PostVisibility!
 }
@@ -1467,6 +1485,19 @@ type UnfollowActorPayload {
 }
 
 union UnfollowActorResult = InvalidInputError | NotAuthenticatedError | UnfollowActorPayload
+
+input UnpinPostInput {
+  clientMutationId: ID
+  postId: ID!
+}
+
+type UnpinPostPayload {
+  clientMutationId: ID
+  post: Post!
+  unpinnedPostId: ID!
+}
+
+union UnpinPostResult = InvalidInputError | NotAuthenticatedError | UnpinPostPayload
 
 input UnregisterApnsDeviceTokenInput {
   clientMutationId: ID

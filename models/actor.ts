@@ -114,6 +114,7 @@ export async function syncActorFromAccount(
     automaticallyApprovesFollowers: true,
     inboxUrl: fedCtx.getInboxUri(account.id).href,
     sharedInboxUrl: fedCtx.getInboxUri().href,
+    featuredUrl: fedCtx.getFeaturedUri(account.id).href,
     avatarUrl: await getAccountAvatarUrl(disk, account),
     fieldHtmls: Object.fromEntries(
       renderAccountLinks(account.links).map((

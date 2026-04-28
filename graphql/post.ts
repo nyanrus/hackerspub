@@ -16,6 +16,11 @@ import {
 } from "@hackerspub/models/bookmark";
 import { createNote } from "@hackerspub/models/note";
 import {
+  isPostPinnedBy,
+  pinPost as pinPostModel,
+  unpinPost as unpinPostModel,
+} from "@hackerspub/models/pin";
+import {
   deletePost,
   getPostVisibilityFilter,
   isPostSharedBy,
@@ -171,6 +176,15 @@ export const Post = builder.drizzleInterface("postTable", {
       async resolve(post, _, ctx) {
         if (ctx.account == null) return false;
         return await isPostBookmarkedBy(ctx.db, post, ctx.account);
+      },
+    }),
+    viewerHasPinned: t.boolean({
+      select: {
+        columns: { id: true },
+      },
+      async resolve(post, _, ctx) {
+        if (ctx.account == null) return false;
+        return await isPostPinnedBy(ctx.db, post, ctx.account.actor);
       },
     }),
   }),
@@ -1342,6 +1356,124 @@ builder.relayMutationField(
           return {
             type: result.unbookmarkedPostId.typename,
             id: result.unbookmarkedPostId.id,
+          };
+        },
+      }),
+    }),
+  },
+);
+
+builder.relayMutationField(
+  "pinPost",
+  {
+    inputFields: (t) => ({
+      postId: t.globalID({
+        for: [Note, Article, Question],
+        required: true,
+      }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      if (ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const { postId } = args.input;
+
+      const post = await ctx.db.query.postTable.findFirst({
+        where: { id: postId.id },
+      });
+
+      if (post == null) {
+        throw new InvalidInputError("postId");
+      }
+
+      const pin = await pinPostModel(ctx.fedCtx, ctx.account.actor, post);
+      if (pin == null) {
+        throw new InvalidInputError("postId");
+      }
+
+      return { postId: postId.id };
+    },
+  },
+  {
+    outputFields: (t) => ({
+      post: t.drizzleField({
+        type: Post,
+        async resolve(query, result, _args, ctx) {
+          const post = await ctx.db.query.postTable.findFirst(
+            query({ where: { id: result.postId } }),
+          );
+          return post!;
+        },
+      }),
+    }),
+  },
+);
+
+builder.relayMutationField(
+  "unpinPost",
+  {
+    inputFields: (t) => ({
+      postId: t.globalID({
+        for: [Note, Article, Question],
+        required: true,
+      }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      if (ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const { postId } = args.input;
+
+      const post = await ctx.db.query.postTable.findFirst({
+        where: { id: postId.id },
+      });
+
+      if (post == null) {
+        throw new InvalidInputError("postId");
+      }
+
+      const pin = await unpinPostModel(ctx.fedCtx, ctx.account.actor, post);
+      if (pin == null) {
+        throw new InvalidInputError("postId");
+      }
+
+      return { postId: postId.id, unpinnedPostId: postId };
+    },
+  },
+  {
+    outputFields: (t) => ({
+      post: t.drizzleField({
+        type: Post,
+        async resolve(query, result, _args, ctx) {
+          const post = await ctx.db.query.postTable.findFirst(
+            query({ where: { id: result.postId } }),
+          );
+          return post!;
+        },
+      }),
+      unpinnedPostId: t.globalID({
+        resolve(result) {
+          return {
+            type: result.unpinnedPostId.typename,
+            id: result.unpinnedPostId.id,
           };
         },
       }),
