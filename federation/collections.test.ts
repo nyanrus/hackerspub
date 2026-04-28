@@ -1,16 +1,19 @@
 import assert from "node:assert/strict";
+import type { Context } from "@fedify/fedify";
 import { Question } from "@fedify/vocab";
+import type { ContextData } from "@hackerspub/models/context";
 import type { Uuid } from "@hackerspub/models/uuid";
 import { toFeaturedCollectionItem } from "./collections.ts";
 
 Deno.test("toFeaturedCollectionItem() returns importable Question posts", async () => {
   const accountId = "00000000-0000-0000-0000-000000000001" as Uuid;
-  const item = toFeaturedCollectionItem({
+  const ctx = {
     getActorUri: (identifier: string) =>
       new URL(`https://example.com/ap/actors/${identifier}`),
     getFollowersUri: (identifier: string) =>
       new URL(`https://example.com/ap/actors/${identifier}/followers`),
-  }, {
+  } as unknown as Context<ContextData>;
+  const item = toFeaturedCollectionItem(ctx, {
     iri: "https://example.com/objects/question",
     type: "Question",
     actor: { accountId },

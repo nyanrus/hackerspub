@@ -131,7 +131,7 @@ builder
   });
 
 export function toFeaturedCollectionItem(
-  ctx: Pick<Context<ContextData>, "getActorUri" | "getFollowersUri">,
+  ctx: Context<ContextData>,
   post:
     & Pick<
       Post,
@@ -166,7 +166,7 @@ export function toFeaturedCollectionItem(
     ? new URL(post.actor.iri ?? post.iri)
     : ctx.getActorUri(post.actor.accountId);
   const recipients = post.actor.accountId == null ? {} : getPostRecipients(
-    ctx as Context<ContextData>,
+    ctx,
     post.actor.accountId,
     post.mentions?.map((mention) => new URL(mention.actor.iri)) ?? [],
     post.visibility,
@@ -241,7 +241,10 @@ builder
             },
           },
         },
-        where: { actorId: account.actor.id },
+        where: {
+          actorId: account.actor.id,
+          post: { visibility: { in: ["public", "unlisted"] } },
+        },
         orderBy: { created: "desc" },
       });
       return {
@@ -254,7 +257,11 @@ builder
     const [{ cnt }] = await ctx.data.db.select({ cnt: count() })
       .from(pinTable)
       .innerJoin(actorTable, eq(pinTable.actorId, actorTable.id))
-      .where(eq(actorTable.accountId, identifier));
+      .innerJoin(postTable, eq(pinTable.postId, postTable.id))
+      .where(and(
+        eq(actorTable.accountId, identifier),
+        inArray(postTable.visibility, ["public", "unlisted"]),
+      ));
     return cnt;
   });
 
