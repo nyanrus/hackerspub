@@ -162,6 +162,26 @@ export function PostControls(props: PostControlsProps) {
     return sortReactionGroups(noteData?.reactionGroups || []);
   };
 
+  const reactionPopoverData = () => {
+    const noteData = note();
+    if (!noteData) return null;
+    return {
+      id: noteData.id,
+      reactionGroups: sortedReactionGroups().map((group) => ({
+        emoji: group.emoji,
+        customEmoji: group.customEmoji == null ? undefined : {
+          id: group.customEmoji.id,
+          name: group.customEmoji.name,
+          imageUrl: group.customEmoji.imageUrl,
+        },
+        reactors: group.reactors == null ? undefined : {
+          totalCount: group.reactors.totalCount,
+          viewerHasReacted: group.reactors.viewerHasReacted,
+        },
+      })),
+    };
+  };
+
   const userHasReacted = () => {
     const noteData = note();
     return noteData?.reactionGroups.some((group) =>
@@ -239,13 +259,14 @@ export function PostControls(props: PostControlsProps) {
               <span class="text-xs">{note().engagementStats.reactions}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent class="w-80 p-0">
-              <EmojiReactionPopover
-                noteData={{
-                  ...note(),
-                  reactionGroups: sortedReactionGroups(),
-                }}
-                onClose={() => setShowEmojiPopover(false)}
-              />
+              <Show when={reactionPopoverData()}>
+                {(noteData) => (
+                  <EmojiReactionPopover
+                    noteData={noteData()}
+                    onClose={() => setShowEmojiPopover(false)}
+                  />
+                )}
+              </Show>
             </DropdownMenuContent>
           </DropdownMenu>
 

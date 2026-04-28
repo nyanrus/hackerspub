@@ -18,8 +18,10 @@ interface NoteData {
       readonly name: string;
       readonly imageUrl: string;
     } | undefined;
-    readonly count?: number;
-    readonly viewerHasReacted?: boolean;
+    readonly reactors?: {
+      readonly totalCount: number;
+      readonly viewerHasReacted: boolean;
+    };
   }>;
 }
 
@@ -90,7 +92,7 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
       });
 
       // Toggle: if user has reacted, undo; if not, add
-      const shouldUndo = existingReaction?.viewerHasReacted;
+      const shouldUndo = existingReaction?.reactors?.viewerHasReacted;
 
       if (shouldUndo) {
         commitRemoveReaction({
@@ -126,8 +128,9 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
               if (existingGroupIndex >= 0) {
                 const existingGroup = reactionGroups[existingGroupIndex];
                 if (existingGroup) {
+                  const reactors = existingGroup.getLinkedRecord("reactors");
                   const currentCount =
-                    existingGroup.getValue("count") as number || 0;
+                    reactors?.getValue("totalCount") as number || 0;
                   if (currentCount <= 1) {
                     // Remove the group entirely
                     const updatedGroups = reactionGroups.filter((_, index) =>
@@ -137,12 +140,13 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
                       updatedGroups,
                       "reactionGroups",
                     );
+                    if (reactors) store.delete(reactors.getDataID());
                     // Also delete the group record from the store
                     store.delete(existingGroup.getDataID());
                   } else {
                     // Decrement count and mark as not reacted
-                    existingGroup.setValue(currentCount - 1, "count");
-                    existingGroup.setValue(false, "viewerHasReacted");
+                    reactors?.setValue(currentCount - 1, "totalCount");
+                    reactors?.setValue(false, "viewerHasReacted");
                   }
                 }
               }
@@ -205,10 +209,18 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
                 // Increment count for existing group and mark as reacted
                 const existingGroup = reactionGroups[existingGroupIndex];
                 if (existingGroup) {
+                  let reactors = existingGroup.getLinkedRecord("reactors");
+                  if (!reactors) {
+                    reactors = store.create(
+                      `${props.noteData.id}_reaction_${emoji}_reactors`,
+                      "ReactionGroupReactorsConnection",
+                    );
+                    existingGroup.setLinkedRecord(reactors, "reactors");
+                  }
                   const currentCount =
-                    existingGroup.getValue("count") as number || 0;
-                  existingGroup.setValue(currentCount + 1, "count");
-                  existingGroup.setValue(true, "viewerHasReacted");
+                    reactors.getValue("totalCount") as number || 0;
+                  reactors.setValue(currentCount + 1, "totalCount");
+                  reactors.setValue(true, "viewerHasReacted");
                 }
               } else {
                 // Create new reaction group
@@ -216,9 +228,14 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
                   `${props.noteData.id}_reaction_${emoji}`,
                   "EmojiReactionGroup",
                 );
+                const reactors = store.create(
+                  `${props.noteData.id}_reaction_${emoji}_reactors`,
+                  "ReactionGroupReactorsConnection",
+                );
                 newGroup.setValue(emoji, "emoji");
-                newGroup.setValue(1, "count");
-                newGroup.setValue(true, "viewerHasReacted");
+                reactors.setValue(1, "totalCount");
+                reactors.setValue(true, "viewerHasReacted");
+                newGroup.setLinkedRecord(reactors, "reactors");
                 newGroup.setLinkedRecord(postRecord, "subject");
 
                 const updatedGroups = [...reactionGroups, newGroup];
@@ -280,13 +297,15 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
             <For each={sortedReactionGroups()}>
               {(group) => (
                 <Button
-                  variant={group.viewerHasReacted === true
+                  variant={group.reactors?.viewerHasReacted === true
                     ? "secondary"
                     : "outline"}
                   size="sm"
-                  class="h-8 gap-2 cursor-pointer"
+                  class={group.reactors?.viewerHasReacted === true
+                    ? "h-8 gap-2 cursor-pointer border-red-300 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60"
+                    : "h-8 gap-2 cursor-pointer"}
                   disabled={isSubmitting()}
-                  title={group.viewerHasReacted === true
+                  title={group.reactors?.viewerHasReacted === true
                     ? t`Remove ${
                       group.emoji || group.customEmoji?.name || t`reaction`
                     }`
@@ -316,7 +335,7 @@ export function EmojiReactionPopover(props: EmojiReactionPopoverProps) {
                     <span class="text-base">{group.emoji}</span>
                   </Show>
                   <span class="text-xs text-muted-foreground">
-                    {group.count ?? 0}
+                    {group.reactors?.totalCount ?? 0}
                   </span>
                 </Button>
               )}
