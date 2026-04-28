@@ -368,6 +368,7 @@ export function QuestionCard(props: QuestionCardProps) {
             size="sm"
             disabled={!canVote() || !hasSelection()}
             onClick={submitVote}
+            class={canVote() && hasSelection() ? "cursor-pointer" : undefined}
           >
             {actionLabel()}
           </Button>
