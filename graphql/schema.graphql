@@ -1152,7 +1152,7 @@ type Question implements Node & Post & Reactable {
   media: [PostMedium!]!
   mentions(after: String, before: String, first: Int, last: Int): PostMentionsConnection!
   name: String
-  poll: Poll!
+  poll: Poll
   published: DateTime!
   quotedPost: Post
   quotes(after: String, before: String, first: Int, last: Int): PostQuotesConnection!

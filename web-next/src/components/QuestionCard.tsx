@@ -11,11 +11,13 @@ import IconCircle from "~icons/lucide/circle";
 import IconListChecks from "~icons/lucide/list-checks";
 import IconRadio from "~icons/lucide/circle-dot";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
+import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
 import { InternalLink } from "./InternalLink.tsx";
 import { PostActionMenu } from "./PostActionMenu.tsx";
 import { PostAvatar } from "./PostAvatar.tsx";
 import { PostControls } from "./PostControls.tsx";
+import { PostSharer } from "./PostSharer.tsx";
 import { QuotedPostCard } from "./QuotedPostCard.tsx";
 import { Timestamp } from "./Timestamp.tsx";
 import { VisibilityTag } from "./VisibilityTag.tsx";
@@ -32,6 +34,59 @@ export function QuestionCard(props: QuestionCardProps) {
   const question = createFragment(
     graphql`
       fragment QuestionCard_question on Question {
+        ...PostSharer_post
+        ...QuestionCardContent_question
+        sharedPost {
+          __typename
+          ... on Question {
+            ...QuestionCardContent_question
+          }
+        }
+      }
+    `,
+    () => props.$question,
+  );
+
+  return (
+    <Show when={question()}>
+      {(q) => {
+        const sharedQuestion = (): QuestionCardContent_question$key | null => {
+          const sharedPost = q().sharedPost;
+          return sharedPost?.__typename === "Question" ? sharedPost : null;
+        };
+        return (
+          <article class="px-4 py-3 border-b-1">
+            <div class="flex flex-col gap-0.5">
+              <Show when={sharedQuestion()}>
+                <PostSharer $post={q()} class="ml-14" />
+              </Show>
+              <QuestionCardContent
+                $question={sharedQuestion() ?? q()}
+                connections={props.connections}
+                bookmarkListConnections={props.bookmarkListConnections}
+                pinConnections={props.pinConnections}
+                onDeleted={props.onDeleted}
+              />
+            </div>
+          </article>
+        );
+      }}
+    </Show>
+  );
+}
+
+interface QuestionCardContentProps {
+  $question: QuestionCardContent_question$key;
+  connections?: string[];
+  bookmarkListConnections?: string[];
+  pinConnections?: string[];
+  onDeleted?: () => void;
+}
+
+function QuestionCardContent(props: QuestionCardContentProps) {
+  const question = createFragment(
+    graphql`
+      fragment QuestionCardContent_question on Question {
         __id
         id
         uuid
@@ -125,73 +180,75 @@ export function QuestionCard(props: QuestionCardProps) {
   return (
     <Show when={question()}>
       {(q) => (
-        <article class="px-4 py-3 border-b-1">
-          <div class="flex gap-4">
-            <PostAvatar $actor={q().actor} />
-            <div class="min-w-0 grow">
-              <div class="flex items-center gap-1 flex-wrap">
-                <Show when={(q().actor.name ?? "").trim() !== ""}>
-                  <InternalLink
-                    href={q().actor.url ?? q().actor.iri}
-                    internalHref={q().actor.local
-                      ? `/@${q().actor.username}`
-                      : `/${q().actor.handle}`}
-                    innerHTML={q().actor.name ?? ""}
-                    class="font-semibold"
-                  />
-                  {" "}
-                </Show>
-                <span class="min-w-0 grow break-all select-all text-muted-foreground">
-                  {q().actor.handle}
-                </span>
-                <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
-                  <InternalLink
-                    href={q().url ?? q().iri}
-                    internalHref={`/${
-                      q().actor.local
-                        ? "@" + q().actor.username
-                        : q().actor.handle
-                    }/${q().uuid}`}
-                  >
-                    <Timestamp value={q().published} capitalizeFirstLetter />
-                  </InternalLink>
-                  &middot;
-                  <VisibilityTag visibility={q().visibility} />
-                  <PostActionMenu
-                    $post={q()}
-                    connections={props.connections}
-                    pinConnections={props.pinConnections}
-                    onDeleted={props.onDeleted}
-                  />
-                </span>
-              </div>
-              <div
-                innerHTML={q().content}
-                lang={q().language ?? undefined}
-                class="prose dark:prose-invert break-words overflow-wrap"
-              />
-              <PollPanel
-                questionId={q().id}
-                poll={q().poll}
-                totalVotes={q().poll.votes.totalCount}
-              />
-              <Show when={q().quotedPost}>
-                {(quotedPost) => <QuotedPostCard $post={quotedPost()} />}
+        <div class="flex gap-4">
+          <PostAvatar $actor={q().actor} />
+          <div class="min-w-0 grow">
+            <div class="flex items-center gap-1 flex-wrap">
+              <Show when={(q().actor.name ?? "").trim() !== ""}>
+                <InternalLink
+                  href={q().actor.url ?? q().actor.iri}
+                  internalHref={q().actor.local
+                    ? `/@${q().actor.username}`
+                    : `/${q().actor.handle}`}
+                  innerHTML={q().actor.name ?? ""}
+                  class="font-semibold"
+                />
+                {" "}
               </Show>
-              <PostControls
-                $post={q()}
-                bookmarkListConnections={props.bookmarkListConnections}
-              />
+              <span class="min-w-0 grow break-all select-all text-muted-foreground">
+                {q().actor.handle}
+              </span>
+              <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
+                <InternalLink
+                  href={q().url ?? q().iri}
+                  internalHref={`/${
+                    q().actor.local
+                      ? "@" + q().actor.username
+                      : q().actor.handle
+                  }/${q().uuid}`}
+                >
+                  <Timestamp value={q().published} capitalizeFirstLetter />
+                </InternalLink>
+                &middot;
+                <VisibilityTag visibility={q().visibility} />
+                <PostActionMenu
+                  $post={q()}
+                  connections={props.connections}
+                  pinConnections={props.pinConnections}
+                  onDeleted={props.onDeleted}
+                />
+              </span>
             </div>
+            <div
+              innerHTML={q().content}
+              lang={q().language ?? undefined}
+              class="prose dark:prose-invert break-words overflow-wrap"
+            />
+            <Show when={q().poll}>
+              {(poll) => (
+                <PollPanel
+                  questionId={q().id}
+                  poll={poll()}
+                  totalVotes={poll().votes.totalCount}
+                />
+              )}
+            </Show>
+            <Show when={q().quotedPost}>
+              {(quotedPost) => <QuotedPostCard $post={quotedPost()} />}
+            </Show>
+            <PostControls
+              $post={q()}
+              bookmarkListConnections={props.bookmarkListConnections}
+            />
           </div>
-        </article>
+        </div>
       )}
     </Show>
   );
 
   function PollPanel(props: {
     questionId: string;
-    poll: NonNullable<ReturnType<typeof question>>["poll"];
+    poll: NonNullable<NonNullable<ReturnType<typeof question>>["poll"]>;
     totalVotes: number;
   }) {
     const totalVotes = () => Math.max(props.totalVotes, 0);

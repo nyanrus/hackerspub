@@ -75,6 +75,30 @@ const actorPostByUuidQuery = parse(`
   }
 `);
 
+const sharedQuestionPollQuery = parse(`
+  query SharedQuestionPoll($id: ID!) {
+    node(id: $id) {
+      ... on Question {
+        poll {
+          multiple
+        }
+        sharedPost {
+          __typename
+          ... on Question {
+            poll {
+              multiple
+              options {
+                index
+                title
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
 const voteOnPollMutation = parse(`
   mutation VoteOnPoll($questionId: ID!, $optionIndices: [Int!]!) {
     voteOnPoll(input: {
@@ -314,6 +338,93 @@ test("Actor.postByUuid resolves visible Question posts", async () => {
         postByUuid: {
           __typename: "Question",
           id: encodeGlobalID("Question", questionId),
+        },
+      },
+    });
+  });
+});
+
+test("shared Question wrappers can resolve the original poll", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "pollgraphqlshareauthor",
+      name: "Poll GraphQL Share Author",
+      email: "pollgraphqlshareauthor@example.com",
+    });
+    const sharer = await insertAccountWithActor(tx, {
+      username: "pollgraphqlsharer",
+      name: "Poll GraphQL Sharer",
+      email: "pollgraphqlsharer@example.com",
+    });
+    const questionId = generateUuidV7();
+    const shareId = generateUuidV7();
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values([
+      {
+        id: questionId,
+        iri: `http://localhost/objects/${questionId}`,
+        type: "Question",
+        visibility: "public",
+        actorId: author.actor.id,
+        name: "Shared poll?",
+        contentHtml: "<p>Shared poll?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: `http://localhost/@${author.account.username}/polls/${questionId}`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+      {
+        id: shareId,
+        iri: `http://localhost/objects/${shareId}`,
+        type: "Question",
+        visibility: "public",
+        actorId: sharer.actor.id,
+        sharedPostId: questionId,
+        name: "Shared poll?",
+        contentHtml: "<p>Shared poll?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: `http://localhost/@${sharer.account.username}/shares/${shareId}`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    ]);
+    await tx.insert(pollTable).values({
+      postId: questionId,
+      multiple: false,
+      votersCount: 0,
+      ends: pollEndsInFuture(),
+    });
+    await tx.insert(pollOptionTable).values([
+      { postId: questionId, index: 0, title: "Yes", votesCount: 0 },
+      { postId: questionId, index: 1, title: "No", votesCount: 0 },
+    ]);
+
+    const result = await execute({
+      schema,
+      document: sharedQuestionPollQuery,
+      variableValues: { id: encodeGlobalID("Question", shareId) },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      node: {
+        poll: null,
+        sharedPost: {
+          __typename: "Question",
+          poll: {
+            multiple: false,
+            options: [
+              { index: 0, title: "Yes" },
+              { index: 1, title: "No" },
+            ],
+          },
         },
       },
     });
