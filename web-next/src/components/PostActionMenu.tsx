@@ -58,7 +58,7 @@ const pinPostMutation = graphql`
       __typename
       ... on PinPostPayload {
         post
-          @appendNode(
+          @prependNode(
             connections: $connections
             edgeTypeName: "ActorPinsConnectionEdge"
           ) {
