@@ -171,6 +171,7 @@
     ".github/",
     "drizzle/",
     "node_modules/",
+    "web-next/dist/",
     "web-next/node_modules/",
     "web-next/.output/",
     "web-next/.nitro/",
