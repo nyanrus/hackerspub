@@ -142,6 +142,7 @@ export function PostActionMenu(props: PostActionMenuProps) {
   const canPinPost = () => {
     const p = post();
     return p != null &&
+      p.actor.isViewer &&
       p.sharedPost == null &&
       (p.visibility === "PUBLIC" || p.visibility === "UNLISTED");
   };
