@@ -2,8 +2,14 @@ import type { Context } from "@fedify/fedify";
 import * as vocab from "@fedify/vocab";
 import { and, count, eq } from "drizzle-orm";
 import type { ContextData } from "./context.ts";
-import type { Database } from "./db.ts";
-import { type Actor, type Pin, pinTable, type Post } from "./schema.ts";
+import type { Database, Transaction } from "./db.ts";
+import {
+  type Actor,
+  actorTable,
+  type Pin,
+  pinTable,
+  type Post,
+} from "./schema.ts";
 
 export const MAX_PINNED_POSTS = 20;
 
@@ -24,36 +30,57 @@ export async function pinPost(
   const { db } = fedCtx.data;
   if (!canPinPost(actor, post)) return null;
 
-  const existing = await db.query.pinTable.findFirst({
-    where: {
-      actorId: actor.id,
-      postId: post.id,
-    },
-  });
-  if (existing != null) return existing;
+  const pinInTransaction = async (tx: Transaction) => {
+    await tx
+      .select({ id: actorTable.id })
+      .from(actorTable)
+      .where(eq(actorTable.id, actor.id))
+      .for("update");
 
-  const [{ pinnedPosts }] = await db
-    .select({ pinnedPosts: count() })
-    .from(pinTable)
-    .where(eq(pinTable.actorId, actor.id));
-  if (pinnedPosts >= MAX_PINNED_POSTS) return null;
+    const existing = await tx.query.pinTable.findFirst({
+      where: {
+        actorId: actor.id,
+        postId: post.id,
+      },
+    });
+    if (existing != null) return { pin: existing, inserted: false };
 
-  const [pin] = await db
-    .insert(pinTable)
-    .values({ actorId: actor.id, postId: post.id })
-    .onConflictDoNothing()
-    .returning();
-  if (pin != null) {
+    const [{ pinnedPosts }] = await tx
+      .select({ pinnedPosts: count() })
+      .from(pinTable)
+      .where(eq(pinTable.actorId, actor.id));
+    if (pinnedPosts >= MAX_PINNED_POSTS) {
+      return { pin: null, inserted: false };
+    }
+
+    const [pin] = await tx
+      .insert(pinTable)
+      .values({ actorId: actor.id, postId: post.id })
+      .onConflictDoNothing()
+      .returning();
+    if (pin != null) return { pin, inserted: true };
+
+    const existingAfterConflict = await tx.query.pinTable.findFirst({
+      where: {
+        actorId: actor.id,
+        postId: post.id,
+      },
+    });
+    return { pin: existingAfterConflict ?? null, inserted: false };
+  };
+
+  const result = isTransaction(db)
+    ? await pinInTransaction(db)
+    : await db.transaction(pinInTransaction);
+
+  if (result.inserted && result.pin != null) {
     await sendPinActivity(fedCtx, actor, post);
-    return pin;
   }
+  return result.pin;
+}
 
-  return await db.query.pinTable.findFirst({
-    where: {
-      actorId: actor.id,
-      postId: post.id,
-    },
-  }) ?? null;
+function isTransaction(db: Database): db is Transaction {
+  return "rollback" in db;
 }
 
 export async function unpinPost(
