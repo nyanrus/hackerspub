@@ -25,6 +25,7 @@
     "./note": "./note.ts",
     "./notification": "./notification.ts",
     "./passkey": "./passkey.ts",
+    "./pin": "./pin.ts",
     "./poll": "./poll.ts",
     "./post": "./post.ts",
     "./reaction": "./reaction.ts",

@@ -391,6 +391,9 @@ export function createFedCtx(
     getFollowingUri(identifier: string) {
       return new URL(`/actors/${identifier}/following`, "http://localhost/");
     },
+    getFeaturedUri(identifier: string) {
+      return new URL(`/actors/${identifier}/featured`, "http://localhost/");
+    },
     getObjectUri(_type: unknown, values: Record<string, string>) {
       if ("id" in values) {
         return new URL(`/objects/${values.id}`, "http://localhost/");

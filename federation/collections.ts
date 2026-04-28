@@ -3,6 +3,7 @@ import { toRecipient } from "@hackerspub/models/actor";
 import {
   actorTable,
   followingTable,
+  pinTable,
   postTable,
 } from "@hackerspub/models/schema";
 import { validateUuid } from "@hackerspub/models/uuid";
@@ -121,6 +122,42 @@ builder
         eq(actorTable.accountId, identifier),
         isNotNull(followingTable.accepted),
       ));
+    return cnt;
+  });
+
+builder
+  .setFeaturedDispatcher(
+    "/ap/actors/{identifier}/featured",
+    async (ctx, identifier) => {
+      if (identifier === new URL(ctx.canonicalOrigin).hostname) {
+        return { items: [] };
+      }
+      if (!validateUuid(identifier)) return null;
+      const account = await ctx.data.db.query.accountTable.findFirst({
+        with: { actor: true },
+        where: { id: identifier },
+      });
+      if (account == null) return null;
+      const pins = await ctx.data.db.query.pinTable.findMany({
+        with: { post: true },
+        where: { actorId: account.actor.id },
+        orderBy: { created: "desc" },
+      });
+      return {
+        items: pins.map((pin) =>
+          pin.post.type === "Article"
+            ? new vocab.Article({ id: new URL(pin.post.iri) })
+            : new vocab.Note({ id: new URL(pin.post.iri) })
+        ),
+      };
+    },
+  )
+  .setCounter(async (ctx, identifier) => {
+    if (!validateUuid(identifier)) return null;
+    const [{ cnt }] = await ctx.data.db.select({ cnt: count() })
+      .from(pinTable)
+      .innerJoin(actorTable, eq(pinTable.actorId, actorTable.id))
+      .where(eq(actorTable.accountId, identifier));
     return cnt;
   });
 
