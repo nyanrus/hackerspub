@@ -19,6 +19,9 @@ import {
   withRollback,
 } from "../test/postgres.ts";
 
+const pollEndsInFuture = () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+const pollEndedInPast = () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
 const questionPollQuery = parse(`
   query QuestionPoll($id: ID!) {
     node(id: $id) {
@@ -158,7 +161,7 @@ test("Question.poll exposes ordered options and vote connections", async () => {
       postId: questionId,
       multiple: true,
       votersCount: 2,
-      ends: new Date("2026-04-16T00:00:00.000Z"),
+      ends: pollEndedInPast(),
     });
     await tx.insert(pollOptionTable).values([
       { postId: questionId, index: 1, title: "Rust", votesCount: 1 },
@@ -284,7 +287,7 @@ test("Actor.postByUuid resolves visible Question posts", async () => {
       postId: questionId,
       multiple: false,
       votersCount: 0,
-      ends: new Date("2026-05-16T00:00:00.000Z"),
+      ends: pollEndsInFuture(),
     });
     await tx.insert(pollOptionTable).values([
       { postId: questionId, index: 0, title: "Yes", votesCount: 0 },
@@ -351,7 +354,7 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
       postId: questionId,
       multiple: false,
       votersCount: 0,
-      ends: new Date("2026-05-16T00:00:00.000Z"),
+      ends: pollEndsInFuture(),
     });
     await tx.insert(pollOptionTable).values([
       { postId: questionId, index: 0, title: "TypeScript", votesCount: 0 },
@@ -475,7 +478,7 @@ test("voteOnPoll stores multiple choices for multi-choice polls", async () => {
       postId: questionId,
       multiple: true,
       votersCount: 0,
-      ends: new Date("2026-05-16T00:00:00.000Z"),
+      ends: pollEndsInFuture(),
     });
     await tx.insert(pollOptionTable).values([
       { postId: questionId, index: 0, title: "Red", votesCount: 0 },
@@ -556,8 +559,8 @@ test("voteOnPoll rejects guest, invalid, and expired votes", async () => {
 
     for (
       const [id, ends] of [
-        [questionId, new Date("2026-05-16T00:00:00.000Z")],
-        [expiredQuestionId, new Date("2026-04-16T00:00:00.000Z")],
+        [questionId, pollEndsInFuture()],
+        [expiredQuestionId, pollEndedInPast()],
       ] as const
     ) {
       await tx.insert(postTable).values(
