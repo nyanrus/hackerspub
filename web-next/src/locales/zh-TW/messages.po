@@ -1278,7 +1278,7 @@ msgstr "權限被拒絕"
 
 #: src/components/PostActionMenu.tsx:260
 msgid "Pin to profile"
-msgstr "釘選到個人檔案"
+msgstr "釘選到個人資料"
 
 #: src/routes/(root)/[handle]/(profile)/index.tsx:104
 msgid "Pinned posts"
@@ -1807,7 +1807,7 @@ msgstr "取消關注"
 
 #: src/components/PostActionMenu.tsx:261
 msgid "Unpin from profile"
-msgstr "從個人檔案取消釘選"
+msgstr "從個人資料取消釘選"
 
 #: src/components/PostControls.tsx:236
 msgid "Unshare"
