@@ -4,6 +4,7 @@ import {
   actorTable,
   followingTable,
   pinTable,
+  type Post,
   postTable,
 } from "@hackerspub/models/schema";
 import { validateUuid } from "@hackerspub/models/uuid";
@@ -125,6 +126,19 @@ builder
     return cnt;
   });
 
+export function toFeaturedCollectionItem(
+  post: Pick<Post, "iri" | "type">,
+): vocab.Article | vocab.Note | vocab.Question {
+  switch (post.type) {
+    case "Article":
+      return new vocab.Article({ id: new URL(post.iri) });
+    case "Note":
+      return new vocab.Note({ id: new URL(post.iri) });
+    case "Question":
+      return new vocab.Question({ id: new URL(post.iri) });
+  }
+}
+
 builder
   .setFeaturedDispatcher(
     "/ap/actors/{identifier}/featured",
@@ -144,11 +158,7 @@ builder
         orderBy: { created: "desc" },
       });
       return {
-        items: pins.map((pin) =>
-          pin.post.type === "Article"
-            ? new vocab.Article({ id: new URL(pin.post.iri) })
-            : new vocab.Note({ id: new URL(pin.post.iri) })
-        ),
+        items: pins.map((pin) => toFeaturedCollectionItem(pin.post)),
       };
     },
   )
