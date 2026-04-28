@@ -143,7 +143,7 @@ msgstr "{0} shared your post"
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
-#: src/routes/(root)/[handle]/[noteId].tsx:144
+#: src/routes/(root)/[handle]/[noteId].tsx:194
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
@@ -884,12 +884,13 @@ msgstr "If enabled, the AI will generate a summary of the article for you. Other
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 
-#: src/routes/(root)/[handle]/[noteId].tsx:254
-#~ msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
-#~ msgstr "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+#. placeholder {0}: "ACTIVITYPUB_URI"
+#: src/routes/(root)/[handle]/[noteId].tsx:299
+msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+msgstr "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:237
+#: src/routes/(root)/[handle]/[noteId].tsx:440
 msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 msgstr "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 

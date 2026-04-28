@@ -143,7 +143,7 @@ msgstr "{0} 轉貼了你的內容"
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
-#: src/routes/(root)/[handle]/[noteId].tsx:144
+#: src/routes/(root)/[handle]/[noteId].tsx:194
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
@@ -880,12 +880,13 @@ msgstr "啟用後，AI 將為您生成文章摘要。否則，將使用文章的
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡評論此文章。在你的站台搜尋 {0} 後回覆。"
 
-#: src/routes/(root)/[handle]/[noteId].tsx:254
-#~ msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
-#~ msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的實例裡評論此貼文。在你的實例搜尋 {0} 後回覆。"
+#. placeholder {0}: "ACTIVITYPUB_URI"
+#: src/routes/(root)/[handle]/[noteId].tsx:299
+msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的實例裡評論此貼文。在你的實例搜尋 {0} 後回覆。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:237
+#: src/routes/(root)/[handle]/[noteId].tsx:440
 msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你有聯邦宇宙帳號，可以從自己的站台回覆此內容。在你的站台中搜尋 {0} 並回覆。"
 
