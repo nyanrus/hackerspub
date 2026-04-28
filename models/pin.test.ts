@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { Add, Remove } from "@fedify/vocab";
 import { MAX_PINNED_POSTS, pinPost, unpinPost } from "./pin.ts";
 import {
+  createFedCtx,
   insertAccountWithActor,
   insertNotePost,
   withRollback,
@@ -12,6 +14,15 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withRollback(async (tx) => {
+      const sent: unknown[][] = [];
+      const baseFedCtx = createFedCtx(tx);
+      const fedCtx = {
+        ...baseFedCtx,
+        sendActivity(...args: unknown[]) {
+          sent.push(args);
+          return Promise.resolve(undefined);
+        },
+      } as typeof baseFedCtx;
       const author = await insertAccountWithActor(tx, {
         username: "pinauthor",
         name: "Pin Author",
@@ -22,20 +33,29 @@ Deno.test({
         content: "Pinned post",
       });
 
-      const pinned = await pinPost(tx, author.actor, post);
+      const pinned = await pinPost(fedCtx, author.actor, post);
       assert.equal(pinned?.actorId, author.actor.id);
       assert.equal(pinned?.postId, post.id);
+      assert.equal(sent.length, 1);
+      assert.ok(sent[0][2] instanceof Add);
 
-      const again = await pinPost(tx, author.actor, post);
+      const again = await pinPost(fedCtx, author.actor, post);
       assert.equal(again?.created.getTime(), pinned?.created.getTime());
+      assert.equal(sent.length, 1);
 
       const rows = await tx.query.pinTable.findMany({
         where: { actorId: author.actor.id },
       });
       assert.equal(rows.length, 1);
 
-      const unpinned = await unpinPost(tx, author.actor, post);
+      const unpinned = await unpinPost(fedCtx, author.actor, post);
       assert.equal(unpinned?.postId, post.id);
+      assert.equal(sent.length, 2);
+      assert.ok(sent[1][2] instanceof Remove);
+
+      const alreadyUnpinned = await unpinPost(fedCtx, author.actor, post);
+      assert.equal(alreadyUnpinned, null);
+      assert.equal(sent.length, 2);
 
       const remaining = await tx.query.pinTable.findMany({
         where: { actorId: author.actor.id },
@@ -51,6 +71,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withRollback(async (tx) => {
+      const fedCtx = createFedCtx(tx);
       const author = await insertAccountWithActor(tx, {
         username: "pinrejectauthor",
         name: "Pin Reject Author",
@@ -80,9 +101,9 @@ Deno.test({
         sharedPostId: original.id,
       });
 
-      assert.equal(await pinPost(tx, author.actor, privatePost), null);
-      assert.equal(await pinPost(tx, author.actor, otherPost), null);
-      assert.equal(await pinPost(tx, author.actor, share), null);
+      assert.equal(await pinPost(fedCtx, author.actor, privatePost), null);
+      assert.equal(await pinPost(fedCtx, author.actor, otherPost), null);
+      assert.equal(await pinPost(fedCtx, author.actor, share), null);
 
       const rows = await tx.query.pinTable.findMany({
         where: { actorId: author.actor.id },
@@ -98,6 +119,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withRollback(async (tx) => {
+      const fedCtx = createFedCtx(tx);
       const author = await insertAccountWithActor(tx, {
         username: "pinlimitauthor",
         name: "Pin Limit Author",
@@ -108,14 +130,14 @@ Deno.test({
           account: author.account,
           content: `Pinned post ${i}`,
         });
-        assert.notEqual(await pinPost(tx, author.actor, post), null);
+        assert.notEqual(await pinPost(fedCtx, author.actor, post), null);
       }
 
       const { post: extra } = await insertNotePost(tx, {
         account: author.account,
         content: "Extra pinned post",
       });
-      assert.equal(await pinPost(tx, author.actor, extra), null);
+      assert.equal(await pinPost(fedCtx, author.actor, extra), null);
 
       const rows = await tx.query.pinTable.findMany({
         where: { actorId: author.actor.id },

@@ -1395,7 +1395,7 @@ builder.relayMutationField(
         throw new InvalidInputError("postId");
       }
 
-      const pin = await pinPostModel(ctx.db, ctx.account.actor, post);
+      const pin = await pinPostModel(ctx.fedCtx, ctx.account.actor, post);
       if (pin == null) {
         throw new InvalidInputError("postId");
       }
@@ -1450,7 +1450,7 @@ builder.relayMutationField(
         throw new InvalidInputError("postId");
       }
 
-      await unpinPostModel(ctx.db, ctx.account.actor, post);
+      await unpinPostModel(ctx.fedCtx, ctx.account.actor, post);
 
       return { postId: postId.id, unpinnedPostId: postId };
     },

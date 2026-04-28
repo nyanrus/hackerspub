@@ -17,7 +17,7 @@ export const handler = define.handlers({
       ctx.state.account,
     );
     if (article == null) return ctx.next();
-    await unpinPost(db, ctx.state.account.actor, article.post);
+    await unpinPost(ctx.state.fedCtx, ctx.state.account.actor, article.post);
     return new Response(null, { status: 204 });
   },
 });

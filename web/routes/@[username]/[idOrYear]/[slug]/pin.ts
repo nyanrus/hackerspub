@@ -35,7 +35,11 @@ export const handler = define.handlers({
       ctx.state.account,
     );
     if (article == null) return ctx.next();
-    const pinned = await pinPost(db, ctx.state.account.actor, article.post);
+    const pinned = await pinPost(
+      ctx.state.fedCtx,
+      ctx.state.account.actor,
+      article.post,
+    );
     if (pinned == null) return new Response("Bad Request", { status: 400 });
     return new Response(null, { status: 204 });
   },
