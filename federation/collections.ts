@@ -1,13 +1,17 @@
+import type { Context } from "@fedify/fedify";
+import { LanguageString } from "@fedify/vocab";
 import * as vocab from "@fedify/vocab";
 import { toRecipient } from "@hackerspub/models/actor";
+import type { ContextData } from "@hackerspub/models/context";
 import {
   actorTable,
   followingTable,
+  type Mention,
   pinTable,
   type Post,
   postTable,
 } from "@hackerspub/models/schema";
-import { validateUuid } from "@hackerspub/models/uuid";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { and, count, eq, inArray, isNotNull, like, or } from "drizzle-orm";
 import { builder } from "./builder.ts";
 import { getPostRecipients } from "./objects.ts";
@@ -127,15 +131,90 @@ builder
   });
 
 export function toFeaturedCollectionItem(
-  post: Pick<Post, "iri" | "type">,
+  ctx: Pick<Context<ContextData>, "getActorUri" | "getFollowersUri">,
+  post:
+    & Pick<
+      Post,
+      | "contentHtml"
+      | "iri"
+      | "language"
+      | "name"
+      | "published"
+      | "sensitive"
+      | "summary"
+      | "type"
+      | "updated"
+      | "url"
+      | "visibility"
+    >
+    & {
+      actor: { accountId: Uuid | null; iri?: string };
+      mentions?: (Mention & { actor: { iri: string } })[];
+      poll?: {
+        ends: Date;
+        multiple: boolean;
+        options: {
+          index: number;
+          title: string;
+          votesCount: number;
+        }[];
+        votersCount: number;
+      } | null;
+    },
 ): vocab.Article | vocab.Note | vocab.Question {
+  const attribution = post.actor.accountId == null
+    ? new URL(post.actor.iri ?? post.iri)
+    : ctx.getActorUri(post.actor.accountId);
+  const recipients = post.actor.accountId == null ? {} : getPostRecipients(
+    ctx as Context<ContextData>,
+    post.actor.accountId,
+    post.mentions?.map((mention) => new URL(mention.actor.iri)) ?? [],
+    post.visibility,
+  );
+  const common = {
+    id: new URL(post.iri),
+    attribution,
+    ...recipients,
+    contents: [
+      post.contentHtml,
+      ...(post.language == null
+        ? []
+        : [new LanguageString(post.contentHtml, post.language)]),
+    ],
+    name: post.name,
+    published: post.published.toTemporalInstant(),
+    sensitive: post.sensitive,
+    summary: post.summary,
+    updated: +post.updated > +post.published
+      ? post.updated.toTemporalInstant()
+      : null,
+    url: post.url == null ? null : new URL(post.url),
+  };
   switch (post.type) {
     case "Article":
-      return new vocab.Article({ id: new URL(post.iri) });
+      return new vocab.Article(common);
     case "Note":
-      return new vocab.Note({ id: new URL(post.iri) });
-    case "Question":
-      return new vocab.Question({ id: new URL(post.iri) });
+      return new vocab.Note(common);
+    case "Question": {
+      const options = post.poll?.options
+        .sort((a, b) => a.index - b.index)
+        .map((option) =>
+          new vocab.Note({
+            name: option.title,
+            replies: new vocab.Collection({
+              totalItems: option.votesCount,
+            }),
+          })
+        ) ?? [];
+      return new vocab.Question({
+        ...common,
+        endTime: post.poll?.ends.toTemporalInstant() ?? null,
+        voters: post.poll?.votersCount ?? null,
+        ...(post.poll?.multiple
+          ? { inclusiveOptions: options }
+          : { exclusiveOptions: options }),
+      });
+    }
   }
 }
 
@@ -153,12 +232,20 @@ builder
       });
       if (account == null) return null;
       const pins = await ctx.data.db.query.pinTable.findMany({
-        with: { post: true },
+        with: {
+          post: {
+            with: {
+              actor: true,
+              mentions: { with: { actor: true } },
+              poll: { with: { options: true } },
+            },
+          },
+        },
         where: { actorId: account.actor.id },
         orderBy: { created: "desc" },
       });
       return {
-        items: pins.map((pin) => toFeaturedCollectionItem(pin.post)),
+        items: pins.map((pin) => toFeaturedCollectionItem(ctx, pin.post)),
       };
     },
   )
