@@ -66,6 +66,12 @@ const ProfilePagePinsQuery = graphql`
 const ProfilePagePostsQuery = graphql`
   query ProfilePagePostsQuery($handle: String!, $locale: Locale) {
     actorByHandle(handle: $handle, allowLocalHandle: true) {
+      posts(first: 20) @connection(key: "ActorPostList_posts") {
+        __id
+        edges {
+          __id
+        }
+      }
       ...ActorPostList_posts @arguments(locale: $locale)
     }
   }
@@ -123,6 +129,13 @@ export default function ProfilePage() {
   };
   const viewerPinConnections = () =>
     data()?.actorByHandle?.isViewer ? pinConnections() : [];
+  const postConnectionId = () => postsData()?.actorByHandle?.posts.__id;
+  const postConnections = () => {
+    const connectionId = postConnectionId();
+    return connectionId == null ? [] : [connectionId];
+  };
+  const viewerPostConnections = () =>
+    data()?.actorByHandle?.isViewer ? postConnections() : [];
   const postsActor = () => {
     const actor = postsData()?.actorByHandle;
     return actor == null || pinConnectionId() == null ? undefined : actor;
@@ -170,6 +183,7 @@ export default function ProfilePage() {
                               {(edge) => (
                                 <PostCard
                                   $post={edge.node}
+                                  connections={viewerPostConnections()}
                                   pinConnections={viewerPinConnections()}
                                 />
                               )}
