@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import * as vocab from "@fedify/vocab";
 import type { Transaction } from "./db.ts";
-import { persistPollVote, vote } from "./poll.ts";
+import { persistPoll, persistPollVote, vote } from "./poll.ts";
 import {
   type NewPost,
   type Poll,
@@ -242,5 +242,58 @@ test("persistPollVote() stores an incoming vote for a persisted poll", async () 
     assert.equal(votes.length, 1);
     assert.equal(votes[0].actorId, remoteVoter.id);
     assert.equal(votes[0].optionIndex, 1);
+  });
+});
+
+test("persistPoll() uses closed timestamp as an end time fallback", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "closedpollauthor",
+      name: "Closed Poll Author",
+      email: "closedpollauthor@example.com",
+    });
+    const postId = generateUuidV7();
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values(
+      {
+        id: postId,
+        iri: `http://localhost/objects/${postId}`,
+        type: "Question",
+        visibility: "public",
+        actorId: author.actor.id,
+        name: "Closed fallback poll",
+        contentHtml: "<p>Closed fallback poll</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: `http://localhost/@${author.account.username}/polls/${postId}`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const poll = await persistPoll(
+      tx,
+      new vocab.Question({
+        id: new URL(`http://localhost/objects/${postId}`),
+        closed: Temporal.Instant.from("2026-04-16T00:00:00.000Z"),
+        exclusiveOptions: [
+          new vocab.Note({ name: "Yes" }),
+          new vocab.Note({ name: "No" }),
+        ],
+      }),
+      postId,
+    );
+
+    assert.ok(poll != null);
+    assert.equal(poll.ends.toISOString(), "2026-04-16T00:00:00.000Z");
+    assert.equal(poll.multiple, false);
+
+    const options = await tx.query.pollOptionTable.findMany({
+      where: { postId },
+      orderBy: { index: "asc" },
+    });
+    assert.deepEqual(options.map((option) => option.title), ["Yes", "No"]);
   });
 });

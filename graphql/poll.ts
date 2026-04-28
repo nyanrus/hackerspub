@@ -1,11 +1,15 @@
-import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
+import { vote } from "@hackerspub/models/poll";
+import { isPostVisibleTo } from "@hackerspub/models/post";
 import { pollVoteTable } from "@hackerspub/models/schema";
+import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { eq } from "drizzle-orm";
 import { builder } from "./builder.ts";
 import { Actor } from "./actor.ts";
-import { Post } from "./post.ts";
+import { InvalidInputError } from "./error.ts";
+import { Post, Question } from "./post.ts";
+import { NotAuthenticatedError } from "./session.ts";
 
-builder.drizzleNode("pollTable", {
+const Poll = builder.drizzleNode("pollTable", {
   name: "Poll",
   id: {
     column: (poll) => poll.postId,
@@ -13,6 +17,35 @@ builder.drizzleNode("pollTable", {
   fields: (t) => ({
     multiple: t.exposeBoolean("multiple"),
     ends: t.expose("ends", { type: "DateTime" }),
+    closed: t.boolean({
+      select: {
+        columns: {
+          ends: true,
+        },
+      },
+      resolve(poll) {
+        return poll.ends <= new Date();
+      },
+    }),
+    viewerHasVoted: t.boolean({
+      select: {
+        columns: {
+          postId: true,
+        },
+      },
+      async resolve(poll, _, ctx) {
+        if (ctx.account == null) return false;
+        return await ctx.db.query.pollVoteTable.findFirst({
+          where: {
+            postId: poll.postId,
+            actorId: ctx.account.actor.id,
+          },
+          columns: {
+            postId: true,
+          },
+        }) != null;
+      },
+    }),
     post: t.relation("post", { type: Post }),
     options: t.field({
       type: [PollOption],
@@ -80,8 +113,30 @@ builder.drizzleNode("pollTable", {
 const PollOption = builder.drizzleObject("pollOptionTable", {
   name: "PollOption",
   fields: (t) => ({
+    index: t.exposeInt("index"),
     title: t.exposeString("title"),
     poll: t.relation("poll"),
+    viewerHasVoted: t.boolean({
+      select: {
+        columns: {
+          postId: true,
+          index: true,
+        },
+      },
+      async resolve(option, _, ctx) {
+        if (ctx.account == null) return false;
+        return await ctx.db.query.pollVoteTable.findFirst({
+          where: {
+            postId: option.postId,
+            optionIndex: option.index,
+            actorId: ctx.account.actor.id,
+          },
+          columns: {
+            postId: true,
+          },
+        }) != null;
+      },
+    }),
     votes: t.connection({
       type: PollVote,
       select: (args, ctx, nestedSelect) => ({
@@ -126,4 +181,123 @@ const actorConnectionHelpers = drizzleConnectionHelpers(
   builder,
   "actorTable",
   {},
+);
+
+builder.relayMutationField(
+  "voteOnPoll",
+  {
+    inputFields: (t) => ({
+      questionId: t.globalID({
+        for: [Question],
+        required: true,
+      }),
+      optionIndices: t.intList({ required: true }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      if (ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const optionIndices = new Set(args.input.optionIndices);
+      if (optionIndices.size < 1) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      const question = await ctx.db.query.postTable.findFirst({
+        with: {
+          actor: {
+            with: {
+              followers: true,
+              blockees: true,
+              blockers: true,
+            },
+          },
+          mentions: true,
+          poll: {
+            with: {
+              options: true,
+            },
+          },
+        },
+        where: {
+          id: args.input.questionId.id,
+          type: "Question",
+        },
+      });
+
+      if (
+        question == null || question.poll == null ||
+        !isPostVisibleTo(question, ctx.account.actor)
+      ) {
+        throw new InvalidInputError("questionId");
+      }
+
+      if (question.poll.ends <= new Date()) {
+        throw new InvalidInputError("questionId");
+      }
+
+      if (!question.poll.multiple && optionIndices.size !== 1) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      const validOptionIndices = new Set(
+        question.poll.options.map((option) => option.index),
+      );
+      if (
+        [...optionIndices].some((index) => !validOptionIndices.has(index))
+      ) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      await vote(ctx.fedCtx, ctx.account, question.poll, optionIndices);
+
+      const poll = await ctx.db.query.pollTable.findFirst({
+        where: { postId: question.id },
+        with: {
+          options: true,
+        },
+      });
+      if (poll == null) throw new InvalidInputError("questionId");
+
+      const votes = await ctx.db.query.pollVoteTable.findMany({
+        where: {
+          postId: question.id,
+          actorId: ctx.account.actor.id,
+        },
+        orderBy: { optionIndex: "asc" },
+      });
+
+      return { question, poll, votes };
+    },
+  },
+  {
+    outputFields: (t) => ({
+      question: t.field({
+        type: Question,
+        resolve(result) {
+          return result.question;
+        },
+      }),
+      poll: t.field({
+        type: Poll,
+        resolve(result) {
+          return result.poll;
+        },
+      }),
+      votes: t.field({
+        type: [PollVote],
+        resolve(result) {
+          return result.votes;
+        },
+      }),
+    }),
+  },
 );

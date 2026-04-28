@@ -231,6 +231,34 @@ export const Actor = builder.drizzleNode("actorTable", {
         return note || null;
       },
     }),
+    postByUuid: t.drizzleField({
+      type: Post,
+      select: { columns: { id: true } },
+      nullable: true,
+      args: {
+        uuid: t.arg({ type: "UUID", required: true }),
+      },
+      async resolve(query, actor, args, ctx) {
+        if (!validateUuid(args.uuid)) return null;
+
+        const visibility = getPostVisibilityFilter(ctx.account?.actor ?? null);
+        return await ctx.db.query.postTable.findFirst(query({
+          where: {
+            AND: [
+              { actorId: actor.id },
+              {
+                OR: [
+                  { id: args.uuid },
+                  { noteSourceId: args.uuid },
+                  { articleSourceId: args.uuid },
+                ],
+              },
+              visibility,
+            ],
+          },
+        })) ?? null;
+      },
+    }),
     articles: t.relatedConnection("posts", {
       type: Article,
       query: (_, ctx) => ({

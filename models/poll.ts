@@ -26,7 +26,9 @@ export async function persistPoll(
   question: vocab.Question,
   postId: Uuid,
 ): Promise<Poll | undefined> {
-  if (question.endTime == null) return undefined;
+  const endTime = question.endTime ??
+    (question.closed instanceof Temporal.Instant ? question.closed : null);
+  if (endTime == null) return undefined;
   let multiple = true;
   let options = await Array.fromAsync(question.getInclusiveOptions());
   if (options.length < 1) {
@@ -34,7 +36,7 @@ export async function persistPoll(
     multiple = false;
   }
   if (options.length < 1) return undefined;
-  const ends = toDate(question.endTime);
+  const ends = toDate(endTime);
   if (ends == null) return undefined;
   const values: NewPoll = {
     postId,

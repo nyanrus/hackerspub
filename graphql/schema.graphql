@@ -147,6 +147,7 @@ type Actor implements Node {
   noteByUuid(uuid: UUID!): Note
   notes(after: String, before: String, first: Int, last: Int): ActorNotesConnection!
   pins(after: String, before: String, first: Int, last: Int): ActorPinsConnection!
+  postByUuid(uuid: UUID!): Post
   posts(after: String, before: String, first: Int, last: Int): ActorPostsConnection!
   published: DateTime
   questions(after: String, before: String, first: Int, last: Int): ActorQuestionsConnection!
@@ -721,6 +722,7 @@ type Mutation {
   updateArticle(input: UpdateArticleInput!): UpdateArticleResult!
   uploadMedia(input: UploadMediaInput!): UploadMediaResult!
   verifyPasskeyRegistration(accountId: ID!, name: String!, platform: String = "web", registrationResponse: JSON!): PasskeyRegistrationResult!
+  voteOnPoll(input: VoteOnPollInput!): VoteOnPollResult!
 }
 
 interface Node {
@@ -822,18 +824,22 @@ type PinPostPayload {
 union PinPostResult = InvalidInputError | NotAuthenticatedError | PinPostPayload
 
 type Poll implements Node {
+  closed: Boolean!
   ends: DateTime!
   id: ID!
   multiple: Boolean!
   options: [PollOption!]!
   post: Post!
+  viewerHasVoted: Boolean!
   voters(after: String, before: String, first: Int, last: Int): PollVotersConnection!
   votes(after: String, before: String, first: Int, last: Int): PollVotesConnection!
 }
 
 type PollOption {
+  index: Int!
   poll: Poll!
   title: String!
+  viewerHasVoted: Boolean!
   votes(after: String, before: String, first: Int, last: Int): PollOptionVotesConnection!
 }
 
@@ -1593,6 +1599,21 @@ type UploadMediaPayload {
 }
 
 union UploadMediaResult = InvalidInputError | NotAuthenticatedError | UploadMediaPayload
+
+input VoteOnPollInput {
+  clientMutationId: ID
+  optionIndices: [Int!]!
+  questionId: ID!
+}
+
+type VoteOnPollPayload {
+  clientMutationId: ID
+  poll: Poll!
+  question: Question!
+  votes: [PollVote!]!
+}
+
+union VoteOnPollResult = InvalidInputError | NotAuthenticatedError | VoteOnPollPayload
 
 """
 Result of looking up a remote follower via WebFinger, including their ActivityPub profile and remote follow URL.
