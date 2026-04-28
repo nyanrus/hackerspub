@@ -1,13 +1,17 @@
 import { graphql } from "relay-runtime";
-import { For, Show } from "solid-js";
-import { createFragment } from "solid-relay";
+import { createEffect, createSignal, For, Show } from "solid-js";
+import { createFragment, createMutation } from "solid-relay";
 import { Badge } from "~/components/ui/badge.tsx";
+import { Button } from "~/components/ui/button.tsx";
+import { showToast } from "~/components/ui/toast.tsx";
+import { useViewer } from "~/contexts/ViewerContext.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import IconCheckSquare from "~icons/lucide/square-check-big";
 import IconCircle from "~icons/lucide/circle";
 import IconListChecks from "~icons/lucide/list-checks";
 import IconRadio from "~icons/lucide/circle-dot";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
+import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
 import { InternalLink } from "./InternalLink.tsx";
 import { PostActionMenu } from "./PostActionMenu.tsx";
 import { PostAvatar } from "./PostAvatar.tsx";
@@ -29,6 +33,7 @@ export function QuestionCard(props: QuestionCardProps) {
     graphql`
       fragment QuestionCard_question on Question {
         __id
+        id
         uuid
         content
         language
@@ -75,6 +80,47 @@ export function QuestionCard(props: QuestionCardProps) {
     () => props.$question,
   );
   const { i18n, t } = useLingui();
+  const viewer = useViewer();
+  const [selectedOptions, setSelectedOptions] = createSignal<
+    ReadonlySet<
+      number
+    >
+  >(new Set());
+  const [voteOnPoll, isVoting] = createMutation<
+    QuestionCard_voteOnPoll_Mutation
+  >(
+    graphql`
+      mutation QuestionCard_voteOnPoll_Mutation($input: VoteOnPollInput!) {
+        voteOnPoll(input: $input) {
+          __typename
+          ... on VoteOnPollPayload {
+            question {
+              ...QuestionCard_question
+            }
+          }
+          ... on InvalidInputError {
+            inputPath
+          }
+          ... on NotAuthenticatedError {
+            notAuthenticated
+          }
+        }
+      }
+    `,
+  );
+
+  createEffect(() => {
+    const poll = question()?.poll;
+    if (poll?.viewerHasVoted) {
+      setSelectedOptions(
+        new Set(
+          poll.options
+            .filter((option) => option.viewerHasVoted)
+            .map((option) => option.index),
+        ),
+      );
+    }
+  });
 
   return (
     <Show when={question()}>
@@ -125,6 +171,7 @@ export function QuestionCard(props: QuestionCardProps) {
                 class="prose dark:prose-invert break-words overflow-wrap"
               />
               <PollPanel
+                questionId={q().id}
                 poll={q().poll}
                 totalVotes={q().poll.votes.totalCount}
               />
@@ -143,12 +190,78 @@ export function QuestionCard(props: QuestionCardProps) {
   );
 
   function PollPanel(props: {
+    questionId: string;
     poll: NonNullable<ReturnType<typeof question>>["poll"];
     totalVotes: number;
   }) {
     const totalVotes = () => Math.max(props.totalVotes, 0);
     const percent = (count: number) =>
       totalVotes() < 1 ? 0 : Math.round((count / totalVotes()) * 100);
+    const canVote = () =>
+      viewer.isAuthenticated() && !props.poll.closed &&
+      !props.poll.viewerHasVoted && !isVoting();
+    const hasSelection = () => selectedOptions().size > 0;
+    const isSelected = (index: number, viewerHasVoted: boolean) =>
+      props.poll.viewerHasVoted ? viewerHasVoted : selectedOptions().has(index);
+    const toggleOption = (index: number) => {
+      if (!canVote()) return;
+      if (props.poll.multiple) {
+        setSelectedOptions((current) => {
+          const next = new Set(current);
+          if (next.has(index)) next.delete(index);
+          else next.add(index);
+          return next;
+        });
+      } else {
+        setSelectedOptions(new Set([index]));
+      }
+    };
+    const actionLabel = () => {
+      if (props.poll.closed) return t`Poll closed`;
+      if (props.poll.viewerHasVoted) return t`Voted`;
+      if (!viewer.isAuthenticated()) return t`Sign in to vote`;
+      if (isVoting()) return t`Voting…`;
+      if (!hasSelection()) {
+        return props.poll.multiple ? t`Select options` : t`Select an option`;
+      }
+      return t`Vote`;
+    };
+    const submitVote = () => {
+      if (!canVote() || !hasSelection()) return;
+      voteOnPoll({
+        variables: {
+          input: {
+            questionId: props.questionId,
+            optionIndices: [...selectedOptions()].sort((a, b) => a - b),
+          },
+        },
+        onCompleted(response) {
+          switch (response.voteOnPoll.__typename) {
+            case "VoteOnPollPayload":
+              showToast({ title: t`Vote recorded` });
+              break;
+            case "NotAuthenticatedError":
+              showToast({
+                title: t`Please sign in to vote`,
+                variant: "destructive",
+              });
+              break;
+            default:
+              showToast({
+                title: t`Could not vote on this poll`,
+                variant: "destructive",
+              });
+              break;
+          }
+        },
+        onError() {
+          showToast({
+            title: t`Failed to vote`,
+            variant: "destructive",
+          });
+        },
+      });
+    };
 
     return (
       <section
@@ -192,19 +305,33 @@ export function QuestionCard(props: QuestionCardProps) {
           <For each={props.poll.options}>
             {(option) => {
               const votes = () => option.votes.totalCount;
+              const selected = () =>
+                isSelected(option.index, option.viewerHasVoted);
               return (
-                <div class="relative overflow-hidden rounded-md border bg-card">
+                <button
+                  type="button"
+                  aria-pressed={selected()}
+                  disabled={!canVote()}
+                  onClick={() => toggleOption(option.index)}
+                  class="relative w-full overflow-hidden rounded-md border bg-card text-left transition-colors disabled:cursor-default"
+                  classList={{
+                    "hover:border-primary/60 hover:bg-accent/40 cursor-pointer":
+                      canVote(),
+                    "border-primary/60": selected() && !props.poll.closed,
+                  }}
+                >
                   <div
                     class="absolute inset-y-0 left-0 bg-primary/10 transition-[width]"
                     classList={{
                       "bg-emerald-500/15": props.poll.multiple,
                       "bg-muted": props.poll.closed,
+                      "bg-primary/20": selected() && !props.poll.multiple,
                     }}
                     style={{ width: `${percent(votes())}%` }}
                   />
                   <div class="relative flex min-h-10 items-center gap-2 px-3 py-2 text-sm">
                     <Show
-                      when={option.viewerHasVoted}
+                      when={selected()}
                       fallback={props.poll.multiple
                         ? (
                           <IconCheckSquare class="size-4 text-muted-foreground" />
@@ -230,10 +357,20 @@ export function QuestionCard(props: QuestionCardProps) {
                       )}
                     </span>
                   </div>
-                </div>
+                </button>
               );
             }}
           </For>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <Button
+            type="button"
+            size="sm"
+            disabled={!canVote() || !hasSelection()}
+            onClick={submitVote}
+          >
+            {actionLabel()}
+          </Button>
         </div>
       </section>
     );

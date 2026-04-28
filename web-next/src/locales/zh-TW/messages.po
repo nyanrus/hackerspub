@@ -31,12 +31,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩餘 # 次邀請}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:224
+#: src/components/QuestionCard.tsx:351
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {# 票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:182
+#: src/components/QuestionCard.tsx:295
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
@@ -346,7 +346,7 @@ msgstr "選擇你的朋友使用的語言。這個語言只會用於邀請。"
 msgid "Choose your preferred language for the verification email."
 msgstr "請選擇驗證信件的語言。"
 
-#: src/components/QuestionCard.tsx:174
+#: src/components/QuestionCard.tsx:287
 msgid "Closed"
 msgstr "已結束"
 
@@ -399,6 +399,10 @@ msgstr "無法將連結複製到剪貼簿。"
 #: src/components/NoteComposer.tsx:204
 msgid "Could not find a post at this URL"
 msgstr "無法在此URL找到內容"
+
+#: src/components/QuestionCard.tsx:251
+msgid "Could not vote on this poll"
+msgstr "無法提交此投票"
 
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
@@ -538,11 +542,11 @@ msgstr "電子郵件地址"
 msgid "Email or username"
 msgstr "電子郵件或使用者名稱"
 
-#: src/components/QuestionCard.tsx:177
+#: src/components/QuestionCard.tsx:290
 msgid "Ended"
 msgstr "已結束"
 
-#: src/components/QuestionCard.tsx:177
+#: src/components/QuestionCard.tsx:290
 msgid "Ends"
 msgstr "截止"
 
@@ -756,6 +760,10 @@ msgstr "文章更新失敗，請重試。"
 msgid "Failed to upload image"
 msgstr "圖片上傳失敗"
 
+#: src/components/QuestionCard.tsx:259
+msgid "Failed to vote"
+msgstr "投票失敗"
+
 #: src/components/AppSidebar.tsx:261
 msgid "Fediverse"
 msgstr "聯邦宇宙"
@@ -877,7 +885,7 @@ msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡
 #~ msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的實例裡評論此貼文。在你的實例搜尋 {0} 後回覆。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:254
+#: src/routes/(root)/[handle]/[noteId].tsx:237
 msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你有聯邦宇宙帳號，可以從自己的站台回覆此內容。在你的站台中搜尋 {0} 並回覆。"
 
@@ -1134,7 +1142,7 @@ msgstr "移動到頂部"
 msgid "Move up"
 msgstr "向上移動"
 
-#: src/components/QuestionCard.tsx:171
+#: src/components/QuestionCard.tsx:284
 msgid "Multiple choice"
 msgstr "多選"
 
@@ -1256,7 +1264,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀請次數"
 
-#: src/components/QuestionCard.tsx:174
+#: src/components/QuestionCard.tsx:287
 msgid "Open"
 msgstr "進行中"
 
@@ -1341,6 +1349,14 @@ msgstr "請輸入你的聯邦宇宙使用者名稱。"
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "請登入以存取此頁面"
+
+#: src/components/QuestionCard.tsx:245
+msgid "Please sign in to vote"
+msgstr "請登入後投票"
+
+#: src/components/QuestionCard.tsx:220
+msgid "Poll closed"
+msgstr "投票已結束"
 
 #: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
@@ -1558,6 +1574,14 @@ msgstr "搜尋內容…"
 msgid "Search results for {0}"
 msgstr "{0}的搜尋結果"
 
+#: src/components/QuestionCard.tsx:225
+msgid "Select an option"
+msgstr "請選擇一個選項"
+
+#: src/components/QuestionCard.tsx:225
+msgid "Select options"
+msgstr "請選擇選項"
+
 #: src/routes/(root)/[handle]/settings/language.tsx:113
 msgid "Select your preferred languages in order of preference. This will help tailor content to your preferences."
 msgstr "按偏好順序選擇您的偏好語言。這將有助於根據您的偏好定製內容。"
@@ -1600,6 +1624,10 @@ msgstr "登入"
 msgid "Sign in to Hackers' Pub"
 msgstr "登入 Hackers' Pub"
 
+#: src/components/QuestionCard.tsx:222
+msgid "Sign in to vote"
+msgstr "登入後投票"
+
 #: src/routes/(root)/sign/index.tsx:420
 msgid "Sign in with passkey"
 msgstr "使用通行金鑰登入"
@@ -1629,7 +1657,7 @@ msgstr "登入中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "註冊 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:171
+#: src/components/QuestionCard.tsx:284
 msgid "Single choice"
 msgstr "單選"
 
@@ -1926,6 +1954,22 @@ msgstr "所有人都可以看到，但不會出現在公共時間軸中。只有
 #: src/components/VisibilityTag.tsx:35
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未註冊使用者在內的所有人都可以看到。內容也會出現在公共時間軸中。"
+
+#: src/components/QuestionCard.tsx:227
+msgid "Vote"
+msgstr "投票"
+
+#: src/components/QuestionCard.tsx:241
+msgid "Vote recorded"
+msgstr "已記錄投票"
+
+#: src/components/QuestionCard.tsx:221
+msgid "Voted"
+msgstr "已投票"
+
+#: src/components/QuestionCard.tsx:223
+msgid "Voting…"
+msgstr "正在投票…"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:551
 msgid "Website"

@@ -31,12 +31,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {残り#件の招待}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:224
+#: src/components/QuestionCard.tsx:351
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {#票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:182
+#: src/components/QuestionCard.tsx:295
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {投票者 #人}}"
 
@@ -346,7 +346,7 @@ msgstr "招待する友達の使用言語を選択してください。この言
 msgid "Choose your preferred language for the verification email."
 msgstr "確認メールの言語を選択してください。"
 
-#: src/components/QuestionCard.tsx:174
+#: src/components/QuestionCard.tsx:287
 msgid "Closed"
 msgstr "終了"
 
@@ -399,6 +399,10 @@ msgstr "クリップボードにリンクをコピーできませんでした。
 #: src/components/NoteComposer.tsx:204
 msgid "Could not find a post at this URL"
 msgstr "このURLのコンテンツが見つかりませんでした"
+
+#: src/components/QuestionCard.tsx:251
+msgid "Could not vote on this poll"
+msgstr "このアンケートに投票できませんでした"
 
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
@@ -538,11 +542,11 @@ msgstr "メールアドレス"
 msgid "Email or username"
 msgstr "メールアドレスまたはユーザー名"
 
-#: src/components/QuestionCard.tsx:177
+#: src/components/QuestionCard.tsx:290
 msgid "Ended"
 msgstr "終了"
 
-#: src/components/QuestionCard.tsx:177
+#: src/components/QuestionCard.tsx:290
 msgid "Ends"
 msgstr "終了"
 
@@ -756,6 +760,10 @@ msgstr "記事の更新に失敗しました。もう一度お試しください
 msgid "Failed to upload image"
 msgstr "画像のアップロードに失敗しました"
 
+#: src/components/QuestionCard.tsx:259
+msgid "Failed to vote"
+msgstr "投票に失敗しました"
+
 #: src/components/AppSidebar.tsx:261
 msgid "Fediverse"
 msgstr "フェディバース"
@@ -877,7 +885,7 @@ msgstr "フェディバース（fediverse）アカウントをお持ちの場合
 #~ msgstr "フェディバース（fediverse）アカウントをお持ちの場合、この投稿に返信することができます。ご利用のインスタンスの検索バーに{0}を検索し、該当投稿に返信してください。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:254
+#: src/routes/(root)/[handle]/[noteId].tsx:237
 msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 msgstr "フェディバースのアカウントをお持ちの場合、自分のインスタンスからこのコンテンツに返信できます。お使いのインスタンスで{0}を検索して返信してください。"
 
@@ -1134,7 +1142,7 @@ msgstr "一番上へ移動"
 msgid "Move up"
 msgstr "上へ移動"
 
-#: src/components/QuestionCard.tsx:171
+#: src/components/QuestionCard.tsx:284
 msgid "Multiple choice"
 msgstr "複数選択"
 
@@ -1256,7 +1264,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "招待数"
 
-#: src/components/QuestionCard.tsx:174
+#: src/components/QuestionCard.tsx:287
 msgid "Open"
 msgstr "受付中"
 
@@ -1341,6 +1349,14 @@ msgstr "フェディバースのハンドルを入力してください。"
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "このページにアクセスするにはログインしてください"
+
+#: src/components/QuestionCard.tsx:245
+msgid "Please sign in to vote"
+msgstr "投票するにはログインしてください"
+
+#: src/components/QuestionCard.tsx:220
+msgid "Poll closed"
+msgstr "アンケートは終了しました"
 
 #: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
@@ -1558,6 +1574,14 @@ msgstr "コンテンツを検索…"
 msgid "Search results for {0}"
 msgstr "{0}の検索結果"
 
+#: src/components/QuestionCard.tsx:225
+msgid "Select an option"
+msgstr "選択肢を選んでください"
+
+#: src/components/QuestionCard.tsx:225
+msgid "Select options"
+msgstr "選択肢を選んでください"
+
 #: src/routes/(root)/[handle]/settings/language.tsx:113
 msgid "Select your preferred languages in order of preference. This will help tailor content to your preferences."
 msgstr "優先度の高い順に言語を選択してください。コンテンツをあなたの好みに合わせて調整するのに役立ちます。"
@@ -1600,6 +1624,10 @@ msgstr "ログイン"
 msgid "Sign in to Hackers' Pub"
 msgstr "Hackers' Pubにログイン"
 
+#: src/components/QuestionCard.tsx:222
+msgid "Sign in to vote"
+msgstr "ログインして投票"
+
 #: src/routes/(root)/sign/index.tsx:420
 msgid "Sign in with passkey"
 msgstr "パスキーでサインイン"
@@ -1629,7 +1657,7 @@ msgstr "ログイン中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "Hackers' Pubに登録"
 
-#: src/components/QuestionCard.tsx:171
+#: src/components/QuestionCard.tsx:284
 msgid "Single choice"
 msgstr "単一選択"
 
@@ -1926,6 +1954,22 @@ msgstr "誰でも閲覧できますが、公開タイムラインには表示さ
 #: src/components/VisibilityTag.tsx:35
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "未登録ユーザーを含む誰でも閲覧できます。公開タイムラインにも表示されます。"
+
+#: src/components/QuestionCard.tsx:227
+msgid "Vote"
+msgstr "投票"
+
+#: src/components/QuestionCard.tsx:241
+msgid "Vote recorded"
+msgstr "投票しました"
+
+#: src/components/QuestionCard.tsx:221
+msgid "Voted"
+msgstr "投票済み"
+
+#: src/components/QuestionCard.tsx:223
+msgid "Voting…"
+msgstr "投票中…"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:551
 msgid "Website"
