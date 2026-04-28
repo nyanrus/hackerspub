@@ -1,0 +1,241 @@
+import { graphql } from "relay-runtime";
+import { For, Show } from "solid-js";
+import { createFragment } from "solid-relay";
+import { Badge } from "~/components/ui/badge.tsx";
+import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import IconCheckSquare from "~icons/lucide/square-check-big";
+import IconCircle from "~icons/lucide/circle";
+import IconListChecks from "~icons/lucide/list-checks";
+import IconRadio from "~icons/lucide/circle-dot";
+import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
+import { InternalLink } from "./InternalLink.tsx";
+import { PostActionMenu } from "./PostActionMenu.tsx";
+import { PostAvatar } from "./PostAvatar.tsx";
+import { PostControls } from "./PostControls.tsx";
+import { QuotedPostCard } from "./QuotedPostCard.tsx";
+import { Timestamp } from "./Timestamp.tsx";
+import { VisibilityTag } from "./VisibilityTag.tsx";
+
+export interface QuestionCardProps {
+  $question: QuestionCard_question$key;
+  connections?: string[];
+  bookmarkListConnections?: string[];
+  pinConnections?: string[];
+  onDeleted?: () => void;
+}
+
+export function QuestionCard(props: QuestionCardProps) {
+  const question = createFragment(
+    graphql`
+      fragment QuestionCard_question on Question {
+        __id
+        uuid
+        content
+        language
+        visibility
+        published
+        url
+        iri
+        actor {
+          name
+          handle
+          username
+          local
+          url
+          iri
+          ...PostAvatar_actor
+        }
+        poll {
+          multiple
+          closed
+          ends
+          viewerHasVoted
+          voters(first: 0) {
+            totalCount
+          }
+          votes(first: 0) {
+            totalCount
+          }
+          options {
+            index
+            title
+            viewerHasVoted
+            votes(first: 0) {
+              totalCount
+            }
+          }
+        }
+        quotedPost {
+          ...QuotedPostCard_post
+        }
+        ...PostActionMenu_post
+        ...PostControls_post
+      }
+    `,
+    () => props.$question,
+  );
+  const { i18n, t } = useLingui();
+
+  return (
+    <Show when={question()}>
+      {(q) => (
+        <article class="px-4 py-3 border-b-1">
+          <div class="flex gap-4">
+            <PostAvatar $actor={q().actor} />
+            <div class="min-w-0 grow">
+              <div class="flex items-center gap-1 flex-wrap">
+                <Show when={(q().actor.name ?? "").trim() !== ""}>
+                  <InternalLink
+                    href={q().actor.url ?? q().actor.iri}
+                    internalHref={q().actor.local
+                      ? `/@${q().actor.username}`
+                      : `/${q().actor.handle}`}
+                    innerHTML={q().actor.name ?? ""}
+                    class="font-semibold"
+                  />
+                  {" "}
+                </Show>
+                <span class="min-w-0 grow break-all select-all text-muted-foreground">
+                  {q().actor.handle}
+                </span>
+                <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
+                  <InternalLink
+                    href={q().url ?? q().iri}
+                    internalHref={`/${
+                      q().actor.local
+                        ? "@" + q().actor.username
+                        : q().actor.handle
+                    }/${q().uuid}`}
+                  >
+                    <Timestamp value={q().published} capitalizeFirstLetter />
+                  </InternalLink>
+                  &middot;
+                  <VisibilityTag visibility={q().visibility} />
+                  <PostActionMenu
+                    $post={q()}
+                    connections={props.connections}
+                    pinConnections={props.pinConnections}
+                    onDeleted={props.onDeleted}
+                  />
+                </span>
+              </div>
+              <div
+                innerHTML={q().content}
+                lang={q().language ?? undefined}
+                class="prose dark:prose-invert break-words overflow-wrap"
+              />
+              <PollPanel
+                poll={q().poll}
+                totalVotes={q().poll.votes.totalCount}
+              />
+              <Show when={q().quotedPost}>
+                {(quotedPost) => <QuotedPostCard $post={quotedPost()} />}
+              </Show>
+              <PostControls
+                $post={q()}
+                bookmarkListConnections={props.bookmarkListConnections}
+              />
+            </div>
+          </div>
+        </article>
+      )}
+    </Show>
+  );
+
+  function PollPanel(props: {
+    poll: NonNullable<ReturnType<typeof question>>["poll"];
+    totalVotes: number;
+  }) {
+    const totalVotes = () => Math.max(props.totalVotes, 0);
+    const percent = (count: number) =>
+      totalVotes() < 1 ? 0 : Math.round((count / totalVotes()) * 100);
+
+    return (
+      <section
+        class="my-3 rounded-lg border bg-background/80 p-3"
+        classList={{
+          "border-primary/30": !props.poll.closed && !props.poll.multiple,
+          "border-emerald-500/35": !props.poll.closed &&
+            props.poll.multiple,
+          "border-muted bg-muted/20 text-muted-foreground": props.poll.closed,
+        }}
+      >
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <Badge variant={props.poll.multiple ? "success" : "secondary"}>
+            <Show
+              when={props.poll.multiple}
+              fallback={<IconRadio class="mr-1 size-3.5" />}
+            >
+              <IconListChecks class="mr-1 size-3.5" />
+            </Show>
+            {props.poll.multiple ? t`Multiple choice` : t`Single choice`}
+          </Badge>
+          <Badge variant={props.poll.closed ? "outline" : "secondary"}>
+            {props.poll.closed ? t`Closed` : t`Open`}
+          </Badge>
+          <span class="text-muted-foreground">
+            {props.poll.closed ? t`Ended` : t`Ends`}{" "}
+            <Timestamp value={props.poll.ends} allowFuture />
+          </span>
+          <span class="text-muted-foreground">
+            &middot; {i18n._(
+              msg`${
+                plural(props.poll.voters.totalCount, {
+                  one: "# voter",
+                  other: "# voters",
+                })
+              }`,
+            )}
+          </span>
+        </div>
+        <div class="mt-3 space-y-2">
+          <For each={props.poll.options}>
+            {(option) => {
+              const votes = () => option.votes.totalCount;
+              return (
+                <div class="relative overflow-hidden rounded-md border bg-card">
+                  <div
+                    class="absolute inset-y-0 left-0 bg-primary/10 transition-[width]"
+                    classList={{
+                      "bg-emerald-500/15": props.poll.multiple,
+                      "bg-muted": props.poll.closed,
+                    }}
+                    style={{ width: `${percent(votes())}%` }}
+                  />
+                  <div class="relative flex min-h-10 items-center gap-2 px-3 py-2 text-sm">
+                    <Show
+                      when={option.viewerHasVoted}
+                      fallback={props.poll.multiple
+                        ? (
+                          <IconCheckSquare class="size-4 text-muted-foreground" />
+                        )
+                        : <IconCircle class="size-4 text-muted-foreground" />}
+                    >
+                      {props.poll.multiple
+                        ? <IconCheckSquare class="size-4 text-primary" />
+                        : <IconRadio class="size-4 text-primary" />}
+                    </Show>
+                    <span class="min-w-0 grow break-words">{option.title}</span>
+                    <span class="shrink-0 tabular-nums text-muted-foreground">
+                      {percent(votes())}%
+                    </span>
+                    <span class="shrink-0 tabular-nums text-muted-foreground">
+                      {i18n._(
+                        msg`${
+                          plural(votes(), {
+                            one: "# vote",
+                            other: "# votes",
+                          })
+                        }`,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              );
+            }}
+          </For>
+        </div>
+      </section>
+    );
+  }
+}

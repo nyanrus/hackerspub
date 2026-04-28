@@ -4,12 +4,14 @@ import { createFragment } from "solid-relay";
 import { PostCard_post$key } from "./__generated__/PostCard_post.graphql.ts";
 import { ArticleCard } from "./ArticleCard.tsx";
 import { NoteCard } from "./NoteCard.tsx";
+import { QuestionCard } from "./QuestionCard.tsx";
 
 export interface PostCardProps {
   $post: PostCard_post$key;
   connections?: string[];
   bookmarkListConnections?: string[];
   pinConnections?: string[];
+  onDeleted?: () => void;
 }
 
 export function PostCard(props: PostCardProps) {
@@ -23,6 +25,7 @@ export function PostCard(props: PostCardProps) {
         __typename
         ...NoteCard_note
         ...ArticleCard_article @arguments(locale: $locale)
+        ...QuestionCard_question
       }
     `,
     () => props.$post,
@@ -32,13 +35,13 @@ export function PostCard(props: PostCardProps) {
     <Show when={post()}>
       {(post) => (
         <Switch>
-          {/* TODO(#259): Render Question/poll posts; tracked separately from pinning. */}
           <Match when={post().__typename === "Note"}>
             <NoteCard
               $note={post()}
               connections={props.connections}
               bookmarkListConnections={props.bookmarkListConnections}
               pinConnections={props.pinConnections}
+              onDeleted={props.onDeleted}
             />
           </Match>
           <Match when={post().__typename === "Article"}>
@@ -47,6 +50,15 @@ export function PostCard(props: PostCardProps) {
               connections={props.connections}
               bookmarkListConnections={props.bookmarkListConnections}
               pinConnections={props.pinConnections}
+            />
+          </Match>
+          <Match when={post().__typename === "Question"}>
+            <QuestionCard
+              $question={post()}
+              connections={props.connections}
+              bookmarkListConnections={props.bookmarkListConnections}
+              pinConnections={props.pinConnections}
+              onDeleted={props.onDeleted}
             />
           </Match>
         </Switch>

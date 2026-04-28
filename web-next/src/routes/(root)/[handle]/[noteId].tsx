@@ -16,10 +16,10 @@ import {
   useRelayEnvironment,
 } from "solid-relay";
 import { NarrowContainer } from "~/components/NarrowContainer.tsx";
+import { PostCard } from "~/components/PostCard.tsx";
 import { Title } from "~/components/Title.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import { NoteCard } from "../../../components/NoteCard.tsx";
 import type { NoteIdPageQuery } from "./__generated__/NoteIdPageQuery.graphql.ts";
 import type { NoteId_body$key } from "./__generated__/NoteId_body.graphql.ts";
 import type { NoteId_head$key } from "./__generated__/NoteId_head.graphql.ts";
@@ -30,20 +30,20 @@ export const route = {
     handle: /^@/,
   },
   preload(args) {
-    const username = args.params.handle!;
+    const username = decodeURIComponent(args.params.handle!);
     const noteId = args.params.noteId!;
     if (!validateUuid(noteId)) {
       throw new Error("Invalid Request"); // FIXME
     }
 
-    void loadPageQuery(username.substring(1), noteId);
+    void loadPageQuery(username.replace(/^@/, ""), noteId);
   },
 } satisfies RouteDefinition;
 
 const NoteIdPageQuery = graphql`
   query NoteIdPageQuery($handle: String!, $noteId: UUID!) {
     actorByHandle(handle: $handle, allowLocalHandle: true) {
-      noteByUuid(uuid: $noteId) {
+      postByUuid(uuid: $noteId) {
         ...NoteId_head
         ...NoteId_body
       }
@@ -61,13 +61,13 @@ const loadPageQuery = query(
       NoteIdPageQuery,
       { handle: username, noteId },
     ),
-  "loadNotePageQuery",
+  "loadPostPageQuery",
 );
 
 export default function NotePage() {
   const params = useParams();
   const noteId = params.noteId!;
-  const username = params.handle!.substring(1);
+  const username = decodeURIComponent(params.handle!).replace(/^@/, "");
 
   if (!validateUuid(noteId)) {
     return <HttpStatusCode code={404} />;
@@ -88,14 +88,14 @@ export default function NotePage() {
           >
             {(actor) => (
               <Show
-                when={actor().noteByUuid}
+                when={actor().postByUuid}
                 fallback={<HttpStatusCode code={404} />}
               >
-                {(note) => (
+                {(post) => (
                   <>
-                    <NoteMetaHead $note={note()} />
-                    <NoteInternal
-                      $note={note()}
+                    <PostMetaHead $post={post()} />
+                    <PostInternal
+                      $post={post()}
                       $viewer={data().viewer ?? undefined}
                     />
                   </>
@@ -109,15 +109,15 @@ export default function NotePage() {
   );
 }
 
-interface NoteMetaHeadProps {
-  $note: NoteId_head$key;
+interface PostMetaHeadProps {
+  $post: NoteId_head$key;
 }
 
-function NoteMetaHead(props: NoteMetaHeadProps) {
+function PostMetaHead(props: PostMetaHeadProps) {
   const { t } = useLingui();
-  const note = createFragment(
+  const post = createFragment(
     graphql`
-      fragment NoteId_head on Note {
+      fragment NoteId_head on Post {
         content
         excerpt
         published
@@ -134,26 +134,26 @@ function NoteMetaHead(props: NoteMetaHeadProps) {
         }
       }
     `,
-    () => props.$note,
+    () => props.$post,
   );
 
   return (
-    <Show when={note()}>
-      {(note) => (
+    <Show when={post()}>
+      {(post) => (
         <>
-          <Title>{t`${note().actor.name}: ${note().excerpt}`}</Title>
-          <Meta property="og:title" content={note().excerpt} />
-          <Meta property="og:description" content={note().excerpt} />
+          <Title>{t`${post().actor.name}: ${post().excerpt}`}</Title>
+          <Meta property="og:title" content={post().excerpt} />
+          <Meta property="og:description" content={post().excerpt} />
           <Meta property="og:type" content="article" />
           <Meta
             property="article:published_time"
-            content={note().published}
+            content={post().published}
           />
           <Meta
             property="article:modified_time"
-            content={note().updated}
+            content={post().updated}
           />
-          <Show when={note().actor.name}>
+          <Show when={post().actor.name}>
             {(name) => (
               <Meta
                 property="article:author"
@@ -163,13 +163,13 @@ function NoteMetaHead(props: NoteMetaHeadProps) {
           </Show>
           <Meta
             property="article:author.username"
-            content={note().actor.username}
+            content={post().actor.username}
           />
           <Meta
             name="fediverse:creator"
-            content={note().actor.handle.replace(/^@/, "")}
+            content={post().actor.handle.replace(/^@/, "")}
           />
-          <For each={note().hashtags}>
+          <For each={post().hashtags}>
             {(hashtag) => (
               <Meta
                 property="article:tag"
@@ -177,7 +177,7 @@ function NoteMetaHead(props: NoteMetaHeadProps) {
               />
             )}
           </For>
-          <Show when={note().language}>
+          <Show when={post().language}>
             {(language) => (
               <Meta
                 property="og:locale"
@@ -188,7 +188,7 @@ function NoteMetaHead(props: NoteMetaHeadProps) {
 
           <HttpHeader
             name="Link"
-            value={`<${note().iri}>; rel="alternate"; type="application/activity+json"`}
+            value={`<${post().iri}>; rel="alternate"; type="application/activity+json"`}
           />
         </>
       )}
@@ -196,34 +196,24 @@ function NoteMetaHead(props: NoteMetaHeadProps) {
   );
 }
 
-interface NoteInternalProps {
-  $note: NoteId_body$key;
+interface PostInternalProps {
+  $post: NoteId_body$key;
   $viewer?: NoteId_viewer$key;
 }
 
-function NoteInternal(props: NoteInternalProps) {
+function PostInternal(props: PostInternalProps) {
   const { t } = useLingui();
   const navigate = useNavigate();
 
-  const note = createFragment(
+  const post = createFragment(
     graphql`
-      fragment NoteId_body on Note {
+      fragment NoteId_body on Post {
         iri
         url
-        ...NoteCard_note
-        replyTarget {
-          ...NoteCard_note
-        }
-        replies {
-          edges {
-            node {
-              ...NoteCard_note
-            }
-          }
-        }
+        ...PostCard_post
       }
     `,
-    () => props.$note,
+    () => props.$post,
   );
   const viewer = createFragment(
     graphql`
@@ -235,27 +225,20 @@ function NoteInternal(props: NoteInternalProps) {
   );
 
   return (
-    <Show when={note()}>
-      {(note) => (
+    <Show when={post()}>
+      {(post) => (
         <NarrowContainer>
           <div class="my-4">
-            <Show when={note().replyTarget}>
-              {(parent) => (
-                <div class="border-x border-t rounded-t-xl">
-                  <NoteCard $note={parent()} />
-                </div>
-              )}
-            </Show>
             <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl text-xl">
-              <NoteCard $note={note()} onDeleted={() => navigate(-1)} />
+              <PostCard $post={post()} onDeleted={() => navigate(-1)} />
               <Show when={viewer() == null}>
                 <p class="p-4 text-sm text-muted-foreground">
                   <Trans
-                    message={t`If you have a fediverse account, you can reply to this note from your own instance. Search ${"ACTIVITYPUB_URI"} on your instance and reply to it.`}
+                    message={t`If you have a fediverse account, you can reply to this post from your own instance. Search ${"ACTIVITYPUB_URI"} on your instance and reply to it.`}
                     values={{
                       ACTIVITYPUB_URI: () => (
                         <span class="select-all text-accent-foreground border-b border-b-muted-foreground border-dashed">
-                          {note().iri}
+                          {post().iri}
                         </span>
                       ),
                     }}
@@ -263,13 +246,6 @@ function NoteInternal(props: NoteInternalProps) {
                 </p>
               </Show>
             </div>
-            <Show when={note().replies?.edges.length}>
-              <div class="border-x border-b rounded-b-xl">
-                <For each={note().replies?.edges}>
-                  {(edge) => <NoteCard $note={edge.node} />}
-                </For>
-              </div>
-            </Show>
           </div>
         </NarrowContainer>
       )}

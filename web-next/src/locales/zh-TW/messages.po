@@ -30,6 +30,16 @@ msgstr "{0, plural, other {關注 # 人}}"
 msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩餘 # 次邀請}}"
 
+#. placeholder {0}: votes()
+#: src/components/QuestionCard.tsx:224
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, other {# 票}}"
+
+#. placeholder {0}: props.poll.voters.totalCount
+#: src/components/QuestionCard.tsx:182
+msgid "{0, plural, one {# voter} other {# voters}}"
+msgstr "{0, plural, other {# 位投票者}}"
+
 #. placeholder {0}: edge.node.tags.length - 3
 #: src/routes/(root)/[handle]/drafts/index.tsx:277
 msgid "{0, plural, one {+1 more} other {+# more}}"
@@ -129,8 +139,8 @@ msgid "{0} shared your post"
 msgstr "{0} 轉貼了你的內容"
 
 #. placeholder {0}: article().actor.rawName
-#. placeholder {0}: note().actor.name
-#. placeholder {1}: note().excerpt
+#. placeholder {0}: post().actor.name
+#. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
 #: src/routes/(root)/[handle]/[noteId].tsx:144
@@ -306,7 +316,7 @@ msgstr "收藏"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:284
+#: src/components/PostActionMenu.tsx:290
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -335,6 +345,10 @@ msgstr "選擇你的朋友使用的語言。這個語言只會用於邀請。"
 #: src/routes/(root)/[handle]/invite/[id].tsx:391
 msgid "Choose your preferred language for the verification email."
 msgstr "請選擇驗證信件的語言。"
+
+#: src/components/QuestionCard.tsx:174
+msgid "Closed"
+msgstr "已結束"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -436,8 +450,8 @@ msgstr "預設貼文隱私設定"
 msgid "Default share privacy"
 msgstr "預設轉貼隱私設定"
 
-#: src/components/PostActionMenu.tsx:270
-#: src/components/PostActionMenu.tsx:290
+#: src/components/PostActionMenu.tsx:276
+#: src/components/PostActionMenu.tsx:296
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +461,7 @@ msgstr "刪除"
 msgid "Delete Draft"
 msgstr "刪除草稿"
 
-#: src/components/PostActionMenu.tsx:278
+#: src/components/PostActionMenu.tsx:284
 msgid "Delete post?"
 msgstr "刪除內容？"
 
@@ -524,6 +538,14 @@ msgstr "電子郵件地址"
 msgid "Email or username"
 msgstr "電子郵件或使用者名稱"
 
+#: src/components/QuestionCard.tsx:177
+msgid "Ended"
+msgstr "已結束"
+
+#: src/components/QuestionCard.tsx:177
+msgid "Ends"
+msgstr "截止"
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."
 msgstr "請在下方輸入你的電子郵件地址以開始。"
@@ -596,8 +618,8 @@ msgstr "建立邀請連結失敗"
 msgid "Failed to delete invitation link"
 msgstr "刪除邀請連結失敗"
 
-#: src/components/PostActionMenu.tsx:218
-#: src/components/PostActionMenu.tsx:225
+#: src/components/PostActionMenu.tsx:224
+#: src/components/PostActionMenu.tsx:231
 msgid "Failed to delete post"
 msgstr "刪除內容失敗"
 
@@ -657,8 +679,8 @@ msgstr "無法載入引用內容"
 msgid "Failed to look up user."
 msgstr "查找使用者失敗。"
 
-#: src/components/PostActionMenu.tsx:188
-#: src/components/PostActionMenu.tsx:195
+#: src/components/PostActionMenu.tsx:189
+#: src/components/PostActionMenu.tsx:196
 msgid "Failed to pin post"
 msgstr "無法釘選內容"
 
@@ -717,8 +739,8 @@ msgstr "登出失敗：{0}"
 msgid "Failed to unfollow"
 msgstr "取消關注失敗"
 
-#: src/components/PostActionMenu.tsx:164
-#: src/components/PostActionMenu.tsx:171
+#: src/components/PostActionMenu.tsx:165
+#: src/components/PostActionMenu.tsx:172
 msgid "Failed to unpin post"
 msgstr "無法取消釘選內容"
 
@@ -850,10 +872,14 @@ msgstr "啟用後，AI 將為您生成文章摘要。否則，將使用文章的
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡評論此文章。在你的站台搜尋 {0} 後回覆。"
 
+#: src/routes/(root)/[handle]/[noteId].tsx:254
+#~ msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+#~ msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的實例裡評論此貼文。在你的實例搜尋 {0} 後回覆。"
+
 #. placeholder {0}: "ACTIVITYPUB_URI"
 #: src/routes/(root)/[handle]/[noteId].tsx:254
-msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
-msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的實例裡評論此貼文。在你的實例搜尋 {0} 後回覆。"
+msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
+msgstr "如果你有聯邦宇宙帳號，可以從自己的站台回覆此內容。在你的站台中搜尋 {0} 並回覆。"
 
 #: src/components/ui/markdown-editor.tsx:572
 #: src/components/ui/markdown-editor.tsx:573
@@ -1108,6 +1134,10 @@ msgstr "移動到頂部"
 msgid "Move up"
 msgstr "向上移動"
 
+#: src/components/QuestionCard.tsx:171
+msgid "Multiple choice"
+msgstr "多選"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:387
 msgid "My passkey"
 msgstr "我的通行金鑰"
@@ -1226,6 +1256,10 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀請次數"
 
+#: src/components/QuestionCard.tsx:174
+msgid "Open"
+msgstr "進行中"
+
 #: src/routes/applink/sign/in/[token].tsx:47
 msgid "Open in app"
 msgstr "在應用程式中開啟"
@@ -1276,11 +1310,11 @@ msgstr "通行金鑰"
 msgid "Permission Denied"
 msgstr "權限被拒絕"
 
-#: src/components/PostActionMenu.tsx:260
+#: src/components/PostActionMenu.tsx:266
 msgid "Pin to profile"
 msgstr "釘選到個人資料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+#: src/routes/(root)/[handle]/(profile)/index.tsx:179
 msgid "Pinned posts"
 msgstr "已釘選內容"
 
@@ -1308,15 +1342,15 @@ msgstr "請輸入你的聯邦宇宙使用者名稱。"
 msgid "Please sign in to access this page"
 msgstr "請登入以存取此頁面"
 
-#: src/components/PostActionMenu.tsx:214
+#: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
 msgstr "內容已刪除"
 
-#: src/components/PostActionMenu.tsx:185
+#: src/components/PostActionMenu.tsx:186
 msgid "Post pinned"
 msgstr "內容已釘選"
 
-#: src/components/PostActionMenu.tsx:161
+#: src/components/PostActionMenu.tsx:162
 msgid "Post unpinned"
 msgstr "已取消釘選內容"
 
@@ -1595,6 +1629,10 @@ msgstr "登入中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "註冊 Hackers' Pub"
 
+#: src/components/QuestionCard.tsx:171
+msgid "Single choice"
+msgstr "單選"
+
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:20
 msgid "Slug (URL)"
 msgstr "網址別名"
@@ -1717,7 +1755,7 @@ msgstr "可在 {0} 上以 {1} 授權取得該網站的原始碼。"
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "該連結的 URL，例如 https://github.com/你的使用者名稱 。"
 
-#: src/components/PostActionMenu.tsx:280
+#: src/components/PostActionMenu.tsx:286
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "此操作無法復原。這將永久刪除該內容。"
 
@@ -1805,7 +1843,7 @@ msgstr "無法移除反應。請重試。"
 msgid "Unfollow"
 msgstr "取消關注"
 
-#: src/components/PostActionMenu.tsx:261
+#: src/components/PostActionMenu.tsx:267
 msgid "Unpin from profile"
 msgstr "從個人資料取消釘選"
 

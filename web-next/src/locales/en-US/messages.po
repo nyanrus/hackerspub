@@ -30,6 +30,16 @@ msgstr "{0, plural, one {# following} other {# following}}"
 msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, one {# invitation left} other {# invitations left}}"
 
+#. placeholder {0}: votes()
+#: src/components/QuestionCard.tsx:224
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, one {# vote} other {# votes}}"
+
+#. placeholder {0}: props.poll.voters.totalCount
+#: src/components/QuestionCard.tsx:182
+msgid "{0, plural, one {# voter} other {# voters}}"
+msgstr "{0, plural, one {# voter} other {# voters}}"
+
 #. placeholder {0}: edge.node.tags.length - 3
 #: src/routes/(root)/[handle]/drafts/index.tsx:277
 msgid "{0, plural, one {+1 more} other {+# more}}"
@@ -129,8 +139,8 @@ msgid "{0} shared your post"
 msgstr "{0} shared your post"
 
 #. placeholder {0}: article().actor.rawName
-#. placeholder {0}: note().actor.name
-#. placeholder {1}: note().excerpt
+#. placeholder {0}: post().actor.name
+#. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
 #: src/routes/(root)/[handle]/[noteId].tsx:144
@@ -306,7 +316,7 @@ msgstr "Bookmarks"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:284
+#: src/components/PostActionMenu.tsx:290
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -335,6 +345,10 @@ msgstr "Choose the language your friend prefers. This language will only be used
 #: src/routes/(root)/[handle]/invite/[id].tsx:391
 msgid "Choose your preferred language for the verification email."
 msgstr "Choose your preferred language for the verification email."
+
+#: src/components/QuestionCard.tsx:174
+msgid "Closed"
+msgstr "Closed"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -436,8 +450,8 @@ msgstr "Default note privacy"
 msgid "Default share privacy"
 msgstr "Default share privacy"
 
-#: src/components/PostActionMenu.tsx:270
-#: src/components/PostActionMenu.tsx:290
+#: src/components/PostActionMenu.tsx:276
+#: src/components/PostActionMenu.tsx:296
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +461,7 @@ msgstr "Delete"
 msgid "Delete Draft"
 msgstr "Delete Draft"
 
-#: src/components/PostActionMenu.tsx:278
+#: src/components/PostActionMenu.tsx:284
 msgid "Delete post?"
 msgstr "Delete post?"
 
@@ -523,6 +537,14 @@ msgstr "Email address"
 #: src/routes/(root)/sign/index.tsx:380
 msgid "Email or username"
 msgstr "Email or username"
+
+#: src/components/QuestionCard.tsx:177
+msgid "Ended"
+msgstr "Ended"
+
+#: src/components/QuestionCard.tsx:177
+msgid "Ends"
+msgstr "Ends"
 
 #: src/components/ArticleComposer.tsx:540
 #~ msgid "Enter article title..."
@@ -600,8 +622,8 @@ msgstr "Failed to create invitation link"
 msgid "Failed to delete invitation link"
 msgstr "Failed to delete invitation link"
 
-#: src/components/PostActionMenu.tsx:218
-#: src/components/PostActionMenu.tsx:225
+#: src/components/PostActionMenu.tsx:224
+#: src/components/PostActionMenu.tsx:231
 msgid "Failed to delete post"
 msgstr "Failed to delete post"
 
@@ -661,8 +683,8 @@ msgstr "Failed to load quoted post"
 msgid "Failed to look up user."
 msgstr "Failed to look up user."
 
-#: src/components/PostActionMenu.tsx:188
-#: src/components/PostActionMenu.tsx:195
+#: src/components/PostActionMenu.tsx:189
+#: src/components/PostActionMenu.tsx:196
 msgid "Failed to pin post"
 msgstr "Failed to pin post"
 
@@ -721,8 +743,8 @@ msgstr "Failed to sign out: {0}"
 msgid "Failed to unfollow"
 msgstr "Failed to unfollow"
 
-#: src/components/PostActionMenu.tsx:164
-#: src/components/PostActionMenu.tsx:171
+#: src/components/PostActionMenu.tsx:165
+#: src/components/PostActionMenu.tsx:172
 msgid "Failed to unpin post"
 msgstr "Failed to unpin post"
 
@@ -854,10 +876,14 @@ msgstr "If enabled, the AI will generate a summary of the article for you. Other
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 
+#: src/routes/(root)/[handle]/[noteId].tsx:254
+#~ msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+#~ msgstr "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+
 #. placeholder {0}: "ACTIVITYPUB_URI"
 #: src/routes/(root)/[handle]/[noteId].tsx:254
-msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
-msgstr "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
+msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
+msgstr "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
 
 #: src/components/ui/markdown-editor.tsx:572
 #: src/components/ui/markdown-editor.tsx:573
@@ -1112,6 +1138,10 @@ msgstr "Move to the top"
 msgid "Move up"
 msgstr "Move up"
 
+#: src/components/QuestionCard.tsx:171
+msgid "Multiple choice"
+msgstr "Multiple choice"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:387
 msgid "My passkey"
 msgstr "My passkey"
@@ -1231,6 +1261,10 @@ msgstr "Notifications"
 msgid "Number of invitations"
 msgstr "Number of invitations"
 
+#: src/components/QuestionCard.tsx:174
+msgid "Open"
+msgstr "Open"
+
 #: src/routes/applink/sign/in/[token].tsx:47
 msgid "Open in app"
 msgstr "Open in app"
@@ -1281,11 +1315,11 @@ msgstr "Passkeys"
 msgid "Permission Denied"
 msgstr "Permission Denied"
 
-#: src/components/PostActionMenu.tsx:260
+#: src/components/PostActionMenu.tsx:266
 msgid "Pin to profile"
 msgstr "Pin to profile"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+#: src/routes/(root)/[handle]/(profile)/index.tsx:179
 msgid "Pinned posts"
 msgstr "Pinned posts"
 
@@ -1313,15 +1347,15 @@ msgstr "Please enter your Fediverse handle."
 msgid "Please sign in to access this page"
 msgstr "Please sign in to access this page"
 
-#: src/components/PostActionMenu.tsx:214
+#: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
 msgstr "Post deleted"
 
-#: src/components/PostActionMenu.tsx:185
+#: src/components/PostActionMenu.tsx:186
 msgid "Post pinned"
 msgstr "Post pinned"
 
-#: src/components/PostActionMenu.tsx:161
+#: src/components/PostActionMenu.tsx:162
 msgid "Post unpinned"
 msgstr "Post unpinned"
 
@@ -1600,6 +1634,10 @@ msgstr "Signing in…"
 msgid "Signing up for Hackers' Pub"
 msgstr "Signing up for Hackers' Pub"
 
+#: src/components/QuestionCard.tsx:171
+msgid "Single choice"
+msgstr "Single choice"
+
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:20
 msgid "Slug (URL)"
 msgstr "Slug (URL)"
@@ -1722,7 +1760,7 @@ msgstr "The source code of this website is available on {0} under the {1} licens
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "The URL of the link, e.g., https://github.com/yourhandle."
 
-#: src/components/PostActionMenu.tsx:280
+#: src/components/PostActionMenu.tsx:286
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "This action cannot be undone. This will permanently delete this post."
 
@@ -1810,7 +1848,7 @@ msgstr "Unable to remove reaction. Please try again."
 msgid "Unfollow"
 msgstr "Unfollow"
 
-#: src/components/PostActionMenu.tsx:261
+#: src/components/PostActionMenu.tsx:267
 msgid "Unpin from profile"
 msgstr "Unpin from profile"
 
