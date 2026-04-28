@@ -114,6 +114,9 @@ export const Actor = builder.drizzleNode("actorTable", {
     ),
     avatarUrl: t.field({
       type: "URL",
+      select: {
+        columns: { avatarUrl: true },
+      },
       resolve(actor) {
         const url = getAvatarUrl(actor);
         return new URL(url);
