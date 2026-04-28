@@ -32,6 +32,7 @@ export function PostCard(props: PostCardProps) {
     <Show when={post()}>
       {(post) => (
         <Switch>
+          {/* TODO(#259): Render Question/poll posts; tracked separately from pinning. */}
           <Match when={post().__typename === "Note"}>
             <NoteCard
               $note={post()}
