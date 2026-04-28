@@ -292,6 +292,50 @@ Deno.test({
 });
 
 Deno.test({
+  name: "unpinPost rejects posts the viewer has not pinned",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "graphqlunpinowner",
+        name: "GraphQL Unpin Owner",
+        email: "graphqlunpinowner@example.com",
+      });
+      const viewer = await insertAccountWithActor(tx, {
+        username: "graphqlunpinviewer",
+        name: "GraphQL Unpin Viewer",
+        email: "graphqlunpinviewer@example.com",
+      });
+      const { post } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Hidden unpin target",
+        visibility: "followers",
+      });
+
+      const result = await execute({
+        schema,
+        document: unpinMutation,
+        variableValues: { postId: encodeGlobalID("Note", post.id) },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(
+        (result.data as {
+          unpinPost: { __typename: string; inputPath?: string };
+        }).unpinPost,
+        {
+          __typename: "InvalidInputError",
+          inputPath: "postId",
+        },
+      );
+    });
+  },
+});
+
+Deno.test({
   name: "pinPost requires authentication",
   sanitizeOps: false,
   sanitizeResources: false,
