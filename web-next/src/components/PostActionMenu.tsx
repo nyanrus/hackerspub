@@ -208,7 +208,12 @@ export function PostActionMenu(props: PostActionMenuProps) {
     commitDeletePost({
       variables: {
         input: { id: p.id },
-        connections: props.connections ?? [],
+        connections: [
+          ...new Set([
+            ...(props.connections ?? []),
+            ...(props.pinConnections ?? []),
+          ]),
+        ],
       },
       onCompleted(response) {
         if (response.deletePost.deletedPostId != null) {
