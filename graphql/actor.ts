@@ -486,6 +486,11 @@ const pinConnectionHelpers = drizzleConnectionHelpers(
   builder,
   "pinTable",
   {
+    query: (_args, ctx) => ({
+      where: {
+        post: getPostVisibilityFilter(ctx.account?.actor ?? null),
+      },
+    }),
     select: (nodeSelection) => ({
       with: {
         post: nodeSelection({}),
