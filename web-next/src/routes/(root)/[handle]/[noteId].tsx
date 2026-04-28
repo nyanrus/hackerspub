@@ -15,21 +15,16 @@ import {
   loadQuery,
   useRelayEnvironment,
 } from "solid-relay";
-import { InternalLink } from "~/components/InternalLink.tsx";
 import { NarrowContainer } from "~/components/NarrowContainer.tsx";
 import { NoteCard } from "~/components/NoteCard.tsx";
-import { PostAvatar } from "~/components/PostAvatar.tsx";
 import { QuestionCard } from "~/components/QuestionCard.tsx";
-import { Timestamp } from "~/components/Timestamp.tsx";
 import { Title } from "~/components/Title.tsx";
 import { Trans } from "~/components/Trans.tsx";
-import { VisibilityTag } from "~/components/VisibilityTag.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { NoteIdPageQuery } from "./__generated__/NoteIdPageQuery.graphql.ts";
 import type { NoteId_head$key } from "./__generated__/NoteId_head.graphql.ts";
 import type { NoteId_noteBody$key } from "./__generated__/NoteId_noteBody.graphql.ts";
 import type { NoteId_questionBody$key } from "./__generated__/NoteId_questionBody.graphql.ts";
-import type { NoteId_threadNote$key } from "./__generated__/NoteId_threadNote.graphql.ts";
 import type {
   NoteIdQuestionPageQuery,
   NoteIdQuestionPageQuery$data,
@@ -263,14 +258,14 @@ function NoteInternal(props: NoteInternalProps) {
         ...NoteCard_note
         replyTarget {
           ... on Note {
-            ...NoteId_threadNote
+            ...NoteCard_note
           }
         }
         replies {
           edges {
             node {
               ... on Note {
-                ...NoteId_threadNote
+                ...NoteCard_note
               }
             }
           }
@@ -287,7 +282,7 @@ function NoteInternal(props: NoteInternalProps) {
             <Show when={note().replyTarget}>
               {(parent) => (
                 <div class="border-x border-t rounded-t-xl">
-                  <ThreadNoteCard $note={parent()} />
+                  <NoteCard $note={parent()} />
                 </div>
               )}
             </Show>
@@ -313,7 +308,7 @@ function NoteInternal(props: NoteInternalProps) {
                 <For each={note().replies?.edges}>
                   {(edge) => (
                     <Show when={edge.node}>
-                      {(reply) => <ThreadNoteCard $note={reply()} />}
+                      {(reply) => <NoteCard $note={reply()} />}
                     </Show>
                   )}
                 </For>
@@ -321,85 +316,6 @@ function NoteInternal(props: NoteInternalProps) {
             </Show>
           </div>
         </NarrowContainer>
-      )}
-    </Show>
-  );
-}
-
-interface ThreadNoteCardProps {
-  $note: NoteId_threadNote$key;
-}
-
-function ThreadNoteCard(props: ThreadNoteCardProps) {
-  const note = createFragment(
-    graphql`
-      fragment NoteId_threadNote on Note {
-        uuid
-        content
-        language
-        visibility
-        published
-        url
-        iri
-        actor {
-          name
-          handle
-          username
-          local
-          url
-          iri
-          ...PostAvatar_actor
-        }
-      }
-    `,
-    () => props.$note,
-  );
-
-  return (
-    <Show when={note()}>
-      {(note) => (
-        <article class="px-4 py-3 border-b-1">
-          <div class="flex gap-4">
-            <PostAvatar $actor={note().actor} />
-            <div class="min-w-0 grow">
-              <div class="flex items-center gap-1 flex-wrap">
-                <Show when={(note().actor.name ?? "").trim() !== ""}>
-                  <InternalLink
-                    href={note().actor.url ?? note().actor.iri}
-                    internalHref={note().actor.local
-                      ? `/@${note().actor.username}`
-                      : `/${note().actor.handle}`}
-                    innerHTML={note().actor.name ?? ""}
-                    class="font-semibold"
-                  />
-                  {" "}
-                </Show>
-                <span class="min-w-0 grow break-all select-all text-muted-foreground">
-                  {note().actor.handle}
-                </span>
-                <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
-                  <InternalLink
-                    href={note().url ?? note().iri}
-                    internalHref={`/${
-                      note().actor.local
-                        ? "@" + note().actor.username
-                        : note().actor.handle
-                    }/${note().uuid}`}
-                  >
-                    <Timestamp value={note().published} capitalizeFirstLetter />
-                  </InternalLink>
-                  &middot;
-                  <VisibilityTag visibility={note().visibility} />
-                </span>
-              </div>
-              <div
-                innerHTML={note().content}
-                lang={note().language ?? undefined}
-                class="prose dark:prose-invert break-words overflow-wrap"
-              />
-            </div>
-          </div>
-        </article>
       )}
     </Show>
   );
