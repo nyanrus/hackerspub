@@ -16,6 +16,8 @@ import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import IconPin from "~icons/lucide/pin";
+import type { ProfilePagePinsQuery } from "./__generated__/ProfilePagePinsQuery.graphql.ts";
+import type { ProfilePagePostsQuery } from "./__generated__/ProfilePagePostsQuery.graphql.ts";
 import type { ProfilePageQuery } from "./__generated__/ProfilePageQuery.graphql.ts";
 
 export const route = {
@@ -24,21 +26,30 @@ export const route = {
   },
   preload(args) {
     const { i18n } = useLingui();
-    void loadPageQuery(args.params.handle!, i18n.locale);
+    const handle = args.params.handle!;
+    void loadPageQuery(handle);
+    void loadPagePinsQuery(handle, i18n.locale);
+    void loadPagePostsQuery(handle, i18n.locale);
   },
 } satisfies RouteDefinition;
 
 const ProfilePageQuery = graphql`
-  query ProfilePageQuery($handle: String!, $locale: Locale) {
+  query ProfilePageQuery($handle: String!) {
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
       url
       iri
       ...NavigateIfHandleIsNotCanonical_actor
-      ...ActorPostList_posts @arguments(locale: $locale)
       ...ProfileCard_actor
       ...ProfileTabs_actor
+    }
+  }
+`;
+
+const ProfilePagePinsQuery = graphql`
+  query ProfilePagePinsQuery($handle: String!, $locale: Locale) {
+    actorByHandle(handle: $handle, allowLocalHandle: true) {
       pins(first: 20) @connection(key: "ProfilePage_pins") {
         __id
         edges {
@@ -51,14 +62,42 @@ const ProfilePageQuery = graphql`
   }
 `;
 
+const ProfilePagePostsQuery = graphql`
+  query ProfilePagePostsQuery($handle: String!, $locale: Locale) {
+    actorByHandle(handle: $handle, allowLocalHandle: true) {
+      ...ActorPostList_posts @arguments(locale: $locale)
+    }
+  }
+`;
+
 const loadPageQuery = query(
-  (handle: string, locale: string) =>
+  (handle: string) =>
     loadQuery<ProfilePageQuery>(
       useRelayEnvironment()(),
       ProfilePageQuery,
-      { handle, locale },
+      { handle },
     ),
   "loadProfilePageQuery",
+);
+
+const loadPagePinsQuery = query(
+  (handle: string, locale: string) =>
+    loadQuery<ProfilePagePinsQuery>(
+      useRelayEnvironment()(),
+      ProfilePagePinsQuery,
+      { handle, locale },
+    ),
+  "loadProfilePagePinsQuery",
+);
+
+const loadPagePostsQuery = query(
+  (handle: string, locale: string) =>
+    loadQuery<ProfilePagePostsQuery>(
+      useRelayEnvironment()(),
+      ProfilePagePostsQuery,
+      { handle, locale },
+    ),
+  "loadProfilePagePostsQuery",
 );
 
 export default function ProfilePage() {
@@ -66,8 +105,26 @@ export default function ProfilePage() {
   const params = useParams();
   const data = createPreloadedQuery<ProfilePageQuery>(
     ProfilePageQuery,
-    () => loadPageQuery(params.handle!, i18n.locale),
+    () => loadPageQuery(params.handle!),
   );
+  const pinnedPostsData = createPreloadedQuery<ProfilePagePinsQuery>(
+    ProfilePagePinsQuery,
+    () => loadPagePinsQuery(params.handle!, i18n.locale),
+  );
+  const postsData = createPreloadedQuery<ProfilePagePostsQuery>(
+    ProfilePagePostsQuery,
+    () => loadPagePostsQuery(params.handle!, i18n.locale),
+  );
+  const pinConnectionId = () => pinnedPostsData()?.actorByHandle?.pins.__id;
+  const pinConnections = () => {
+    const connectionId = pinConnectionId();
+    return connectionId == null ? [] : [connectionId];
+  };
+  const postsActor = () => {
+    const actor = postsData()?.actorByHandle;
+    return actor == null || pinConnectionId() == null ? undefined : actor;
+  };
+
   return (
     <Show when={data()}>
       {(data) => (
@@ -97,28 +154,36 @@ export default function ProfilePage() {
                 </div>
                 <div class="p-4">
                   <ProfileTabs selected="posts" $actor={actor()} />
-                  <Show when={actor().pins.edges.length > 0}>
-                    <section class="my-4">
-                      <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
-                        <IconPin class="size-4" />
-                        {t`Pinned posts`}
-                      </h2>
-                      <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl">
-                        <For each={actor().pins.edges}>
-                          {(edge) => (
-                            <PostCard
-                              $post={edge.node}
-                              pinConnections={[actor().pins.__id]}
-                            />
-                          )}
-                        </For>
-                      </div>
-                    </section>
+                  <Show when={pinnedPostsData()?.actorByHandle?.pins}>
+                    {(pins) => (
+                      <Show when={pins().edges.length > 0}>
+                        <section class="my-4">
+                          <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
+                            <IconPin class="size-4" />
+                            {t`Pinned posts`}
+                          </h2>
+                          <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl">
+                            <For each={pins().edges}>
+                              {(edge) => (
+                                <PostCard
+                                  $post={edge.node}
+                                  pinConnections={pinConnections()}
+                                />
+                              )}
+                            </For>
+                          </div>
+                        </section>
+                      </Show>
+                    )}
                   </Show>
-                  <ActorPostList
-                    $posts={actor()}
-                    pinConnections={[actor().pins.__id]}
-                  />
+                  <Show when={postsActor()}>
+                    {(postsActor) => (
+                      <ActorPostList
+                        $posts={postsActor()}
+                        pinConnections={pinConnections()}
+                      />
+                    )}
+                  </Show>
                 </div>
               </NarrowContainer>
             )}
