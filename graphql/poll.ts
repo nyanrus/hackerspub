@@ -259,13 +259,30 @@ builder.relayMutationField(
 
       await vote(ctx.fedCtx, ctx.account, question.poll, optionIndices);
 
-      const poll = await ctx.db.query.pollTable.findFirst({
-        where: { postId: question.id },
+      const updatedQuestion = await ctx.db.query.postTable.findFirst({
         with: {
-          options: true,
+          actor: {
+            with: {
+              followers: true,
+              blockees: true,
+              blockers: true,
+            },
+          },
+          mentions: true,
+          poll: {
+            with: {
+              options: true,
+            },
+          },
+        },
+        where: {
+          id: question.id,
+          type: "Question",
         },
       });
-      if (poll == null) throw new InvalidInputError("questionId");
+      if (updatedQuestion == null || updatedQuestion.poll == null) {
+        throw new InvalidInputError("questionId");
+      }
 
       const votes = await ctx.db.query.pollVoteTable.findMany({
         where: {
@@ -275,7 +292,7 @@ builder.relayMutationField(
         orderBy: { optionIndex: "asc" },
       });
 
-      return { question, poll, votes };
+      return { question: updatedQuestion, poll: updatedQuestion.poll, votes };
     },
   },
   {
