@@ -282,6 +282,11 @@
     "deleteConfirm": "이 콘텐츠를 삭제하시겠습니까?",
     "deleting": "삭제중…",
     "deleted": "이미 삭제됨",
+    "pin": "프로필에 고정",
+    "unpin": "프로필에서 고정 해제",
+    "pinning": "고정 중…",
+    "unpinning": "고정 해제 중…",
+    "pinned": "고정됨",
     "quotes": "인용",
     "reactions": {
       "title": "반응",

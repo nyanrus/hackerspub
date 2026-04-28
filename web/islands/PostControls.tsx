@@ -4,7 +4,7 @@ import {
   type ReactionEmoji,
 } from "@hackerspub/models/emoji";
 import type { Account, Actor, Post, Reaction } from "@hackerspub/models/schema";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Msg, TranslationSetup } from "../components/Msg.tsx";
 import type { Language } from "../i18n.ts";
 import getFixedT from "../i18n.ts";
@@ -34,6 +34,9 @@ export function PostControls(props: PostControlsProps) {
   );
   const [shareSubmitting, setShareSubmitting] = useState(false);
   const [shareFocused, setShareFocused] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [pinSubmitting, setPinSubmitting] = useState(false);
+  const [pinFocused, setPinFocused] = useState(false);
   const [deleted, setDeleted] = useState<null | "deleting" | "deleted">(null);
   const nonPrivate = post.visibility === "public" ||
     post.visibility === "unlisted";
@@ -41,6 +44,19 @@ export function PostControls(props: PostControlsProps) {
   const localPostUrl = remotePost
     ? `/${post.actor.handle}/${post.id}`
     : `${post.url}`;
+  const pinnable = signedAccount?.actor.id === post.actorId &&
+    !remotePost &&
+    nonPrivate &&
+    post.sharedPostId == null;
+
+  useEffect(() => {
+    if (!pinnable) return;
+    fetch(`${localPostUrl}/pin`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (typeof data?.pinned === "boolean") setPinned(data.pinned);
+      });
+  }, [localPostUrl, pinnable]);
 
   let anyReacted = false;
   for (const emoji of REACTION_EMOJIS) {
@@ -125,6 +141,30 @@ export function PostControls(props: PostControlsProps) {
 
   function onShareFocusOut() {
     setShareFocused(false);
+  }
+
+  function onPinSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!pinnable) return;
+    if (event.currentTarget instanceof HTMLFormElement) {
+      setPinSubmitting(true);
+      const form = event.currentTarget;
+      fetch(form.action, { method: form.method })
+        .then((response) => {
+          if (response.status >= 200 && response.status < 400) {
+            setPinned(!pinned);
+          }
+        })
+        .finally(() => setPinSubmitting(false));
+    }
+  }
+
+  function onPinFocus() {
+    setPinFocused(true);
+  }
+
+  function onPinFocusOut() {
+    setPinFocused(false);
   }
 
   function onDelete(this: HTMLButtonElement, _event: MouseEvent) {
@@ -429,6 +469,56 @@ export function PostControls(props: PostControlsProps) {
                 />
               </svg>
             </button>
+          )}
+          {pinnable && (
+            <form
+              method="post"
+              action={pinned ? `${localPostUrl}/unpin` : `${localPostUrl}/pin`}
+              onSubmit={onPinSubmit}
+            >
+              <button
+                type="submit"
+                class={`
+                  h-5 flex opacity-50
+                  ${deleted != null ? "cursor-default" : "hover:opacity-100"}
+                `}
+                onMouseOver={onPinFocus}
+                onFocus={onPinFocus}
+                onMouseOut={onPinFocusOut}
+                onBlur={onPinFocusOut}
+                title={pinned ? t("post.unpin") : t("post.pin")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  className={`size-5 ${pinned ? "stroke-2" : ""}`}
+                  aria-label={pinned ? t("post.unpin") : t("post.pin")}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 17v5m-5 0h10M8 3h8l-1 7 4 4v2H5v-2l4-4-1-7Z"
+                  />
+                </svg>
+                {(pinned || pinSubmitting) && (
+                  <span
+                    class={`ml-1 my-auto text-xs ${pinned ? "font-bold" : ""}`}
+                  >
+                    {" — "}
+                    <Msg
+                      $key={pinSubmitting
+                        ? (pinned ? "post.unpinning" : "post.pinning")
+                        : pinFocused
+                        ? "post.unpin"
+                        : "post.pinned"}
+                    />
+                  </span>
+                )}
+              </button>
+            </form>
           )}
           {signedAccount?.actor.id === post.actorId &&
             (

@@ -286,6 +286,11 @@
     "deleteConfirm": "你確定要刪除此內容嗎？",
     "deleting": "正在刪除……",
     "deleted": "已經刪除",
+    "pin": "釘選到個人檔案",
+    "unpin": "從個人檔案取消釘選",
+    "pinning": "正在釘選……",
+    "unpinning": "正在取消釘選……",
+    "pinned": "已釘選",
     "quotes": "引用",
     "reactions": {
       "title": "反應",

@@ -284,6 +284,11 @@
     "deleteConfirm": "このコンテンツを削除してもよろしいですか？",
     "deleting": "削除中…",
     "deleted": "削除済み",
+    "pin": "プロフィールに固定",
+    "unpin": "プロフィールから固定解除",
+    "pinning": "固定中…",
+    "unpinning": "固定解除中…",
+    "pinned": "固定済み",
     "quotes": "引用",
     "reactions": {
       "title": "リアクション",
