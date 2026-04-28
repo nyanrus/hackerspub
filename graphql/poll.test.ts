@@ -90,6 +90,9 @@ const voteOnPollMutation = parse(`
             voters(first: 10) {
               totalCount
             }
+            votes(first: 10) {
+              totalCount
+            }
             options {
               index
               title
@@ -381,6 +384,7 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
           poll: {
             viewerHasVoted: boolean;
             voters: { totalCount: number };
+            votes: { totalCount: number };
             options: Array<{
               index: number;
               title: string;
@@ -399,6 +403,7 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
     assert.equal(payload.question?.poll.viewerHasVoted, true);
     assert.equal(payload.poll?.viewerHasVoted, true);
     assert.equal(payload.question?.poll.voters.totalCount, 1);
+    assert.equal(payload.question?.poll.votes.totalCount, 1);
     assert.deepEqual(payload.question?.poll.options, [
       {
         index: 0,
@@ -504,6 +509,7 @@ test("voteOnPoll stores multiple choices for multi-choice polls", async () => {
         question?: {
           poll: {
             voters: { totalCount: number };
+            votes: { totalCount: number };
             options: Array<{
               index: number;
               viewerHasVoted: boolean;
@@ -517,6 +523,7 @@ test("voteOnPoll stores multiple choices for multi-choice polls", async () => {
 
     assert.equal(payload.__typename, "VoteOnPollPayload");
     assert.equal(payload.question?.poll.voters.totalCount, 1);
+    assert.equal(payload.question?.poll.votes.totalCount, 2);
     assert.deepEqual(
       payload.question?.poll.options.map((option) => ({
         index: option.index,
