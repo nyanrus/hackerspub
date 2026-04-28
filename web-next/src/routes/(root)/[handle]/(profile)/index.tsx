@@ -138,7 +138,7 @@ export default function ProfilePage() {
     data()?.actorByHandle?.isViewer ? postConnections() : [];
   const postsActor = () => {
     const actor = postsData()?.actorByHandle;
-    return actor == null || pinConnectionId() == null ? undefined : actor;
+    return actor ?? undefined;
   };
 
   return (
