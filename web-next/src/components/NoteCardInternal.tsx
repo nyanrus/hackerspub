@@ -13,6 +13,7 @@ export interface NoteCardInternalProps {
   $note: NoteCardInternal_note$key;
   connections?: string[];
   bookmarkListConnections?: string[];
+  pinConnections?: string[];
   onDeleted?: () => void;
 }
 
@@ -48,6 +49,7 @@ export function NoteCardInternal(props: NoteCardInternalProps) {
             <NoteHeader
               $note={n()}
               connections={props.connections}
+              pinConnections={props.pinConnections}
               onDeleted={props.onDeleted}
             />
             <div

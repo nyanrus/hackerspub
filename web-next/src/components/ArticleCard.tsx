@@ -22,6 +22,7 @@ export interface ArticleCardProps {
   $article: ArticleCard_article$key;
   connections?: string[];
   bookmarkListConnections?: string[];
+  pinConnections?: string[];
 }
 
 export function ArticleCard(props: ArticleCardProps) {
@@ -58,6 +59,7 @@ export function ArticleCard(props: ArticleCardProps) {
                   $article={article()}
                   setHover={setHover}
                   connections={props.connections}
+                  pinConnections={props.pinConnections}
                 />
                 <ArticleControls
                   $article={article()}
@@ -73,6 +75,7 @@ export function ArticleCard(props: ArticleCardProps) {
                   $article={sharedPost()}
                   setHover={setHover}
                   connections={props.connections}
+                  pinConnections={props.pinConnections}
                 />
                 <ArticleControls
                   $article={sharedPost()}
@@ -92,6 +95,7 @@ interface ArticleCardInternalProps {
   hover?: Accessor<boolean>;
   setHover?: Setter<boolean>;
   connections?: string[];
+  pinConnections?: string[];
 }
 
 function ArticleCardInternal(props: ArticleCardInternalProps) {
@@ -175,6 +179,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 <PostActionMenu
                   $post={article()}
                   connections={props.connections}
+                  pinConnections={props.pinConnections}
                 />
                 <Show
                   when={article().contents != null &&

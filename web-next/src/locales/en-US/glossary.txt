@@ -9,6 +9,7 @@ comment → comment
 share → share
 quote → quote
 bookmark → bookmark
+pin → pin
 username → username
 displayName → name
 bio → bio

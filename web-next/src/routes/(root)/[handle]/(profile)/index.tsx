@@ -1,7 +1,7 @@
 import { Link, Meta } from "@solidjs/meta";
 import { query, type RouteDefinition, useParams } from "@solidjs/router";
 import { graphql } from "relay-runtime";
-import { Show } from "solid-js";
+import { For, Show } from "solid-js";
 import {
   createPreloadedQuery,
   loadQuery,
@@ -10,10 +10,12 @@ import {
 import { ActorPostList } from "~/components/ActorPostList.tsx";
 import { NarrowContainer } from "~/components/NarrowContainer.tsx";
 import { NavigateIfHandleIsNotCanonical } from "~/components/NavigateIfHandleIsNotCanonical.tsx";
+import { PostCard } from "~/components/PostCard.tsx";
 import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import IconPin from "~icons/lucide/pin";
 import type { ProfilePageQuery } from "./__generated__/ProfilePageQuery.graphql.ts";
 
 export const route = {
@@ -37,6 +39,14 @@ const ProfilePageQuery = graphql`
       ...ActorPostList_posts @arguments(locale: $locale)
       ...ProfileCard_actor
       ...ProfileTabs_actor
+      pins(first: 20) @connection(key: "ProfilePage_pins") {
+        __id
+        edges {
+          node {
+            ...PostCard_post @arguments(locale: $locale)
+          }
+        }
+      }
     }
   }
 `;
@@ -52,7 +62,7 @@ const loadPageQuery = query(
 );
 
 export default function ProfilePage() {
-  const { i18n } = useLingui();
+  const { i18n, t } = useLingui();
   const params = useParams();
   const data = createPreloadedQuery<ProfilePageQuery>(
     ProfilePageQuery,
@@ -87,7 +97,28 @@ export default function ProfilePage() {
                 </div>
                 <div class="p-4">
                   <ProfileTabs selected="posts" $actor={actor()} />
-                  <ActorPostList $posts={actor()} />
+                  <Show when={actor().pins.edges.length > 0}>
+                    <section class="my-4">
+                      <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
+                        <IconPin class="size-4" />
+                        {t`Pinned posts`}
+                      </h2>
+                      <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl">
+                        <For each={actor().pins.edges}>
+                          {(edge) => (
+                            <PostCard
+                              $post={edge.node}
+                              pinConnections={[actor().pins.__id]}
+                            />
+                          )}
+                        </For>
+                      </div>
+                    </section>
+                  </Show>
+                  <ActorPostList
+                    $posts={actor()}
+                    pinConnections={[actor().pins.__id]}
+                  />
                 </div>
               </NarrowContainer>
             )}

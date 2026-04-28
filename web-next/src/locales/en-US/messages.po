@@ -189,7 +189,7 @@ msgid "Add"
 msgstr "Add"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:293
+#: src/components/EmojiReactionPopover.tsx:312
 msgid "Add {0}"
 msgstr "Add {0}"
 
@@ -306,7 +306,7 @@ msgstr "Bookmarks"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:137
+#: src/components/PostActionMenu.tsx:284
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -436,8 +436,8 @@ msgstr "Default note privacy"
 msgid "Default share privacy"
 msgstr "Default share privacy"
 
-#: src/components/PostActionMenu.tsx:123
-#: src/components/PostActionMenu.tsx:143
+#: src/components/PostActionMenu.tsx:270
+#: src/components/PostActionMenu.tsx:290
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +447,7 @@ msgstr "Delete"
 msgid "Delete Draft"
 msgstr "Delete Draft"
 
-#: src/components/PostActionMenu.tsx:131
+#: src/components/PostActionMenu.tsx:278
 msgid "Delete post?"
 msgstr "Delete post?"
 
@@ -600,8 +600,8 @@ msgstr "Failed to create invitation link"
 msgid "Failed to delete invitation link"
 msgstr "Failed to delete invitation link"
 
-#: src/components/PostActionMenu.tsx:88
-#: src/components/PostActionMenu.tsx:95
+#: src/components/PostActionMenu.tsx:218
+#: src/components/PostActionMenu.tsx:225
 msgid "Failed to delete post"
 msgstr "Failed to delete post"
 
@@ -645,7 +645,7 @@ msgstr "Failed to load more notifications; click to retry"
 msgid "Failed to load more passkeys; click to retry"
 msgstr "Failed to load more passkeys; click to retry"
 
-#: src/components/ActorPostList.tsx:76
+#: src/components/ActorPostList.tsx:81
 #: src/components/ActorSharedPostList.tsx:81
 #: src/components/PersonalTimeline.tsx:98
 #: src/components/PublicTimeline.tsx:100
@@ -661,10 +661,15 @@ msgstr "Failed to load quoted post"
 msgid "Failed to look up user."
 msgstr "Failed to look up user."
 
-#: src/components/EmojiReactionPopover.tsx:159
-#: src/components/EmojiReactionPopover.tsx:168
-#: src/components/EmojiReactionPopover.tsx:237
-#: src/components/EmojiReactionPopover.tsx:246
+#: src/components/PostActionMenu.tsx:188
+#: src/components/PostActionMenu.tsx:195
+msgid "Failed to pin post"
+msgstr "Failed to pin post"
+
+#: src/components/EmojiReactionPopover.tsx:163
+#: src/components/EmojiReactionPopover.tsx:172
+#: src/components/EmojiReactionPopover.tsx:254
+#: src/components/EmojiReactionPopover.tsx:263
 msgid "Failed to react"
 msgstr "Failed to react"
 
@@ -715,6 +720,11 @@ msgstr "Failed to sign out: {0}"
 #: src/components/FollowButton.tsx:131
 msgid "Failed to unfollow"
 msgstr "Failed to unfollow"
+
+#: src/components/PostActionMenu.tsx:164
+#: src/components/PostActionMenu.tsx:171
+msgid "Failed to unpin post"
+msgstr "Failed to unpin post"
 
 #: src/components/PostControls.tsx:139
 msgid "Failed to unshare post"
@@ -999,7 +1009,7 @@ msgstr "Load more notifications"
 msgid "Load more passkeys"
 msgstr "Load more passkeys"
 
-#: src/components/ActorPostList.tsx:79
+#: src/components/ActorPostList.tsx:84
 #: src/components/ActorSharedPostList.tsx:84
 #: src/components/PersonalTimeline.tsx:101
 #: src/components/PublicTimeline.tsx:103
@@ -1043,7 +1053,7 @@ msgstr "Loading more notifications"
 msgid "Loading more passkeys…"
 msgstr "Loading more passkeys…"
 
-#: src/components/ActorPostList.tsx:73
+#: src/components/ActorPostList.tsx:78
 #: src/components/ActorSharedPostList.tsx:78
 #: src/components/PersonalTimeline.tsx:95
 #: src/components/PublicTimeline.tsx:97
@@ -1166,7 +1176,7 @@ msgstr "No notes articles"
 msgid "No notes found"
 msgstr "No notes found"
 
-#: src/components/ActorPostList.tsx:86
+#: src/components/ActorPostList.tsx:91
 #: src/components/ActorSharedPostList.tsx:91
 #: src/components/PersonalTimeline.tsx:108
 #: src/components/PublicTimeline.tsx:110
@@ -1271,6 +1281,14 @@ msgstr "Passkeys"
 msgid "Permission Denied"
 msgstr "Permission Denied"
 
+#: src/components/PostActionMenu.tsx:260
+msgid "Pin to profile"
+msgstr "Pin to profile"
+
+#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+msgid "Pinned posts"
+msgstr "Pinned posts"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:209
 msgid "Please choose an image file smaller than 5 MiB."
 msgstr "Please choose an image file smaller than 5 MiB."
@@ -1295,9 +1313,17 @@ msgstr "Please enter your Fediverse handle."
 msgid "Please sign in to access this page"
 msgstr "Please sign in to access this page"
 
-#: src/components/PostActionMenu.tsx:84
+#: src/components/PostActionMenu.tsx:214
 msgid "Post deleted"
 msgstr "Post deleted"
+
+#: src/components/PostActionMenu.tsx:185
+msgid "Post pinned"
+msgstr "Post pinned"
+
+#: src/components/PostActionMenu.tsx:161
+msgid "Post unpinned"
+msgstr "Post unpinned"
 
 #: src/components/ProfileTabs.tsx:38
 msgid "Posts"
@@ -1368,26 +1394,26 @@ msgid "Quiet public"
 msgstr "Quiet public"
 
 #: src/components/NoteComposeModal.tsx:26
-#: src/components/PostControls.tsx:198
+#: src/components/PostControls.tsx:218
 #: src/components/ui/markdown-editor.tsx:289
 msgid "Quote"
 msgstr "Quote"
 
-#: src/components/PostControls.tsx:236
+#: src/components/PostControls.tsx:256
 msgid "React"
 msgstr "React"
 
-#: src/components/EmojiReactionPopover.tsx:338
+#: src/components/EmojiReactionPopover.tsx:357
 msgid "React with {emoji}"
 msgstr "React with {emoji}"
 
-#: src/components/EmojiReactionPopover.tsx:291
-#: src/components/EmojiReactionPopover.tsx:294
+#: src/components/EmojiReactionPopover.tsx:310
+#: src/components/EmojiReactionPopover.tsx:313
 msgid "reaction"
 msgstr "reaction"
 
-#: src/components/ArticleCard.tsx:353
-#: src/components/ArticleCard.tsx:373
+#: src/components/ArticleCard.tsx:358
+#: src/components/ArticleCard.tsx:378
 msgid "Read full article"
 msgstr "Read full article"
 
@@ -1430,7 +1456,7 @@ msgid "Remove"
 msgstr "Remove"
 
 #. placeholder {0}: group.emoji || group.customEmoji?.name || t`reaction`
-#: src/components/EmojiReactionPopover.tsx:290
+#: src/components/EmojiReactionPopover.tsx:309
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
@@ -1443,7 +1469,7 @@ msgstr "Remove bookmark"
 msgid "Remove quote"
 msgstr "Remove quote"
 
-#: src/components/PostControls.tsx:187
+#: src/components/PostControls.tsx:207
 msgid "Reply"
 msgstr "Reply"
 
@@ -1524,7 +1550,7 @@ msgstr "Set your personal preferences."
 msgid "Settings"
 msgstr "Settings"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostControls.tsx:236
 msgid "Share"
 msgstr "Share"
 
@@ -1607,8 +1633,8 @@ msgstr "Successfully saved preferences"
 msgid "Successfully saved settings"
 msgstr "Successfully saved settings"
 
-#: src/components/ArticleCard.tsx:306
-#: src/components/ArticleCard.tsx:325
+#: src/components/ArticleCard.tsx:311
+#: src/components/ArticleCard.tsx:330
 msgid "Summarized by LLM"
 msgstr "Summarized by LLM"
 
@@ -1696,7 +1722,7 @@ msgstr "The source code of this website is available on {0} under the {1} licens
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "The URL of the link, e.g., https://github.com/yourhandle."
 
-#: src/components/PostActionMenu.tsx:133
+#: src/components/PostActionMenu.tsx:280
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "This action cannot be undone. This will permanently delete this post."
 
@@ -1756,7 +1782,7 @@ msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:189
+#: src/components/ArticleCard.tsx:194
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:403
 msgid "Translated from {0}"
 msgstr "Translated from {0}"
@@ -1770,13 +1796,13 @@ msgstr "Translating..."
 msgid "Type tags separated by spaces"
 msgstr "Type tags separated by spaces"
 
-#: src/components/EmojiReactionPopover.tsx:238
-#: src/components/EmojiReactionPopover.tsx:247
+#: src/components/EmojiReactionPopover.tsx:255
+#: src/components/EmojiReactionPopover.tsx:264
 msgid "Unable to add reaction. Please try again."
 msgstr "Unable to add reaction. Please try again."
 
-#: src/components/EmojiReactionPopover.tsx:160
-#: src/components/EmojiReactionPopover.tsx:169
+#: src/components/EmojiReactionPopover.tsx:164
+#: src/components/EmojiReactionPopover.tsx:173
 msgid "Unable to remove reaction. Please try again."
 msgstr "Unable to remove reaction. Please try again."
 
@@ -1784,7 +1810,11 @@ msgstr "Unable to remove reaction. Please try again."
 msgid "Unfollow"
 msgstr "Unfollow"
 
-#: src/components/PostControls.tsx:216
+#: src/components/PostActionMenu.tsx:261
+msgid "Unpin from profile"
+msgstr "Unpin from profile"
+
+#: src/components/PostControls.tsx:236
 msgid "Unshare"
 msgstr "Unshare"
 
