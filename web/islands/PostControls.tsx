@@ -4,7 +4,7 @@ import {
   type ReactionEmoji,
 } from "@hackerspub/models/emoji";
 import type { Account, Actor, Post, Reaction } from "@hackerspub/models/schema";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { Msg, TranslationSetup } from "../components/Msg.tsx";
 import type { Language } from "../i18n.ts";
 import getFixedT from "../i18n.ts";
@@ -37,6 +37,7 @@ export function PostControls(props: PostControlsProps) {
   const [pinned, setPinned] = useState(false);
   const [pinSubmitting, setPinSubmitting] = useState(false);
   const [pinFocused, setPinFocused] = useState(false);
+  const pinStateFetchController = useRef<AbortController | null>(null);
   const [deleted, setDeleted] = useState<null | "deleting" | "deleted">(null);
   const nonPrivate = post.visibility === "public" ||
     post.visibility === "unlisted";
@@ -51,11 +52,31 @@ export function PostControls(props: PostControlsProps) {
 
   useEffect(() => {
     if (!pinnable) return;
-    fetch(`${localPostUrl}/pin`)
+    const controller = new AbortController();
+    pinStateFetchController.current = controller;
+    fetch(`${localPostUrl}/pin`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
-        if (typeof data?.pinned === "boolean") setPinned(data.pinned);
+        if (!controller.signal.aborted && typeof data?.pinned === "boolean") {
+          setPinned(data.pinned);
+        }
+      })
+      .catch((error) => {
+        if (!(error instanceof DOMException) || error.name !== "AbortError") {
+          console.error(error);
+        }
+      })
+      .finally(() => {
+        if (pinStateFetchController.current === controller) {
+          pinStateFetchController.current = null;
+        }
       });
+    return () => {
+      controller.abort();
+      if (pinStateFetchController.current === controller) {
+        pinStateFetchController.current = null;
+      }
+    };
   }, [localPostUrl, pinnable]);
 
   let anyReacted = false;
@@ -147,12 +168,14 @@ export function PostControls(props: PostControlsProps) {
     event.preventDefault();
     if (!pinnable) return;
     if (event.currentTarget instanceof HTMLFormElement) {
+      pinStateFetchController.current?.abort();
+      pinStateFetchController.current = null;
       setPinSubmitting(true);
       const form = event.currentTarget;
       fetch(form.action, { method: form.method })
         .then((response) => {
           if (response.status >= 200 && response.status < 400) {
-            setPinned(!pinned);
+            setPinned((previous) => !previous);
           }
         })
         .finally(() => setPinSubmitting(false));
