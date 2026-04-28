@@ -487,6 +487,7 @@ const pinConnectionHelpers = drizzleConnectionHelpers(
   "pinTable",
   {
     query: (_args, ctx) => ({
+      orderBy: { created: "desc" },
       where: {
         post: getPostVisibilityFilter(ctx.account?.actor ?? null),
       },
