@@ -1,10 +1,4 @@
-import {
-  Navigate,
-  query,
-  type RouteDefinition,
-  useLocation,
-  useParams,
-} from "@solidjs/router";
+import { query, type RouteDefinition, useParams } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, For, Match, Show, Switch } from "solid-js";
 import {
@@ -16,6 +10,7 @@ import {
 } from "solid-relay";
 import { LocaleSelect } from "~/components/LocaleSelect.tsx";
 import { NarrowContainer } from "~/components/NarrowContainer.tsx";
+import { SettingsOwnerGuard } from "~/components/SettingsOwnerGuard.tsx";
 import { SettingsTabs } from "~/components/SettingsTabs.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { Title } from "~/components/Title.tsx";
@@ -205,7 +200,6 @@ const EXPIRATION_OPTIONS: {
 
 export default function InvitePage() {
   const params = useParams();
-  const location = useLocation();
   const { t, i18n } = useLingui();
 
   const data = createPreloadedQuery<invitePageQuery>(
@@ -278,25 +272,10 @@ export default function InvitePage() {
   return (
     <Show when={data()}>
       {(data) => (
-        <>
-          <Show
-            when={data().viewer}
-            fallback={
-              <Navigate
-                href={`/sign?next=${encodeURIComponent(location.pathname)}`}
-              />
-            }
-          >
-            {(viewer) => (
-              <Show when={data().accountByUsername}>
-                {(account) => (
-                  <Show when={viewer().id !== account().id}>
-                    <Navigate href="/" />
-                  </Show>
-                )}
-              </Show>
-            )}
-          </Show>
+        <SettingsOwnerGuard
+          accountId={data().accountByUsername?.id}
+          viewerId={data().viewer?.id}
+        >
           <Show when={data().accountByUsername}>
             {(account) => (
               <>
@@ -462,7 +441,7 @@ export default function InvitePage() {
               </>
             )}
           </Show>
-        </>
+        </SettingsOwnerGuard>
       )}
     </Show>
   );

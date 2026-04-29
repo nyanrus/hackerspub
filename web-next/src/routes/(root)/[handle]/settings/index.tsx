@@ -1,10 +1,4 @@
-import {
-  Navigate,
-  query,
-  type RouteDefinition,
-  useLocation,
-  useParams,
-} from "@solidjs/router";
+import { query, type RouteDefinition, useParams } from "@solidjs/router";
 import { createDropzone } from "@soorria/solid-dropzone";
 import type {
   CropperCanvas,
@@ -23,17 +17,9 @@ import {
   useRelayEnvironment,
 } from "solid-relay";
 import { Timestamp } from "~/components/Timestamp.tsx";
-import { Title } from "~/components/Title.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
 import { Button } from "~/components/ui/button.tsx";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card.tsx";
 import {
   Dialog,
   DialogContent,
@@ -52,9 +38,9 @@ import {
 } from "~/components/ui/text-field.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import { NarrowContainer } from "~/components/NarrowContainer.tsx";
-import { SettingsTabs } from "../../../../components/SettingsTabs.tsx";
-import { settingsForm_account$key } from "./__generated__/settingsForm_account.graphql.ts";
+import { SettingsCardPage } from "~/components/SettingsCardPage.tsx";
+import { SettingsOwnerGuard } from "~/components/SettingsOwnerGuard.tsx";
+import type { settingsForm_account$key } from "./__generated__/settingsForm_account.graphql.ts";
 import type { settingsMutation } from "./__generated__/settingsMutation.graphql.ts";
 import type { settingsPageQuery } from "./__generated__/settingsPageQuery.graphql.ts";
 
@@ -110,7 +96,6 @@ const settingsMutation = graphql`
 
 export default function SettingsPage() {
   const params = useParams();
-  const location = useLocation();
   const { t } = useLingui();
   const data = createPreloadedQuery<settingsPageQuery>(
     settingsPageQuery,
@@ -119,47 +104,24 @@ export default function SettingsPage() {
   return (
     <Show when={data()}>
       {(data) => (
-        <>
-          <Show
-            when={data().viewer}
-            fallback={
-              <Navigate
-                href={`/sign?next=${encodeURIComponent(location.pathname)}`}
-              />
-            }
-          >
-            {(viewer) => (
-              <Show when={data().accountByUsername}>
-                {(account) => (
-                  <Show when={viewer().id !== account().id}>
-                    <Navigate href="/" />
-                  </Show>
-                )}
-              </Show>
-            )}
-          </Show>
+        <SettingsOwnerGuard
+          accountId={data().accountByUsername?.id}
+          viewerId={data().viewer?.id}
+        >
           <Show when={data().accountByUsername}>
             {(account) => (
-              <>
-                <Title>{t`Profile settings`}</Title>
-                <NarrowContainer class="p-4">
-                  <SettingsTabs selected="profile" $account={account()} />
-                  <Card class="mt-4">
-                    <CardHeader>
-                      <CardTitle>{t`Profile settings`}</CardTitle>
-                      <CardDescription>
-                        {t`Update your profile information, including your avatar, username, display name, bio, and links.`}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <SettingsForm $account={account()} />
-                    </CardContent>
-                  </Card>
-                </NarrowContainer>
-              </>
+              <SettingsCardPage
+                selected="profile"
+                title={t`Profile settings`}
+                cardTitle={t`Profile settings`}
+                description={t`Update your profile information, including your avatar, username, display name, bio, and links.`}
+                $account={account()}
+              >
+                <SettingsForm $account={account()} />
+              </SettingsCardPage>
             )}
           </Show>
-        </>
+        </SettingsOwnerGuard>
       )}
     </Show>
   );

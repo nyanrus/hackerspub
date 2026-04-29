@@ -1,10 +1,4 @@
-import {
-  Navigate,
-  query,
-  type RouteDefinition,
-  useLocation,
-  useParams,
-} from "@solidjs/router";
+import { query, type RouteDefinition, useParams } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, Show } from "solid-js";
 import {
@@ -16,17 +10,9 @@ import {
 } from "solid-relay";
 import { LanguageList } from "~/components/LanguageList.tsx";
 import { LanguageSelect } from "~/components/LanguageSelect.tsx";
-import { NarrowContainer } from "~/components/NarrowContainer.tsx";
-import { SettingsTabs } from "~/components/SettingsTabs.tsx";
-import { Title } from "~/components/Title.tsx";
+import { SettingsCardPage } from "~/components/SettingsCardPage.tsx";
+import { SettingsOwnerGuard } from "~/components/SettingsOwnerGuard.tsx";
 import { Button } from "~/components/ui/button.tsx";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { languageMutation } from "./__generated__/languageMutation.graphql.ts";
@@ -68,7 +54,6 @@ const loadLanguagePageQuery = query(
 
 export default function LanguagePage() {
   const params = useParams();
-  const location = useLocation();
   const { t } = useLingui();
   const data = createPreloadedQuery<languagePageQuery>(
     languagePageQuery,
@@ -78,50 +63,24 @@ export default function LanguagePage() {
   return (
     <Show when={data()}>
       {(data) => (
-        <>
-          <Show
-            when={data().viewer}
-            fallback={
-              <Navigate
-                href={`/sign?next=${encodeURIComponent(location.pathname)}`}
-              />
-            }
-          >
-            {(viewer) => (
-              <Show when={data().accountByUsername}>
-                {(account) => (
-                  <Show when={viewer().id !== account().id}>
-                    <Navigate href="/" />
-                  </Show>
-                )}
-              </Show>
-            )}
-          </Show>
+        <SettingsOwnerGuard
+          accountId={data().accountByUsername?.id}
+          viewerId={data().viewer?.id}
+        >
           <Show when={data().accountByUsername}>
             {(account) => (
-              <>
-                <Title>{t`Language settings`}</Title>
-                <NarrowContainer class="p-4">
-                  <SettingsTabs
-                    selected="language"
-                    $account={account()}
-                  />
-                  <Card class="mt-4">
-                    <CardHeader>
-                      <CardTitle>{t`Preferred languages`}</CardTitle>
-                      <CardDescription>
-                        {t`Select your preferred languages in order of preference. This will help tailor content to your preferences.`}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <PreferredLanguagesForm $locales={account()} />
-                    </CardContent>
-                  </Card>
-                </NarrowContainer>
-              </>
+              <SettingsCardPage
+                selected="language"
+                title={t`Language settings`}
+                cardTitle={t`Preferred languages`}
+                description={t`Select your preferred languages in order of preference. This will help tailor content to your preferences.`}
+                $account={account()}
+              >
+                <PreferredLanguagesForm $locales={account()} />
+              </SettingsCardPage>
             )}
           </Show>
-        </>
+        </SettingsOwnerGuard>
       )}
     </Show>
   );
