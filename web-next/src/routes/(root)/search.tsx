@@ -3,13 +3,14 @@ import {
   HANDLE_REGEXP,
 } from "@hackerspub/models/searchPatterns";
 import {
+  Navigate,
   query,
   type RouteDefinition,
   useNavigate,
   useSearchParams,
 } from "@solidjs/router";
 import { graphql } from "relay-runtime";
-import { type Accessor, createEffect, Show } from "solid-js";
+import { type Accessor, Show } from "solid-js";
 import {
   createPreloadedQuery,
   loadQuery,
@@ -217,18 +218,10 @@ function SearchObjectContent(
   },
 ) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const data = createPreloadedQuery<searchObjectPageQuery>(
     searchObjectPageQuery,
     () => loadSearchObjectQuery(props.searchQuery()),
   );
-
-  createEffect(() => {
-    const searchResult = data()?.searchObject;
-    if (searchResult != null && "url" in searchResult && searchResult.url) {
-      navigate(searchResult.url);
-    }
-  });
 
   return (
     <Show when={data()}>
@@ -236,6 +229,9 @@ function SearchObjectContent(
         const searchResult = data()?.searchObject;
         if (searchResult == null) {
           return <SearchPostsContent searchQuery={props.searchQuery} />;
+        }
+        if ("url" in searchResult && searchResult.url) {
+          return <Navigate href={searchResult.url} />;
         }
         if (searchResult?.__typename === "EmptySearchQueryError") {
           return (
