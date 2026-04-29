@@ -402,7 +402,7 @@ msgstr "이 URL에서 콘텐츠를 찾을 수 없습니다"
 
 #: src/components/QuestionCard.tsx:251
 msgid "Could not vote on this poll"
-msgstr "이 앙케트 조사에 투표할 수 없습니다"
+msgstr "이 투표에 참여할 수 없습니다"
 
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
@@ -1357,7 +1357,7 @@ msgstr "투표하려면 로그인하세요"
 
 #: src/components/QuestionCard.tsx:220
 msgid "Poll closed"
-msgstr "앙케트 조사가 마감되었습니다"
+msgstr "투표가 마감되었습니다"
 
 #: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"

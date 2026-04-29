@@ -548,7 +548,7 @@ msgstr "終了"
 
 #: src/components/QuestionCard.tsx:290
 msgid "Ends"
-msgstr "終了"
+msgstr "終了予定"
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."

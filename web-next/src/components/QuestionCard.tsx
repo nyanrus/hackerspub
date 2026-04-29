@@ -1,5 +1,12 @@
 import { graphql } from "relay-runtime";
-import { createEffect, createSignal, For, onCleanup, Show } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  Show,
+} from "solid-js";
 import { createFragment, createMutation } from "solid-relay";
 import { Badge } from "~/components/ui/badge.tsx";
 import { Button } from "~/components/ui/button.tsx";
@@ -253,13 +260,19 @@ function QuestionCardContent(props: QuestionCardContentProps) {
     const [now, setNow] = createSignal(Date.now());
     const endsAt = () => new Date(props.poll.ends).getTime();
     const isClosed = () => props.poll.closed || endsAt() <= now();
-    const totalVotes = () =>
+    const totalVotes = createMemo(() =>
       props.poll.options.reduce(
         (sum, option) => sum + Math.max(option.votes.totalCount, 0),
         0,
-      );
-    const percent = (count: number) =>
-      totalVotes() < 1 ? 0 : Math.round((count / totalVotes()) * 100);
+      )
+    );
+    const percent = (count: number) => {
+      const denominator = props.poll.multiple &&
+          props.poll.voters.totalCount > 0
+        ? props.poll.voters.totalCount
+        : totalVotes();
+      return denominator < 1 ? 0 : Math.round((count / denominator) * 100);
+    };
     const canVote = () =>
       viewer.isAuthenticated() && !isClosed() &&
       !props.poll.viewerHasVoted && !isVoting();
