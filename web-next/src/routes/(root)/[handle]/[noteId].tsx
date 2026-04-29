@@ -242,16 +242,12 @@ function NoteInternal(props: NoteInternalProps) {
         url
         ...NoteCard_note
         replyTarget {
-          ... on Note {
-            ...NoteCard_note
-          }
+          ...PostCard_post
         }
         replies {
           edges {
             node {
-              ... on Note {
-                ...NoteCard_note
-              }
+              ...PostCard_post
             }
           }
         }
@@ -267,7 +263,7 @@ function NoteInternal(props: NoteInternalProps) {
             <Show when={note().replyTarget}>
               {(parent) => (
                 <div class="border-x border-t rounded-t-xl">
-                  <NoteCard $note={parent()} />
+                  <PostCard $post={parent()} />
                 </div>
               )}
             </Show>
@@ -293,7 +289,7 @@ function NoteInternal(props: NoteInternalProps) {
                 <For each={note().replies?.edges}>
                   {(edge) => (
                     <Show when={edge.node}>
-                      {(reply) => <NoteCard $note={reply()} />}
+                      {(reply) => <PostCard $post={reply()} />}
                     </Show>
                   )}
                 </For>
