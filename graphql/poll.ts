@@ -311,6 +311,9 @@ builder.relayMutationField(
       }
 
       const votes = await ctx.db.query.pollVoteTable.findMany({
+        with: {
+          option: true,
+        },
         where: {
           postId: question.id,
           actorId: ctx.account.actor.id,
