@@ -240,7 +240,7 @@ function SearchObjectContent(
             </div>
           );
         }
-        return null;
+        return <div>{t`No matching object found`}</div>;
       }}
     </Show>
   );
