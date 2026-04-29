@@ -21,19 +21,22 @@ import { QuestionCard } from "~/components/QuestionCard.tsx";
 import { Title } from "~/components/Title.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import type { NoteIdPageQuery } from "./__generated__/NoteIdPageQuery.graphql.ts";
+import type {
+  NoteIdPageQuery,
+  NoteIdPageQuery$data,
+} from "./__generated__/NoteIdPageQuery.graphql.ts";
 import type { NoteId_head$key } from "./__generated__/NoteId_head.graphql.ts";
 import type { NoteId_noteBody$key } from "./__generated__/NoteId_noteBody.graphql.ts";
 import type { NoteId_questionBody$key } from "./__generated__/NoteId_questionBody.graphql.ts";
-import type {
-  NoteIdQuestionPageQuery,
-  NoteIdQuestionPageQuery$data,
-} from "./__generated__/NoteIdQuestionPageQuery.graphql.ts";
 
-type NoteIdPageQuestion = Extract<
+type NoteIdPagePost = NonNullable<
   NonNullable<
-    NonNullable<NoteIdQuestionPageQuery$data["actorByHandle"]>["postByUuid"]
-  >,
+    NoteIdPageQuery$data["actorByHandle"]
+  >["postByUuid"]
+>;
+type NoteIdPageNote = Extract<NoteIdPagePost, { readonly __typename: "Note" }>;
+type NoteIdPageQuestion = Extract<
+  NoteIdPagePost,
   { readonly __typename: "Question" }
 >;
 
@@ -49,31 +52,19 @@ export const route = {
     }
 
     void loadNotePageQuery(username.replace(/^@/, ""), noteId);
-    void loadQuestionPageQuery(username.replace(/^@/, ""), noteId);
   },
 } satisfies RouteDefinition;
 
 const NoteIdPageQuery = graphql`
   query NoteIdPageQuery($handle: String!, $noteId: UUID!) {
     actorByHandle(handle: $handle, allowLocalHandle: true) {
-      noteByUuid(uuid: $noteId) {
-        ...NoteId_head
-        ...NoteId_noteBody
-      }
-    }
-    viewer {
-      id
-    }
-  }
-`;
-
-const NoteIdQuestionPageQuery = graphql`
-  query NoteIdQuestionPageQuery($handle: String!, $noteId: UUID!) {
-    actorByHandle(handle: $handle, allowLocalHandle: true) {
       postByUuid(uuid: $noteId) {
         __typename
+        ...NoteId_head
+        ... on Note {
+          ...NoteId_noteBody
+        }
         ... on Question {
-          ...NoteId_head
           ...NoteId_questionBody
         }
       }
@@ -94,16 +85,6 @@ const loadNotePageQuery = query(
   "loadNotePageQuery",
 );
 
-const loadQuestionPageQuery = query(
-  (username: string, noteId: Uuid) =>
-    loadQuery<NoteIdQuestionPageQuery>(
-      useRelayEnvironment()(),
-      NoteIdQuestionPageQuery,
-      { handle: username, noteId },
-    ),
-  "loadQuestionPageQuery",
-);
-
 export default function NotePage() {
   const params = useParams();
   const noteId = params.noteId!;
@@ -117,21 +98,24 @@ export default function NotePage() {
     NoteIdPageQuery,
     () => loadNotePageQuery(username, noteId),
   );
-  const questionData = createPreloadedQuery<NoteIdQuestionPageQuery>(
-    NoteIdQuestionPageQuery,
-    () => loadQuestionPageQuery(username, noteId),
-  );
 
-  const note = () => noteData()?.actorByHandle?.noteByUuid;
-  const question = (): NoteIdPageQuestion | null => {
-    const post = questionData()?.actorByHandle?.postByUuid;
-    return post?.__typename === "Question" ? post as NoteIdPageQuestion : null;
+  const post = () => noteData()?.actorByHandle?.postByUuid;
+  const note = (): NoteIdPageNote | null => {
+    const currentPost = post();
+    return currentPost?.__typename === "Note"
+      ? currentPost as NoteIdPageNote
+      : null;
   };
-  const viewer = () =>
-    noteData()?.viewer ?? questionData()?.viewer ?? undefined;
+  const question = (): NoteIdPageQuestion | null => {
+    const currentPost = post();
+    return currentPost?.__typename === "Question"
+      ? currentPost as NoteIdPageQuestion
+      : null;
+  };
+  const viewer = () => noteData()?.viewer ?? undefined;
 
   return (
-    <Show when={noteData() != null && questionData() != null}>
+    <Show when={noteData() != null}>
       <Switch fallback={<HttpStatusCode code={404} />}>
         <Match when={note()}>
           {(note) => (
