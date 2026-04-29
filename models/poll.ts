@@ -4,7 +4,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { getPersistedActor, persistActor, toRecipient } from "./actor.ts";
 import type { ContextData } from "./context.ts";
 import { toDate } from "./date.ts";
-import type { Database } from "./db.ts";
+import type { Database, Transaction } from "./db.ts";
 import { getPersistedPost, persistPost } from "./post.ts";
 import {
   type Account,
@@ -149,17 +149,27 @@ export async function vote(
   optionIndices: Set<number>,
 ): Promise<PollVote[]> {
   const { db } = fedCtx.data;
-  const { post, votes } = await db.transaction(async (tx) => {
+  const voteInTransaction = async (tx: Transaction) => {
     if (
-      poll.ends < new Date() || optionIndices.size < 1 ||
+      optionIndices.size < 1 ||
       !poll.multiple && optionIndices.size > 1
     ) {
-      return { post: undefined, votes: [] };
+      return { post: undefined, votes: [], federate: false };
     }
 
-    await tx.execute(
-      sql`select 1 from ${pollTable} where ${pollTable.postId} = ${poll.postId} for update`,
-    );
+    const [lockedPoll] = await tx
+      .select({ postId: pollTable.postId })
+      .from(pollTable)
+      .where(
+        and(
+          eq(pollTable.postId, poll.postId),
+          sql`${pollTable.ends} > now()`,
+        ),
+      )
+      .for("update");
+    if (lockedPoll == null) {
+      return { post: undefined, votes: [], federate: false };
+    }
 
     const post = await tx.query.postTable.findFirst({
       where: { id: poll.postId },
@@ -167,17 +177,21 @@ export async function vote(
         actor: true,
       },
     });
-    if (post?.type !== "Question") return { post, votes: [] };
+    if (post?.type !== "Question") {
+      return { post, votes: [], federate: false };
+    }
 
     const alreadyVoted = await tx.query.pollVoteTable.findMany({
       where: { postId: poll.postId, actorId: voter.actor.id },
     });
-    if (alreadyVoted.length > 0) return { post, votes: alreadyVoted };
+    if (alreadyVoted.length > 0) {
+      return { post, votes: alreadyVoted, federate: false };
+    }
 
     const indices = [...optionIndices].filter((index) =>
       poll.options.find((o) => o.index === index) != null
     );
-    if (indices.length < 1) return { post, votes: [] };
+    if (indices.length < 1) return { post, votes: [], federate: false };
 
     const votes = await tx.insert(pollVoteTable)
       .values(indices.map((index) => ({
@@ -198,10 +212,14 @@ export async function vote(
         ),
       );
 
-    return { post, votes };
-  });
+    return { post, votes, federate: true };
+  };
 
-  if (post != null && post.actor.accountId == null) {
+  const { post, votes, federate } = isTransaction(db)
+    ? await voteInTransaction(db)
+    : await db.transaction(voteInTransaction);
+
+  if (federate && post != null && post.actor.accountId == null) {
     for (const vote of votes) {
       const name = poll.options.find((o) => o.index === vote.optionIndex)
         ?.title;
@@ -231,4 +249,8 @@ export async function vote(
     }
   }
   return votes;
+}
+
+function isTransaction(db: Database): db is Transaction {
+  return "rollback" in db;
 }
