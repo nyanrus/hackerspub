@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "@solidjs/router";
-import { Match, type ParentComponent, Show, Switch } from "solid-js";
+import { Match, type ParentComponent, Switch } from "solid-js";
 
 export interface SettingsOwnerGuardProps {
   accountId?: string | null;
@@ -24,9 +24,7 @@ export const SettingsOwnerGuard: ParentComponent<SettingsOwnerGuardProps> = (
         <Navigate href="/" />
       </Match>
       <Match when={props.accountId != null}>
-        <Show when={props.children}>
-          {(children) => children()}
-        </Show>
+        {props.children}
       </Match>
     </Switch>
   );
