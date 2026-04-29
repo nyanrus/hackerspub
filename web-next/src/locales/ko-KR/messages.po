@@ -348,7 +348,7 @@ msgstr "인증 이메일의 언어를 선택해 주세요."
 
 #: src/components/QuestionCard.tsx:287
 msgid "Closed"
-msgstr "마감"
+msgstr "닫힘"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -544,11 +544,11 @@ msgstr "이메일 또는 아이디"
 
 #: src/components/QuestionCard.tsx:290
 msgid "Ended"
-msgstr "마감"
+msgstr "종료됨"
 
 #: src/components/QuestionCard.tsx:290
 msgid "Ends"
-msgstr "마감"
+msgstr "종료까지"
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."

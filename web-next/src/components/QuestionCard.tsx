@@ -267,10 +267,7 @@ function QuestionCardContent(props: QuestionCardContentProps) {
       )
     );
     const percent = (count: number) => {
-      const denominator = props.poll.multiple &&
-          props.poll.voters.totalCount > 0
-        ? props.poll.voters.totalCount
-        : totalVotes();
+      const denominator = totalVotes();
       return denominator < 1 ? 0 : Math.round((count / denominator) * 100);
     };
     const canVote = () =>
