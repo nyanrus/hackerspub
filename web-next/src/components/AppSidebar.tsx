@@ -105,9 +105,6 @@ export function AppSidebar(props: AppSidebarProps) {
     if (sessionId != null) {
       signOut({
         variables: { sessionId },
-        updater(store) {
-          store.getRoot().setLinkedRecord(null, "viewer");
-        },
         onCompleted() {
           location.replace("/local");
         },
