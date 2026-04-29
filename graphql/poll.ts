@@ -1,5 +1,9 @@
 import { vote } from "@hackerspub/models/poll";
-import { isPostVisibleTo } from "@hackerspub/models/post";
+import {
+  isPostObject,
+  isPostVisibleTo,
+  persistPost,
+} from "@hackerspub/models/post";
 import { pollVoteTable } from "@hackerspub/models/schema";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { eq } from "drizzle-orm";
@@ -182,6 +186,65 @@ const actorConnectionHelpers = drizzleConnectionHelpers(
   "actorTable",
   {},
 );
+
+builder.drizzleObjectField(Question, "poll", (t) =>
+  t.field({
+    type: Poll,
+    nullable: true,
+    select: (_, __, nestedSelect) => ({
+      columns: {
+        id: true,
+        iri: true,
+        sharedPostId: true,
+      },
+      with: {
+        poll: nestedSelect(),
+      },
+    }),
+    async resolve(question, _, ctx) {
+      if (question.poll != null) return question.poll;
+      if (question.sharedPostId != null) return null;
+
+      const documentLoader = ctx.account == null
+        ? undefined
+        : await ctx.fedCtx.getDocumentLoader({
+          identifier: ctx.account.id,
+        });
+      const postObject = await ctx.fedCtx.lookupObject(question.iri, {
+        documentLoader,
+      });
+      if (!isPostObject(postObject)) return null;
+
+      await persistPost(ctx.fedCtx, postObject, { documentLoader });
+      const reloaded = await ctx.db.query.postTable.findFirst({
+        where: {
+          id: question.id,
+          type: "Question",
+        },
+        with: {
+          poll: {
+            extras: {
+              votesCount: (table) =>
+                ctx.db.$count(
+                  pollVoteTable,
+                  eq(pollVoteTable.postId, table.postId),
+                ),
+            },
+            with: {
+              options: {
+                with: {
+                  votes: true,
+                },
+              },
+              votes: true,
+              voters: true,
+            },
+          },
+        },
+      });
+      return reloaded?.poll ?? null;
+    },
+  }));
 
 builder.relayMutationField(
   "voteOnPoll",

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import * as vocab from "@fedify/vocab";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
 import {
@@ -12,7 +13,9 @@ import {
 import { generateUuidV7 } from "@hackerspub/models/uuid";
 import { schema } from "./mod.ts";
 import {
+  createFedCtx,
   insertAccountWithActor,
+  insertRemoteActor,
   makeGuestContext,
   makeUserContext,
   toPlainJson,
@@ -428,6 +431,102 @@ test("shared Question wrappers can resolve the original poll", async () => {
         },
       },
     });
+  });
+});
+
+test("Question.poll backfills missing remote poll rows", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertRemoteActor(tx, {
+      username: "backfillpollauthor",
+      name: "Backfill Poll Author",
+      host: "remote.example",
+      iri: "https://remote.example/users/backfillpollauthor",
+    });
+    const questionId = generateUuidV7();
+    const questionIri = `https://remote.example/objects/${questionId}`;
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values(
+      {
+        id: questionId,
+        iri: questionIri,
+        type: "Question",
+        visibility: "public",
+        actorId: author.id,
+        name: "Backfill poll?",
+        contentHtml: "<p>Backfill poll?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: questionIri,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const fedCtx = createFedCtx(tx);
+    let lookupCount = 0;
+    fedCtx.lookupObject = (url: string | URL) => {
+      assert.equal(url.toString(), questionIri);
+      lookupCount++;
+      return Promise.resolve(
+        new vocab.Question({
+          id: new URL(questionIri),
+          attribution: new URL(author.iri),
+          to: vocab.PUBLIC_COLLECTION,
+          content: "<p>Backfill poll?</p>",
+          endTime: Temporal.Instant.from(pollEndsInFuture().toISOString()),
+          inclusiveOptions: [
+            new vocab.Note({ name: "TypeScript" }),
+            new vocab.Note({ name: "Rust" }),
+          ],
+          voters: 3,
+        }),
+      );
+    };
+
+    const result = await execute({
+      schema,
+      document: questionPollQuery,
+      variableValues: { id: encodeGlobalID("Question", questionId) },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    const poll = (toPlainJson(result.data) as {
+      node: {
+        poll: {
+          multiple: boolean;
+          voters: { totalCount: number };
+          options: Array<{ index: number; title: string }>;
+        } | null;
+      } | null;
+    }).node?.poll;
+
+    assert.equal(lookupCount, 1);
+    assert.ok(poll != null);
+    assert.equal(poll.multiple, true);
+    assert.equal(poll.voters.totalCount, 3);
+    assert.deepEqual(
+      poll.options.map((option) => ({
+        index: option.index,
+        title: option.title,
+      })),
+      [
+        { index: 0, title: "TypeScript" },
+        { index: 1, title: "Rust" },
+      ],
+    );
+
+    const storedOptions = await tx.query.pollOptionTable.findMany({
+      where: { postId: questionId },
+      orderBy: { index: "asc" },
+    });
+    assert.deepEqual(
+      storedOptions.map((option) => option.title),
+      ["TypeScript", "Rust"],
+    );
   });
 });
 
