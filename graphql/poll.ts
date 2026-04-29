@@ -114,11 +114,17 @@ const Poll = builder.drizzleNode("pollTable", {
     options: t.field({
       type: [PollOption],
       complexity: pollBranchComplexity,
-      select: (_, __, nestedSelect) => ({
-        with: {
-          options: nestedSelect(),
-        },
-      }),
+      select: (_, __, nestedSelect) => {
+        const selection = nestedSelect();
+        return {
+          with: {
+            options: {
+              ...(typeof selection === "object" ? selection : {}),
+              orderBy: (table, { asc }) => [asc(table.index)],
+            },
+          },
+        };
+      },
       resolve(poll) {
         return poll.options.toSorted((a, b) => a.index - b.index);
       },
@@ -318,6 +324,7 @@ builder.drizzleObjectField(Question, "poll", (t) =>
             },
             with: {
               options: {
+                orderBy: (table, { asc }) => [asc(table.index)],
                 with: {
                   votes: true,
                 },
@@ -374,15 +381,9 @@ builder.relayMutationField(
           },
           mentions: true,
           poll: {
-            extras: {
-              votesCount: (table) =>
-                ctx.db.$count(
-                  pollVoteTable,
-                  eq(pollVoteTable.postId, table.postId),
-                ),
-            },
             with: {
               options: {
+                orderBy: (table, { asc }) => [asc(table.index)],
                 with: {
                   votes: true,
                 },
@@ -432,15 +433,6 @@ builder.relayMutationField(
         throw new InvalidInputError("questionId");
       }
 
-      const votes = persistedVotes
-        .toSorted((a, b) => a.optionIndex - b.optionIndex)
-        .map((pollVote) => ({
-          ...pollVote,
-          option: question.poll!.options.find((option) =>
-            option.index === pollVote.optionIndex
-          ),
-        }));
-
       const updatedPoll = await ctx.db.query.pollTable.findFirst({
         extras: {
           votesCount: (table) =>
@@ -451,6 +443,7 @@ builder.relayMutationField(
         },
         with: {
           options: {
+            orderBy: (table, { asc }) => [asc(table.index)],
             with: {
               votes: true,
             },
@@ -465,6 +458,18 @@ builder.relayMutationField(
       if (updatedPoll == null) {
         throw new InvalidInputError("questionId");
       }
+
+      const votes = persistedVotes
+        .toSorted((a, b) => a.optionIndex - b.optionIndex)
+        .map((pollVote) => {
+          const option = updatedPoll.options.find((option) =>
+            option.index === pollVote.optionIndex
+          );
+          if (option == null) {
+            throw new InvalidInputError("optionIndices");
+          }
+          return { ...pollVote, option };
+        });
 
       const updatedQuestion = { ...question, poll: updatedPoll };
 

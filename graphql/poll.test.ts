@@ -137,6 +137,9 @@ const voteOnPollMutation = parse(`
           option {
             index
             title
+            votes(first: 10) {
+              totalCount
+            }
           }
         }
       }
@@ -720,7 +723,13 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
           };
         };
         poll?: { viewerHasVoted: boolean };
-        votes?: Array<{ option: { index: number; title: string } }>;
+        votes?: Array<{
+          option: {
+            index: number;
+            title: string;
+            votes: { totalCount: number };
+          };
+        }>;
       };
     }).voteOnPoll;
 
@@ -745,7 +754,7 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
       },
     ]);
     assert.deepEqual(payload.votes, [
-      { option: { index: 1, title: "Rust" } },
+      { option: { index: 1, title: "Rust", votes: { totalCount: 1 } } },
     ]);
 
     const repeat = await execute({
@@ -763,12 +772,18 @@ test("voteOnPoll stores a single-choice vote and updates viewer fields", async (
     const repeatPayload = (toPlainJson(repeat.data) as {
       voteOnPoll: {
         __typename: string;
-        votes?: Array<{ option: { index: number; title: string } }>;
+        votes?: Array<{
+          option: {
+            index: number;
+            title: string;
+            votes: { totalCount: number };
+          };
+        }>;
       };
     }).voteOnPoll;
     assert.equal(repeatPayload.__typename, "VoteOnPollPayload");
     assert.deepEqual(repeatPayload.votes, [
-      { option: { index: 1, title: "Rust" } },
+      { option: { index: 1, title: "Rust", votes: { totalCount: 1 } } },
     ]);
   });
 });
@@ -843,7 +858,13 @@ test("voteOnPoll stores multiple choices for multi-choice polls", async () => {
             }>;
           };
         };
-        votes?: Array<{ option: { index: number; title: string } }>;
+        votes?: Array<{
+          option: {
+            index: number;
+            title: string;
+            votes: { totalCount: number };
+          };
+        }>;
       };
     }).voteOnPoll;
 
@@ -867,8 +888,8 @@ test("voteOnPoll stores multiple choices for multi-choice polls", async () => {
         a.index - b.index
       ),
       [
-        { index: 0, title: "Red" },
-        { index: 2, title: "Green" },
+        { index: 0, title: "Red", votes: { totalCount: 1 } },
+        { index: 2, title: "Green", votes: { totalCount: 1 } },
       ],
     );
   });
