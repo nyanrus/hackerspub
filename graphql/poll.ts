@@ -205,17 +205,21 @@ builder.drizzleObjectField(Question, "poll", (t) =>
       if (question.poll != null) return question.poll;
       if (question.sharedPostId != null) return null;
 
-      const documentLoader = ctx.account == null
-        ? undefined
-        : await ctx.fedCtx.getDocumentLoader({
-          identifier: ctx.account.id,
+      try {
+        const documentLoader = ctx.account == null
+          ? undefined
+          : await ctx.fedCtx.getDocumentLoader({
+            identifier: ctx.account.id,
+          });
+        const postObject = await ctx.fedCtx.lookupObject(question.iri, {
+          documentLoader,
         });
-      const postObject = await ctx.fedCtx.lookupObject(question.iri, {
-        documentLoader,
-      });
-      if (!isPostObject(postObject)) return null;
+        if (!isPostObject(postObject)) return null;
 
-      await persistPost(ctx.fedCtx, postObject, { documentLoader });
+        await persistPost(ctx.fedCtx, postObject, { documentLoader });
+      } catch {
+        return null;
+      }
       const reloaded = await ctx.db.query.postTable.findFirst({
         where: {
           id: question.id,

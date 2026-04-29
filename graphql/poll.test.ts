@@ -530,6 +530,58 @@ test("Question.poll backfills missing remote poll rows", async () => {
   });
 });
 
+test("Question.poll returns null when remote backfill fails", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertRemoteActor(tx, {
+      username: "failedbackfillpollauthor",
+      name: "Failed Backfill Poll Author",
+      host: "remote.example",
+      iri: "https://remote.example/users/failedbackfillpollauthor",
+    });
+    const questionId = generateUuidV7();
+    const questionIri = `https://remote.example/objects/${questionId}`;
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values(
+      {
+        id: questionId,
+        iri: questionIri,
+        type: "Question",
+        visibility: "public",
+        actorId: author.id,
+        name: "Missing poll?",
+        contentHtml: "<p>Missing poll?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: questionIri,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const fedCtx = createFedCtx(tx);
+    fedCtx.lookupObject = () => {
+      throw new Error("remote instance unavailable");
+    };
+
+    const result = await execute({
+      schema,
+      document: questionPollQuery,
+      variableValues: { id: encodeGlobalID("Question", questionId) },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      node: {
+        poll: null,
+      },
+    });
+  });
+});
+
 test("voteOnPoll stores a single-choice vote and updates viewer fields", async () => {
   await withRollback(async (tx) => {
     const author = await insertAccountWithActor(tx, {
