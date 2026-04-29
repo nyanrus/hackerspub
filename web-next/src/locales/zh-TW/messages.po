@@ -13,6 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: article().replies?.edges.length ?? 0
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:605
+msgid "{0, plural, one {# comment} other {# comments}}"
+msgstr "{0, plural, other {# 則評論}}"
+
 #. placeholder {0}: actor().followersCount.totalCount
 #: src/components/ProfileCard.tsx:222
 msgid "{0, plural, one {# follower} other {# followers}}"
@@ -208,7 +213,7 @@ msgstr "新增{0}"
 msgid "All"
 msgstr "全部"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:321
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:320
 msgid "Allow automatic translation by AI"
 msgstr "允許 AI 自動翻譯"
 
@@ -264,7 +269,7 @@ msgstr "文章草稿"
 msgid "Article published"
 msgstr "文章已發布"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:190
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:189
 msgid "Article updated"
 msgstr "文章已更新"
 
@@ -320,14 +325,14 @@ msgstr "收藏"
 #: src/components/PostActionMenu.tsx:355
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
 #: src/routes/(root)/[handle]/settings/index.tsx:364
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:506
 #: src/routes/(root)/authorize_interaction.tsx:190
 msgid "Cancel"
 msgstr "取消"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:205
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:204
 msgid "Cannot change the language because translations already exist"
 msgstr "由於已存在翻譯，無法變更語言"
 
@@ -355,16 +360,15 @@ msgstr "已結束"
 msgid "Code"
 msgstr "程式碼"
 
-#: src/components/AppSidebar.tsx:614
+#: src/components/AppSidebar.tsx:613
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/sign/up/[token].tsx:457
 msgid "Code of conduct"
 msgstr "行為準則"
 
-#. placeholder {0}: article().replies?.edges.length ?? 0
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:603
-msgid "Comments ({0})"
-msgstr "評論（{0}）"
+#~ msgid "Comments ({0})"
+#~ msgstr "評論（{0}）"
 
 #: src/components/AppSidebar.tsx:460
 #: src/components/FloatingComposeButton.tsx:61
@@ -373,7 +377,7 @@ msgstr "寫作"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:53
 #: src/components/NoteComposer.tsx:374
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:254
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:253
 msgid "Content"
 msgstr "內容"
 
@@ -520,11 +524,11 @@ msgstr "拖動選擇要保留的區域，然後點擊「裁剪」來更新你的
 msgid "e.g., @user@mastodon.social"
 msgstr "例如：@user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:384
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:385
 msgid "Edit"
 msgstr "編輯"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:236
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:235
 msgid "Edit Article"
 msgstr "編輯文章"
 
@@ -578,9 +582,9 @@ msgstr "請在下方輸入您的電子郵件或使用者名稱以登入。"
 #: src/components/NoteComposer.tsx:280
 #: src/components/NoteComposer.tsx:288
 #: src/components/NoteComposer.tsx:296
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:203
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:213
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:222
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
 #: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
 #: src/routes/(root)/[handle]/drafts/index.tsx:193
@@ -753,7 +757,7 @@ msgstr "無法取消釘選內容"
 msgid "Failed to unshare post"
 msgstr "取消轉貼失敗"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:223
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:222
 msgid "Failed to update the article. Please try again."
 msgstr "文章更新失敗，請重試。"
 
@@ -877,7 +881,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "啟用後，AI 將為您生成文章摘要。否則，將使用文章的前幾行作為摘要。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:619
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:627
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡評論此文章。在你的站台搜尋 {0} 後回覆。"
 
@@ -911,7 +915,7 @@ msgstr "聯邦宇宙使用者名稱格式無效。"
 msgid "Invalid input: {0}"
 msgstr "無效輸入：{0}"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:206
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:205
 msgid "Invalid input: {inputPath}"
 msgstr "無效輸入：{inputPath}"
 
@@ -967,7 +971,7 @@ msgstr "於{0}加入"
 #: src/components/LanguageList.tsx:33
 #: src/components/LanguageSelect.tsx:93
 #: src/components/NoteComposer.tsx:421
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:304
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:303
 msgid "Language"
 msgstr "語言"
 
@@ -1119,7 +1123,7 @@ msgstr "Markdown 指南"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:99
 #: src/components/NoteComposer.tsx:399
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:279
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:278
 msgid "Markdown supported"
 msgstr "Markdown 可用"
 
@@ -1204,6 +1208,10 @@ msgstr "沒有找到關注的使用者"
 msgid "No invitations left"
 msgstr "沒有剩餘邀請名額"
 
+#: src/routes/(root)/search.tsx:243
+msgid "No matching object found"
+msgstr "找不到相符的物件"
+
 #: src/components/ActorArticleList.tsx:91
 msgid "No notes articles"
 msgstr "未找到文章"
@@ -1282,7 +1290,7 @@ msgstr "或"
 msgid "Or enter the code from the email"
 msgstr "或輸入郵件中的驗證碼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:502
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:503
 msgid "Other languages"
 msgstr "其他語言"
 
@@ -1338,7 +1346,7 @@ msgid "Please correct the errors and try again."
 msgstr "請修正錯誤並重試。"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:44
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:245
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:244
 msgid "Please enter a title for your article."
 msgstr "請輸入文章標題。"
 
@@ -1403,7 +1411,7 @@ msgstr "偏好語言"
 msgid "Priority"
 msgstr "優先級"
 
-#: src/components/AppSidebar.tsx:617
+#: src/components/AppSidebar.tsx:616
 #: src/routes/(root)/privacy.tsx:48
 msgid "Privacy policy"
 msgstr "隱私權政策"
@@ -1468,7 +1476,7 @@ msgstr "閱讀完整文章"
 msgid "Read the full Code of conduct"
 msgstr "閱讀完整的行為守則"
 
-#: src/components/AppSidebar.tsx:541
+#: src/components/AppSidebar.tsx:540
 msgid "Recent Drafts"
 msgstr "最近的草稿"
 
@@ -1535,7 +1543,7 @@ msgstr "撤銷通行金鑰"
 msgid "Save"
 msgstr "儲存"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:345
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
 msgid "Save Changes"
 msgstr "儲存變更"
 
@@ -1548,7 +1556,7 @@ msgid "Save draft to see preview"
 msgstr "儲存草稿以查看預覽"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:32
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:345
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
 msgid "Saving..."
 msgstr "儲存中..."
 
@@ -1634,7 +1642,7 @@ msgstr "登入後投票"
 msgid "Sign in with passkey"
 msgstr "使用通行金鑰登入"
 
-#: src/components/AppSidebar.tsx:602
+#: src/components/AppSidebar.tsx:601
 msgid "Sign out"
 msgstr "登出"
 
@@ -1679,7 +1687,7 @@ msgstr "發生錯誤，請重試。"
 #: src/components/article-composer/ArticleComposerContext.tsx:363
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:189
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
 #: src/routes/(root)/[handle]/drafts/index.tsx:168
 msgid "Success"
 msgstr "成功"
@@ -1702,9 +1710,9 @@ msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:410
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:418
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:660
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:411
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:419
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:668
 msgid "Table of contents"
 msgstr "目錄"
 
@@ -1713,8 +1721,8 @@ msgstr "目錄"
 #~ msgstr "標籤"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:293
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:669
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:677
 msgid "Tags"
 msgstr "標籤"
 
@@ -1777,7 +1785,7 @@ msgstr "註冊連結無效。請確保你使用的是你收到的正確郵件連
 
 #. placeholder {0}: "GITHUB_REPOSITORY"
 #. placeholder {1}: "AGPL-3.0"
-#: src/components/AppSidebar.tsx:640
+#: src/components/AppSidebar.tsx:639
 msgid "The source code of this website is available on {0} under the {1} license."
 msgstr "可在 {0} 上以 {1} 授權取得該網站的原始碼。"
 
@@ -1827,7 +1835,7 @@ msgid "Timeline"
 msgstr "時間軸"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:40
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:241
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:240
 msgid "Title"
 msgstr "標題"
 
@@ -1846,7 +1854,7 @@ msgstr "切換側邊欄"
 
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:194
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:486
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
 
@@ -1855,7 +1863,7 @@ msgid "Translating..."
 msgstr "正在翻譯…"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:297
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:296
 msgid "Type tags separated by spaces"
 msgstr "輸入標籤，用空格分隔"
 
@@ -1933,7 +1941,7 @@ msgstr "已於{1}驗證此連結歸{0}所有"
 msgid "Verifying your invitation…"
 msgstr "驗證您的邀請…"
 
-#: src/components/AppSidebar.tsx:565
+#: src/components/AppSidebar.tsx:564
 msgid "View all drafts →"
 msgstr "查看所有草稿 →"
 
@@ -1993,11 +2001,11 @@ msgstr "你在想什麼？"
 msgid "Without shares"
 msgstr "不含轉貼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:610
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:618
 msgid "Write a reply..."
 msgstr "寫個回覆…"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:285
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:284
 msgid "Write your article here."
 msgstr "在此撰寫您的文章。"
 
@@ -2058,7 +2066,7 @@ msgstr "你必須登入才能建立貼文"
 msgid "You must be signed in to delete a draft"
 msgstr "您必須登入才能刪除草稿"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:214
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:213
 msgid "You must be signed in to edit an article"
 msgstr "您必須登入才能編輯文章"
 
