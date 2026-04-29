@@ -1,13 +1,11 @@
+import * as vocab from "@fedify/vocab";
 import { vote } from "@hackerspub/models/poll";
-import {
-  isPostObject,
-  isPostVisibleTo,
-  persistPost,
-} from "@hackerspub/models/post";
+import { isPostVisibleTo, persistPost } from "@hackerspub/models/post";
 import { pollVoteTable } from "@hackerspub/models/schema";
+import type { Uuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { eq } from "drizzle-orm";
-import { builder } from "./builder.ts";
+import { builder, type UserContext } from "./builder.ts";
 import { Actor } from "./actor.ts";
 import { InvalidInputError } from "./error.ts";
 import { Post, Question } from "./post.ts";
@@ -38,16 +36,7 @@ const Poll = builder.drizzleNode("pollTable", {
         },
       },
       async resolve(poll, _, ctx) {
-        if (ctx.account == null) return false;
-        return await ctx.db.query.pollVoteTable.findFirst({
-          where: {
-            postId: poll.postId,
-            actorId: ctx.account.actor.id,
-          },
-          columns: {
-            postId: true,
-          },
-        }) != null;
+        return (await getViewerPollOptionIndices(ctx, poll.postId)).size > 0;
       },
     }),
     post: t.relation("post", { type: Post }),
@@ -128,17 +117,9 @@ const PollOption = builder.drizzleObject("pollOptionTable", {
         },
       },
       async resolve(option, _, ctx) {
-        if (ctx.account == null) return false;
-        return await ctx.db.query.pollVoteTable.findFirst({
-          where: {
-            postId: option.postId,
-            optionIndex: option.index,
-            actorId: ctx.account.actor.id,
-          },
-          columns: {
-            postId: true,
-          },
-        }) != null;
+        return (await getViewerPollOptionIndices(ctx, option.postId)).has(
+          option.index,
+        );
       },
     }),
     votes: t.connection({
@@ -187,6 +168,31 @@ const actorConnectionHelpers = drizzleConnectionHelpers(
   {},
 );
 
+async function getViewerPollOptionIndices(
+  ctx: UserContext,
+  postId: Uuid,
+): Promise<ReadonlySet<number>> {
+  if (ctx.account == null) return new Set();
+
+  ctx.pollViewerVotes ??= new Map();
+  const cached = ctx.pollViewerVotes.get(postId);
+  if (cached != null) return await cached;
+
+  const promise = ctx.db.query.pollVoteTable.findMany({
+    where: {
+      postId,
+      actorId: ctx.account.actor.id,
+    },
+    columns: {
+      optionIndex: true,
+    },
+  }).then((votes) =>
+    new Set(votes.map((vote) => vote.optionIndex)) as ReadonlySet<number>
+  );
+  ctx.pollViewerVotes.set(postId, promise);
+  return await promise;
+}
+
 builder.drizzleObjectField(Question, "poll", (t) =>
   t.field({
     type: Poll,
@@ -214,7 +220,7 @@ builder.drizzleObjectField(Question, "poll", (t) =>
         const postObject = await ctx.fedCtx.lookupObject(question.iri, {
           documentLoader,
         });
-        if (!isPostObject(postObject)) return null;
+        if (!(postObject instanceof vocab.Question)) return null;
 
         await persistPost(ctx.fedCtx, postObject, { documentLoader });
       } catch {
@@ -274,6 +280,9 @@ builder.relayMutationField(
       }
 
       const optionIndices = new Set(args.input.optionIndices);
+      if (optionIndices.size !== args.input.optionIndices.length) {
+        throw new InvalidInputError("optionIndices");
+      }
       if (optionIndices.size < 1) {
         throw new InvalidInputError("optionIndices");
       }
@@ -337,7 +346,26 @@ builder.relayMutationField(
         throw new InvalidInputError("optionIndices");
       }
 
-      await vote(ctx.fedCtx, ctx.account, question.poll, optionIndices);
+      const persistedVotes = await vote(
+        ctx.fedCtx,
+        ctx.account,
+        question.poll,
+        optionIndices,
+      );
+
+      const votes = await ctx.db.query.pollVoteTable.findMany({
+        with: {
+          option: true,
+        },
+        where: {
+          postId: question.id,
+          actorId: ctx.account.actor.id,
+        },
+        orderBy: { optionIndex: "asc" },
+      });
+      if (persistedVotes.length < 1 && votes.length < 1) {
+        throw new InvalidInputError("questionId");
+      }
 
       const updatedQuestion = await ctx.db.query.postTable.findFirst({
         with: {
@@ -376,17 +404,6 @@ builder.relayMutationField(
       if (updatedQuestion == null || updatedQuestion.poll == null) {
         throw new InvalidInputError("questionId");
       }
-
-      const votes = await ctx.db.query.pollVoteTable.findMany({
-        with: {
-          option: true,
-        },
-        where: {
-          postId: question.id,
-          actorId: ctx.account.actor.id,
-        },
-        orderBy: { optionIndex: "asc" },
-      });
 
       return { question: updatedQuestion, poll: updatedQuestion.poll, votes };
     },

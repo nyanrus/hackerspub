@@ -49,6 +49,7 @@ export interface UserContext extends ServerContext {
   account:
     | Account & { actor: Actor; emails: AccountEmail[]; links: AccountLink[] }
     | undefined;
+  pollViewerVotes?: Map<Uuid, Promise<ReadonlySet<number>>>;
 }
 
 export interface PothosTypes {

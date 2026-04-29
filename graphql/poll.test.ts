@@ -530,6 +530,70 @@ test("Question.poll backfills missing remote poll rows", async () => {
   });
 });
 
+test("Question.poll ignores non-Question remote backfills", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertRemoteActor(tx, {
+      username: "nonquestionbackfillauthor",
+      name: "Non-Question Backfill Author",
+      host: "remote.example",
+      iri: "https://remote.example/users/nonquestionbackfillauthor",
+    });
+    const questionId = generateUuidV7();
+    const questionIri = `https://remote.example/objects/${questionId}`;
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values(
+      {
+        id: questionId,
+        iri: questionIri,
+        type: "Question",
+        visibility: "public",
+        actorId: author.id,
+        name: "Backfill type mismatch?",
+        contentHtml: "<p>Backfill type mismatch?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: questionIri,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const fedCtx = createFedCtx(tx);
+    fedCtx.lookupObject = () =>
+      Promise.resolve(
+        new vocab.Note({
+          id: new URL(questionIri),
+          attribution: new URL(author.iri),
+          to: vocab.PUBLIC_COLLECTION,
+          content: "<p>This is not a Question.</p>",
+        }),
+      );
+
+    const result = await execute({
+      schema,
+      document: questionPollQuery,
+      variableValues: { id: encodeGlobalID("Question", questionId) },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      node: {
+        poll: null,
+      },
+    });
+
+    const storedPost = await tx.query.postTable.findFirst({
+      where: { id: questionId },
+      columns: { type: true },
+    });
+    assert.equal(storedPost?.type, "Question");
+  });
+});
+
 test("Question.poll returns null when remote backfill fails", async () => {
   await withRollback(async (tx) => {
     const author = await insertRemoteActor(tx, {
@@ -883,6 +947,7 @@ test("voteOnPoll rejects guest, invalid, and expired votes", async () => {
     for (
       const [optionIndices, expectedPath] of [
         [[], "optionIndices"],
+        [[0, 0], "optionIndices"],
         [[0, 1], "optionIndices"],
         [[999], "optionIndices"],
       ] as const
