@@ -148,47 +148,60 @@ export async function vote(
   poll: Poll & { options: PollOption[] },
   optionIndices: Set<number>,
 ): Promise<PollVote[]> {
-  if (
-    poll.ends < new Date() || optionIndices.size < 1 ||
-    !poll.multiple && optionIndices.size > 1
-  ) {
-    return [];
-  }
   const { db } = fedCtx.data;
-  const post = await db.query.postTable.findFirst({
-    where: { id: poll.postId },
-    with: {
-      actor: true,
-    },
-  });
-  if (post?.type !== "Question") return [];
-  const alreadyVoted = await db.query.pollVoteTable.findMany({
-    where: { postId: poll.postId, actorId: voter.actor.id },
-  });
-  if (alreadyVoted.length > 0) return alreadyVoted;
-  const indices = [...optionIndices].filter((index) =>
-    poll.options.find((o) => o.index === index) != null
-  );
-  if (indices.length < 1) return [];
-  const votes = await db.insert(pollVoteTable)
-    .values(indices.map((index) => ({
-      postId: poll.postId,
-      actorId: voter.actor.id,
-      optionIndex: index,
-    } satisfies NewPollVote)))
-    .returning();
-  await db.update(pollTable)
-    .set({ votersCount: sql`${pollTable.votersCount} + 1` })
-    .where(eq(pollTable.postId, poll.postId));
-  await db.update(pollOptionTable)
-    .set({ votesCount: sql`${pollOptionTable.votesCount} + 1` })
-    .where(
-      and(
-        eq(pollOptionTable.postId, poll.postId),
-        inArray(pollOptionTable.index, indices),
-      ),
+  const { post, votes } = await db.transaction(async (tx) => {
+    if (
+      poll.ends < new Date() || optionIndices.size < 1 ||
+      !poll.multiple && optionIndices.size > 1
+    ) {
+      return { post: undefined, votes: [] };
+    }
+
+    await tx.execute(
+      sql`select 1 from ${pollTable} where ${pollTable.postId} = ${poll.postId} for update`,
     );
-  if (post.actor.accountId == null) {
+
+    const post = await tx.query.postTable.findFirst({
+      where: { id: poll.postId },
+      with: {
+        actor: true,
+      },
+    });
+    if (post?.type !== "Question") return { post, votes: [] };
+
+    const alreadyVoted = await tx.query.pollVoteTable.findMany({
+      where: { postId: poll.postId, actorId: voter.actor.id },
+    });
+    if (alreadyVoted.length > 0) return { post, votes: alreadyVoted };
+
+    const indices = [...optionIndices].filter((index) =>
+      poll.options.find((o) => o.index === index) != null
+    );
+    if (indices.length < 1) return { post, votes: [] };
+
+    const votes = await tx.insert(pollVoteTable)
+      .values(indices.map((index) => ({
+        postId: poll.postId,
+        actorId: voter.actor.id,
+        optionIndex: index,
+      } satisfies NewPollVote)))
+      .returning();
+    await tx.update(pollTable)
+      .set({ votersCount: sql`${pollTable.votersCount} + 1` })
+      .where(eq(pollTable.postId, poll.postId));
+    await tx.update(pollOptionTable)
+      .set({ votesCount: sql`${pollOptionTable.votesCount} + 1` })
+      .where(
+        and(
+          eq(pollOptionTable.postId, poll.postId),
+          inArray(pollOptionTable.index, indices),
+        ),
+      );
+
+    return { post, votes };
+  });
+
+  if (post != null && post.actor.accountId == null) {
     for (const vote of votes) {
       const name = poll.options.find((o) => o.index === vote.optionIndex)
         ?.title;
