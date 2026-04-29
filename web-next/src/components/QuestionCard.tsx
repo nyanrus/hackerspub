@@ -10,6 +10,7 @@ import IconCheckSquare from "~icons/lucide/square-check-big";
 import IconCircle from "~icons/lucide/circle";
 import IconListChecks from "~icons/lucide/list-checks";
 import IconRadio from "~icons/lucide/circle-dot";
+import IconSquare from "~icons/lucide/square";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
 import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
@@ -390,9 +391,7 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                     <Show
                       when={selected()}
                       fallback={props.poll.multiple
-                        ? (
-                          <IconCheckSquare class="size-4 text-muted-foreground" />
-                        )
+                        ? <IconSquare class="size-4 text-muted-foreground" />
                         : <IconCircle class="size-4 text-muted-foreground" />}
                     >
                       {props.poll.multiple
