@@ -353,9 +353,6 @@ export const Question = builder.drizzleNode("postTable", {
   id: {
     column: (post) => post.id,
   },
-  fields: (t) => ({
-    poll: t.relation("poll"),
-  }),
 });
 
 export const ArticleContent = builder.drizzleNode("articleContentTable", {

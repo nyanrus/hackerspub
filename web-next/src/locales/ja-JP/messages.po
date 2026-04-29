@@ -30,6 +30,16 @@ msgstr "{0, plural, other {#フォロー}}"
 msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {残り#件の招待}}"
 
+#. placeholder {0}: votes()
+#: src/components/QuestionCard.tsx:351
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, other {#票}}"
+
+#. placeholder {0}: props.poll.voters.totalCount
+#: src/components/QuestionCard.tsx:295
+msgid "{0, plural, one {# voter} other {# voters}}"
+msgstr "{0, plural, other {投票者 #人}}"
+
 #. placeholder {0}: edge.node.tags.length - 3
 #: src/routes/(root)/[handle]/drafts/index.tsx:277
 msgid "{0, plural, one {+1 more} other {+# more}}"
@@ -129,11 +139,11 @@ msgid "{0} shared your post"
 msgstr "{0}さんがあなたのコンテンツを共有しました"
 
 #. placeholder {0}: article().actor.rawName
-#. placeholder {0}: note().actor.name
-#. placeholder {1}: note().excerpt
+#. placeholder {0}: post().actor.name
+#. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
-#: src/routes/(root)/[handle]/[noteId].tsx:144
+#: src/routes/(root)/[handle]/[noteId].tsx:194
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
@@ -306,7 +316,7 @@ msgstr "ブックマーク"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:284
+#: src/components/PostActionMenu.tsx:290
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -335,6 +345,10 @@ msgstr "招待する友達の使用言語を選択してください。この言
 #: src/routes/(root)/[handle]/invite/[id].tsx:391
 msgid "Choose your preferred language for the verification email."
 msgstr "確認メールの言語を選択してください。"
+
+#: src/components/QuestionCard.tsx:287
+msgid "Closed"
+msgstr "終了"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -386,6 +400,10 @@ msgstr "クリップボードにリンクをコピーできませんでした。
 msgid "Could not find a post at this URL"
 msgstr "このURLのコンテンツが見つかりませんでした"
 
+#: src/components/QuestionCard.tsx:251
+msgid "Could not vote on this poll"
+msgstr "このアンケートに投票できませんでした"
+
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
 msgid "Create Article"
@@ -436,8 +454,8 @@ msgstr "投稿のデフォルト公開範囲"
 msgid "Default share privacy"
 msgstr "共有のデフォルト公開範囲"
 
-#: src/components/PostActionMenu.tsx:270
-#: src/components/PostActionMenu.tsx:290
+#: src/components/PostActionMenu.tsx:276
+#: src/components/PostActionMenu.tsx:296
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +465,7 @@ msgstr "削除"
 msgid "Delete Draft"
 msgstr "下書きを削除"
 
-#: src/components/PostActionMenu.tsx:278
+#: src/components/PostActionMenu.tsx:284
 msgid "Delete post?"
 msgstr "コンテンツを削除しますか？"
 
@@ -524,6 +542,14 @@ msgstr "メールアドレス"
 msgid "Email or username"
 msgstr "メールアドレスまたはユーザー名"
 
+#: src/components/QuestionCard.tsx:290
+msgid "Ended"
+msgstr "終了"
+
+#: src/components/QuestionCard.tsx:290
+msgid "Ends"
+msgstr "終了予定"
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."
 msgstr "以下にメールアドレスを入力して始めましょう。"
@@ -596,8 +622,8 @@ msgstr "招待リンクの作成に失敗しました"
 msgid "Failed to delete invitation link"
 msgstr "招待リンクの削除に失敗しました"
 
-#: src/components/PostActionMenu.tsx:218
-#: src/components/PostActionMenu.tsx:225
+#: src/components/PostActionMenu.tsx:224
+#: src/components/PostActionMenu.tsx:231
 msgid "Failed to delete post"
 msgstr "コンテンツの削除に失敗しました"
 
@@ -657,8 +683,8 @@ msgstr "引用コンテンツの読み込みに失敗しました"
 msgid "Failed to look up user."
 msgstr "ユーザーの検索に失敗しました。"
 
-#: src/components/PostActionMenu.tsx:188
-#: src/components/PostActionMenu.tsx:195
+#: src/components/PostActionMenu.tsx:189
+#: src/components/PostActionMenu.tsx:196
 msgid "Failed to pin post"
 msgstr "コンテンツを固定できませんでした"
 
@@ -717,8 +743,8 @@ msgstr "ログアウトに失敗：{0}"
 msgid "Failed to unfollow"
 msgstr "フォロー解除に失敗しました"
 
-#: src/components/PostActionMenu.tsx:164
-#: src/components/PostActionMenu.tsx:171
+#: src/components/PostActionMenu.tsx:165
+#: src/components/PostActionMenu.tsx:172
 msgid "Failed to unpin post"
 msgstr "コンテンツの固定を解除できませんでした"
 
@@ -733,6 +759,10 @@ msgstr "記事の更新に失敗しました。もう一度お試しください
 #: src/components/article-composer/ArticleComposerForm.tsx:29
 msgid "Failed to upload image"
 msgstr "画像のアップロードに失敗しました"
+
+#: src/components/QuestionCard.tsx:259
+msgid "Failed to vote"
+msgstr "投票に失敗しました"
 
 #: src/components/AppSidebar.tsx:261
 msgid "Fediverse"
@@ -851,9 +881,14 @@ msgid "If you have a fediverse account, you can reply to this article from your 
 msgstr "フェディバース（fediverse）アカウントをお持ちの場合、この記事に返信することができます。ご利用のインスタンスの検索バーに{0}を検索し、該当記事に返信してください。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:254
+#: src/routes/(root)/[handle]/[noteId].tsx:299
 msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
 msgstr "フェディバース（fediverse）アカウントをお持ちの場合、この投稿に返信することができます。ご利用のインスタンスの検索バーに{0}を検索し、該当投稿に返信してください。"
+
+#. placeholder {0}: "ACTIVITYPUB_URI"
+#: src/routes/(root)/[handle]/[noteId].tsx:440
+msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
+msgstr "フェディバースのアカウントをお持ちの場合、自分のインスタンスからこのコンテンツに返信できます。お使いのインスタンスで{0}を検索して返信してください。"
 
 #: src/components/ui/markdown-editor.tsx:572
 #: src/components/ui/markdown-editor.tsx:573
@@ -1108,6 +1143,10 @@ msgstr "一番上へ移動"
 msgid "Move up"
 msgstr "上へ移動"
 
+#: src/components/QuestionCard.tsx:284
+msgid "Multiple choice"
+msgstr "複数選択"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:387
 msgid "My passkey"
 msgstr "私のパスキー"
@@ -1226,6 +1265,10 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "招待数"
 
+#: src/components/QuestionCard.tsx:287
+msgid "Open"
+msgstr "受付中"
+
 #: src/routes/applink/sign/in/[token].tsx:47
 msgid "Open in app"
 msgstr "アプリで開く"
@@ -1276,11 +1319,11 @@ msgstr "パスキー"
 msgid "Permission Denied"
 msgstr "アクセスが拒否されました"
 
-#: src/components/PostActionMenu.tsx:260
+#: src/components/PostActionMenu.tsx:266
 msgid "Pin to profile"
 msgstr "プロフィールに固定"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+#: src/routes/(root)/[handle]/(profile)/index.tsx:179
 msgid "Pinned posts"
 msgstr "固定されたコンテンツ"
 
@@ -1308,15 +1351,23 @@ msgstr "フェディバースのハンドルを入力してください。"
 msgid "Please sign in to access this page"
 msgstr "このページにアクセスするにはログインしてください"
 
-#: src/components/PostActionMenu.tsx:214
+#: src/components/QuestionCard.tsx:245
+msgid "Please sign in to vote"
+msgstr "投票するにはログインしてください"
+
+#: src/components/QuestionCard.tsx:220
+msgid "Poll closed"
+msgstr "アンケートは終了しました"
+
+#: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
 msgstr "コンテンツを削除しました"
 
-#: src/components/PostActionMenu.tsx:185
+#: src/components/PostActionMenu.tsx:186
 msgid "Post pinned"
 msgstr "コンテンツを固定しました"
 
-#: src/components/PostActionMenu.tsx:161
+#: src/components/PostActionMenu.tsx:162
 msgid "Post unpinned"
 msgstr "コンテンツの固定を解除しました"
 
@@ -1524,6 +1575,14 @@ msgstr "コンテンツを検索…"
 msgid "Search results for {0}"
 msgstr "{0}の検索結果"
 
+#: src/components/QuestionCard.tsx:225
+msgid "Select an option"
+msgstr "選択肢を選んでください"
+
+#: src/components/QuestionCard.tsx:225
+msgid "Select options"
+msgstr "選択肢を選んでください"
+
 #: src/routes/(root)/[handle]/settings/language.tsx:113
 msgid "Select your preferred languages in order of preference. This will help tailor content to your preferences."
 msgstr "優先度の高い順に言語を選択してください。コンテンツをあなたの好みに合わせて調整するのに役立ちます。"
@@ -1566,6 +1625,10 @@ msgstr "ログイン"
 msgid "Sign in to Hackers' Pub"
 msgstr "Hackers' Pubにログイン"
 
+#: src/components/QuestionCard.tsx:222
+msgid "Sign in to vote"
+msgstr "ログインして投票"
+
 #: src/routes/(root)/sign/index.tsx:420
 msgid "Sign in with passkey"
 msgstr "パスキーでサインイン"
@@ -1594,6 +1657,10 @@ msgstr "ログイン中…"
 #: src/routes/(root)/sign/up/[token].tsx:313
 msgid "Signing up for Hackers' Pub"
 msgstr "Hackers' Pubに登録"
+
+#: src/components/QuestionCard.tsx:284
+msgid "Single choice"
+msgstr "単一選択"
 
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:20
 msgid "Slug (URL)"
@@ -1717,7 +1784,7 @@ msgstr "このウェブサイトのソースコードは{1}ライセンスで{0}
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "リンクのURL。（例：https://github.com/yourhandle）"
 
-#: src/components/PostActionMenu.tsx:280
+#: src/components/PostActionMenu.tsx:286
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "この操作は取り消せません。このコンテンツは完全に削除されます。"
 
@@ -1805,7 +1872,7 @@ msgstr "リアクションを削除できませんでした。もう一度お試
 msgid "Unfollow"
 msgstr "フォロー解除"
 
-#: src/components/PostActionMenu.tsx:261
+#: src/components/PostActionMenu.tsx:267
 msgid "Unpin from profile"
 msgstr "プロフィールから固定解除"
 
@@ -1888,6 +1955,22 @@ msgstr "誰でも閲覧できますが、公開タイムラインには表示さ
 #: src/components/VisibilityTag.tsx:35
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "未登録ユーザーを含む誰でも閲覧できます。公開タイムラインにも表示されます。"
+
+#: src/components/QuestionCard.tsx:227
+msgid "Vote"
+msgstr "投票"
+
+#: src/components/QuestionCard.tsx:241
+msgid "Vote recorded"
+msgstr "投票しました"
+
+#: src/components/QuestionCard.tsx:221
+msgid "Voted"
+msgstr "投票済み"
+
+#: src/components/QuestionCard.tsx:223
+msgid "Voting…"
+msgstr "投票中…"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:551
 msgid "Website"

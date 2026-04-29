@@ -27,6 +27,7 @@ import IconTrash2 from "~icons/lucide/trash-2";
 import type { PostActionMenu_deletePost_Mutation } from "./__generated__/PostActionMenu_deletePost_Mutation.graphql.ts";
 import type { PostActionMenu_post$key } from "./__generated__/PostActionMenu_post.graphql.ts";
 import type { PostActionMenu_pinPost_Mutation } from "./__generated__/PostActionMenu_pinPost_Mutation.graphql.ts";
+import type { PostActionMenu_question$key } from "./__generated__/PostActionMenu_question.graphql.ts";
 import type { PostActionMenu_unpinPost_Mutation } from "./__generated__/PostActionMenu_unpinPost_Mutation.graphql.ts";
 
 const deletePostMutation = graphql`
@@ -108,8 +109,17 @@ export interface PostActionMenuProps {
   onDeleted?: () => void;
 }
 
+interface PostActionMenuData {
+  readonly id: string;
+  readonly visibility: string;
+  readonly viewerHasPinned: boolean;
+  readonly sharedPost: { readonly id: string } | null | undefined;
+  readonly actor: {
+    readonly isViewer: boolean;
+  };
+}
+
 export function PostActionMenu(props: PostActionMenuProps) {
-  const { i18n, t } = useLingui();
   const post = createFragment(
     graphql`
       fragment PostActionMenu_post on Post {
@@ -127,6 +137,61 @@ export function PostActionMenu(props: PostActionMenuProps) {
     () => props.$post,
   );
 
+  return (
+    <PostActionMenuContent
+      post={post}
+      connections={props.connections}
+      pinConnections={props.pinConnections}
+      onDeleted={props.onDeleted}
+    />
+  );
+}
+
+export interface QuestionActionMenuProps {
+  $question: PostActionMenu_question$key;
+  connections?: string[];
+  pinConnections?: string[];
+  onDeleted?: () => void;
+}
+
+export function QuestionActionMenu(props: QuestionActionMenuProps) {
+  const question = createFragment(
+    graphql`
+      fragment PostActionMenu_question on Question {
+        id
+        visibility
+        viewerHasPinned
+        sharedPost {
+          id
+        }
+        actor {
+          isViewer
+        }
+      }
+    `,
+    () => props.$question,
+  );
+
+  return (
+    <PostActionMenuContent
+      post={question}
+      connections={props.connections}
+      pinConnections={props.pinConnections}
+      onDeleted={props.onDeleted}
+    />
+  );
+}
+
+interface PostActionMenuContentProps {
+  post: () => PostActionMenuData | null | undefined;
+  connections?: string[];
+  pinConnections?: string[];
+  onDeleted?: () => void;
+}
+
+function PostActionMenuContent(props: PostActionMenuContentProps) {
+  const { i18n, t } = useLingui();
+  const post = props.post;
   const [showConfirm, setShowConfirm] = createSignal(false);
 
   const [commitDeletePost, isDeleting] = createMutation<

@@ -30,6 +30,16 @@ msgstr "{0, plural, other {关注 # 人}}"
 msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩余 # 次邀请}}"
 
+#. placeholder {0}: votes()
+#: src/components/QuestionCard.tsx:351
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, other {# 票}}"
+
+#. placeholder {0}: props.poll.voters.totalCount
+#: src/components/QuestionCard.tsx:295
+msgid "{0, plural, one {# voter} other {# voters}}"
+msgstr "{0, plural, other {# 位投票者}}"
+
 #. placeholder {0}: edge.node.tags.length - 3
 #: src/routes/(root)/[handle]/drafts/index.tsx:277
 msgid "{0, plural, one {+1 more} other {+# more}}"
@@ -129,11 +139,11 @@ msgid "{0} shared your post"
 msgstr "{0} 转发了你的内容"
 
 #. placeholder {0}: article().actor.rawName
-#. placeholder {0}: note().actor.name
-#. placeholder {1}: note().excerpt
+#. placeholder {0}: post().actor.name
+#. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
-#: src/routes/(root)/[handle]/[noteId].tsx:144
+#: src/routes/(root)/[handle]/[noteId].tsx:194
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
@@ -306,7 +316,7 @@ msgstr "收藏"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:284
+#: src/components/PostActionMenu.tsx:290
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -335,6 +345,10 @@ msgstr "选择你的朋友使用的语言。这个语言只会用于邀请。"
 #: src/routes/(root)/[handle]/invite/[id].tsx:391
 msgid "Choose your preferred language for the verification email."
 msgstr "请选择验证邮件的语言。"
+
+#: src/components/QuestionCard.tsx:287
+msgid "Closed"
+msgstr "已结束"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -386,6 +400,10 @@ msgstr "无法将链接复制到剪贴板。"
 msgid "Could not find a post at this URL"
 msgstr "无法在此URL找到内容"
 
+#: src/components/QuestionCard.tsx:251
+msgid "Could not vote on this poll"
+msgstr "无法提交此投票"
+
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
 msgid "Create Article"
@@ -436,8 +454,8 @@ msgstr "默认帖子隐私设置"
 msgid "Default share privacy"
 msgstr "默认转帖隐私设置"
 
-#: src/components/PostActionMenu.tsx:270
-#: src/components/PostActionMenu.tsx:290
+#: src/components/PostActionMenu.tsx:276
+#: src/components/PostActionMenu.tsx:296
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +465,7 @@ msgstr "删除"
 msgid "Delete Draft"
 msgstr "删除草稿"
 
-#: src/components/PostActionMenu.tsx:278
+#: src/components/PostActionMenu.tsx:284
 msgid "Delete post?"
 msgstr "删除内容？"
 
@@ -524,6 +542,14 @@ msgstr "电子邮件地址"
 msgid "Email or username"
 msgstr "邮箱或用户名"
 
+#: src/components/QuestionCard.tsx:290
+msgid "Ended"
+msgstr "已结束"
+
+#: src/components/QuestionCard.tsx:290
+msgid "Ends"
+msgstr "截止"
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."
 msgstr "请在下方输入你的电子邮件地址以开始。"
@@ -596,8 +622,8 @@ msgstr "创建邀请链接失败"
 msgid "Failed to delete invitation link"
 msgstr "删除邀请链接失败"
 
-#: src/components/PostActionMenu.tsx:218
-#: src/components/PostActionMenu.tsx:225
+#: src/components/PostActionMenu.tsx:224
+#: src/components/PostActionMenu.tsx:231
 msgid "Failed to delete post"
 msgstr "删除内容失败"
 
@@ -657,8 +683,8 @@ msgstr "无法加载引用内容"
 msgid "Failed to look up user."
 msgstr "查找用户失败。"
 
-#: src/components/PostActionMenu.tsx:188
-#: src/components/PostActionMenu.tsx:195
+#: src/components/PostActionMenu.tsx:189
+#: src/components/PostActionMenu.tsx:196
 msgid "Failed to pin post"
 msgstr "无法置顶内容"
 
@@ -717,8 +743,8 @@ msgstr "登出失败：{0}"
 msgid "Failed to unfollow"
 msgstr "取消关注失败"
 
-#: src/components/PostActionMenu.tsx:164
-#: src/components/PostActionMenu.tsx:171
+#: src/components/PostActionMenu.tsx:165
+#: src/components/PostActionMenu.tsx:172
 msgid "Failed to unpin post"
 msgstr "无法取消置顶内容"
 
@@ -733,6 +759,10 @@ msgstr "文章更新失败，请重试。"
 #: src/components/article-composer/ArticleComposerForm.tsx:29
 msgid "Failed to upload image"
 msgstr "图片上传失败"
+
+#: src/components/QuestionCard.tsx:259
+msgid "Failed to vote"
+msgstr "投票失败"
 
 #: src/components/AppSidebar.tsx:261
 msgid "Fediverse"
@@ -851,9 +881,14 @@ msgid "If you have a fediverse account, you can reply to this article from your 
 msgstr "如果你在联邦宇宙有个账户，你可以在你自己的实例里评论此文章。在你的实例搜索 {0} 后回复。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:254
+#: src/routes/(root)/[handle]/[noteId].tsx:299
 msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在联邦宇宙有个账户，你可以在你自己的实例里评论此帖子。在你的实例搜索 {0} 后回复。"
+
+#. placeholder {0}: "ACTIVITYPUB_URI"
+#: src/routes/(root)/[handle]/[noteId].tsx:440
+msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
+msgstr "如果你有联邦宇宙账号，可以从自己的实例回复此内容。在你的实例中搜索 {0} 并回复。"
 
 #: src/components/ui/markdown-editor.tsx:572
 #: src/components/ui/markdown-editor.tsx:573
@@ -1108,6 +1143,10 @@ msgstr "移动到顶部"
 msgid "Move up"
 msgstr "向上移动"
 
+#: src/components/QuestionCard.tsx:284
+msgid "Multiple choice"
+msgstr "多选"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:387
 msgid "My passkey"
 msgstr "我的通行密钥"
@@ -1226,6 +1265,10 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀请次数"
 
+#: src/components/QuestionCard.tsx:287
+msgid "Open"
+msgstr "进行中"
+
 #: src/routes/applink/sign/in/[token].tsx:47
 msgid "Open in app"
 msgstr "在应用中打开"
@@ -1276,11 +1319,11 @@ msgstr "通行密钥"
 msgid "Permission Denied"
 msgstr "权限被拒绝"
 
-#: src/components/PostActionMenu.tsx:260
+#: src/components/PostActionMenu.tsx:266
 msgid "Pin to profile"
 msgstr "置顶到个人资料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+#: src/routes/(root)/[handle]/(profile)/index.tsx:179
 msgid "Pinned posts"
 msgstr "已置顶内容"
 
@@ -1308,15 +1351,23 @@ msgstr "请输入你的联邦宇宙用户名。"
 msgid "Please sign in to access this page"
 msgstr "请登录以访问此页面"
 
-#: src/components/PostActionMenu.tsx:214
+#: src/components/QuestionCard.tsx:245
+msgid "Please sign in to vote"
+msgstr "请登录后投票"
+
+#: src/components/QuestionCard.tsx:220
+msgid "Poll closed"
+msgstr "投票已结束"
+
+#: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
 msgstr "内容已删除"
 
-#: src/components/PostActionMenu.tsx:185
+#: src/components/PostActionMenu.tsx:186
 msgid "Post pinned"
 msgstr "内容已置顶"
 
-#: src/components/PostActionMenu.tsx:161
+#: src/components/PostActionMenu.tsx:162
 msgid "Post unpinned"
 msgstr "已取消置顶内容"
 
@@ -1524,6 +1575,14 @@ msgstr "搜索内容…"
 msgid "Search results for {0}"
 msgstr "{0}的搜索结果"
 
+#: src/components/QuestionCard.tsx:225
+msgid "Select an option"
+msgstr "请选择一个选项"
+
+#: src/components/QuestionCard.tsx:225
+msgid "Select options"
+msgstr "请选择选项"
+
 #: src/routes/(root)/[handle]/settings/language.tsx:113
 msgid "Select your preferred languages in order of preference. This will help tailor content to your preferences."
 msgstr "按偏好顺序选择您的偏好语言。这将有助于根据您的偏好定制内容。"
@@ -1566,6 +1625,10 @@ msgstr "登录"
 msgid "Sign in to Hackers' Pub"
 msgstr "登录 Hackers' Pub"
 
+#: src/components/QuestionCard.tsx:222
+msgid "Sign in to vote"
+msgstr "登录后投票"
+
 #: src/routes/(root)/sign/index.tsx:420
 msgid "Sign in with passkey"
 msgstr "使用通行密钥登录"
@@ -1594,6 +1657,10 @@ msgstr "登录中…"
 #: src/routes/(root)/sign/up/[token].tsx:313
 msgid "Signing up for Hackers' Pub"
 msgstr "注册 Hackers' Pub"
+
+#: src/components/QuestionCard.tsx:284
+msgid "Single choice"
+msgstr "单选"
 
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:20
 msgid "Slug (URL)"
@@ -1717,7 +1784,7 @@ msgstr "可在 {1} 上以 {0} 许可获取该网站的源代码。"
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "该链接的 URL，例如 https://github.com/nideyonghuming 。"
 
-#: src/components/PostActionMenu.tsx:280
+#: src/components/PostActionMenu.tsx:286
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "此操作无法撤销。这将永久删除该内容。"
 
@@ -1805,7 +1872,7 @@ msgstr "无法移除反应。请重试。"
 msgid "Unfollow"
 msgstr "取消关注"
 
-#: src/components/PostActionMenu.tsx:261
+#: src/components/PostActionMenu.tsx:267
 msgid "Unpin from profile"
 msgstr "从个人资料取消置顶"
 
@@ -1888,6 +1955,22 @@ msgstr "所有人都可以看到，但不会出现在公共时间线中。只有
 #: src/components/VisibilityTag.tsx:35
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未注册用户在内的所有人都可以看到。内容也会出现在公共时间线中。"
+
+#: src/components/QuestionCard.tsx:227
+msgid "Vote"
+msgstr "投票"
+
+#: src/components/QuestionCard.tsx:241
+msgid "Vote recorded"
+msgstr "已记录投票"
+
+#: src/components/QuestionCard.tsx:221
+msgid "Voted"
+msgstr "已投票"
+
+#: src/components/QuestionCard.tsx:223
+msgid "Voting…"
+msgstr "正在投票…"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:551
 msgid "Website"

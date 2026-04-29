@@ -1,11 +1,88 @@
+import * as vocab from "@fedify/vocab";
+import { renderCustomEmojis } from "@hackerspub/models/emoji";
+import { addExternalLinkTargets } from "@hackerspub/models/html";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
-import { pollVoteTable } from "@hackerspub/models/schema";
 import { eq } from "drizzle-orm";
-import { builder } from "./builder.ts";
+import { vote } from "@hackerspub/models/poll";
+import { isPostVisibleTo, persistPost } from "@hackerspub/models/post";
+import { pollVoteTable } from "@hackerspub/models/schema";
+import type { Uuid } from "@hackerspub/models/uuid";
 import { Actor } from "./actor.ts";
-import { Post } from "./post.ts";
+import { builder, type UserContext } from "./builder.ts";
+import { InvalidInputError } from "./error.ts";
+import { Post, Question } from "./post.ts";
+import { PostVisibility, toPostVisibility } from "./postvisibility.ts";
+import { NotAuthenticatedError } from "./session.ts";
 
-builder.drizzleNode("pollTable", {
+const pollBranchComplexity = { field: 0, multiplier: 0 } as const;
+const questionPollComplexity = { field: 0, multiplier: 0 } as const;
+
+builder.drizzleObjectFields(Question, (t) => ({
+  uuid: t.expose("id", { type: "UUID", complexity: questionPollComplexity }),
+  iri: t.field({
+    type: "URL",
+    complexity: questionPollComplexity,
+    select: {
+      columns: { iri: true },
+    },
+    resolve: (post) => new URL(post.iri),
+  }),
+  visibility: t.field({
+    type: PostVisibility,
+    complexity: questionPollComplexity,
+    select: {
+      columns: { visibility: true },
+    },
+    resolve(post) {
+      return toPostVisibility(post.visibility);
+    },
+  }),
+  content: t.field({
+    type: "HTML",
+    complexity: questionPollComplexity,
+    select: {
+      columns: {
+        contentHtml: true,
+        emojis: true,
+      },
+    },
+    resolve: (post, _, ctx) =>
+      addExternalLinkTargets(
+        renderCustomEmojis(post.contentHtml, post.emojis),
+        new URL(ctx.fedCtx.canonicalOrigin),
+      ),
+  }),
+  language: t.exposeString("language", {
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+  url: t.field({
+    type: "URL",
+    nullable: true,
+    complexity: questionPollComplexity,
+    select: {
+      columns: { url: true },
+    },
+    resolve: (post) => post.url ? new URL(post.url) : null,
+  }),
+  published: t.expose("published", {
+    type: "DateTime",
+    complexity: questionPollComplexity,
+  }),
+  actor: t.relation("actor", { complexity: questionPollComplexity }),
+  quotedPost: t.relation("quotedPost", {
+    type: Post,
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+  sharedPost: t.relation("sharedPost", {
+    type: Post,
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+}));
+
+const Poll = builder.drizzleNode("pollTable", {
   name: "Poll",
   id: {
     column: (poll) => poll.postId,
@@ -13,20 +90,48 @@ builder.drizzleNode("pollTable", {
   fields: (t) => ({
     multiple: t.exposeBoolean("multiple"),
     ends: t.expose("ends", { type: "DateTime" }),
+    closed: t.boolean({
+      select: {
+        columns: {
+          ends: true,
+        },
+      },
+      resolve(poll) {
+        return poll.ends <= new Date();
+      },
+    }),
+    viewerHasVoted: t.boolean({
+      select: {
+        columns: {
+          postId: true,
+        },
+      },
+      async resolve(poll, _, ctx) {
+        return (await getViewerPollOptionIndices(ctx, poll.postId)).size > 0;
+      },
+    }),
     post: t.relation("post", { type: Post }),
     options: t.field({
       type: [PollOption],
-      select: (_, __, nestedSelect) => ({
-        with: {
-          options: nestedSelect(),
-        },
-      }),
+      complexity: pollBranchComplexity,
+      select: (_, __, nestedSelect) => {
+        const selection = nestedSelect();
+        return {
+          with: {
+            options: {
+              ...(typeof selection === "object" ? selection : {}),
+              orderBy: (table, { asc }) => [asc(table.index)],
+            },
+          },
+        };
+      },
       resolve(poll) {
         return poll.options.toSorted((a, b) => a.index - b.index);
       },
     }),
     votes: t.connection({
       type: PollVote,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           votes: pollVoteConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -55,6 +160,7 @@ builder.drizzleNode("pollTable", {
     }),
     voters: t.connection({
       type: Actor,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           voters: actorConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -80,10 +186,25 @@ builder.drizzleNode("pollTable", {
 const PollOption = builder.drizzleObject("pollOptionTable", {
   name: "PollOption",
   fields: (t) => ({
+    index: t.exposeInt("index"),
     title: t.exposeString("title"),
     poll: t.relation("poll"),
+    viewerHasVoted: t.boolean({
+      select: {
+        columns: {
+          postId: true,
+          index: true,
+        },
+      },
+      async resolve(option, _, ctx) {
+        return (await getViewerPollOptionIndices(ctx, option.postId)).has(
+          option.index,
+        );
+      },
+    }),
     votes: t.connection({
       type: PollVote,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           votes: pollVoteConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -126,4 +247,255 @@ const actorConnectionHelpers = drizzleConnectionHelpers(
   builder,
   "actorTable",
   {},
+);
+
+async function getViewerPollOptionIndices(
+  ctx: UserContext,
+  postId: Uuid,
+): Promise<ReadonlySet<number>> {
+  if (ctx.account == null) return new Set();
+
+  ctx.pollViewerVotes ??= new Map();
+  const cached = ctx.pollViewerVotes.get(postId);
+  if (cached != null) return await cached;
+
+  const promise = ctx.db.query.pollVoteTable.findMany({
+    where: {
+      postId,
+      actorId: ctx.account.actor.id,
+    },
+    columns: {
+      optionIndex: true,
+    },
+  }).then((votes) =>
+    new Set(votes.map((vote) => vote.optionIndex)) as ReadonlySet<number>
+  );
+  ctx.pollViewerVotes.set(postId, promise);
+  return await promise;
+}
+
+builder.drizzleObjectField(Question, "poll", (t) =>
+  t.field({
+    type: Poll,
+    nullable: true,
+    complexity: questionPollComplexity,
+    select: (_, __, nestedSelect) => ({
+      columns: {
+        id: true,
+        iri: true,
+        sharedPostId: true,
+      },
+      with: {
+        poll: nestedSelect(),
+      },
+    }),
+    async resolve(question, _, ctx) {
+      if (question.poll != null) return question.poll;
+      if (question.sharedPostId != null) return null;
+
+      try {
+        const documentLoader = ctx.account == null
+          ? undefined
+          : await ctx.fedCtx.getDocumentLoader({
+            identifier: ctx.account.id,
+          });
+        const postObject = await ctx.fedCtx.lookupObject(question.iri, {
+          documentLoader,
+        });
+        if (!(postObject instanceof vocab.Question)) return null;
+
+        await persistPost(ctx.fedCtx, postObject, { documentLoader });
+      } catch {
+        return null;
+      }
+      const reloaded = await ctx.db.query.postTable.findFirst({
+        where: {
+          id: question.id,
+          type: "Question",
+        },
+        with: {
+          poll: {
+            extras: {
+              votesCount: (table) =>
+                ctx.db.$count(
+                  pollVoteTable,
+                  eq(pollVoteTable.postId, table.postId),
+                ),
+            },
+            with: {
+              options: {
+                orderBy: (table, { asc }) => [asc(table.index)],
+                with: {
+                  votes: true,
+                },
+              },
+              votes: true,
+              voters: true,
+            },
+          },
+        },
+      });
+      return reloaded?.poll ?? null;
+    },
+  }));
+
+builder.relayMutationField(
+  "voteOnPoll",
+  {
+    inputFields: (t) => ({
+      questionId: t.globalID({
+        for: [Question],
+        required: true,
+      }),
+      optionIndices: t.intList({ required: true }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      if (ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const optionIndices = new Set(args.input.optionIndices);
+      if (optionIndices.size !== args.input.optionIndices.length) {
+        throw new InvalidInputError("optionIndices");
+      }
+      if (optionIndices.size < 1) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      const question = await ctx.db.query.postTable.findFirst({
+        with: {
+          actor: {
+            with: {
+              followers: true,
+              blockees: true,
+              blockers: true,
+            },
+          },
+          mentions: true,
+          poll: {
+            with: {
+              options: {
+                orderBy: (table, { asc }) => [asc(table.index)],
+                with: {
+                  votes: true,
+                },
+              },
+              votes: true,
+              voters: true,
+            },
+          },
+        },
+        where: {
+          id: args.input.questionId.id,
+          type: "Question",
+        },
+      });
+
+      if (
+        question == null || question.poll == null ||
+        !isPostVisibleTo(question, ctx.account.actor)
+      ) {
+        throw new InvalidInputError("questionId");
+      }
+
+      if (question.poll.ends <= new Date()) {
+        throw new InvalidInputError("questionId");
+      }
+
+      if (!question.poll.multiple && optionIndices.size !== 1) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      const validOptionIndices = new Set(
+        question.poll.options.map((option) => option.index),
+      );
+      if (
+        [...optionIndices].some((index) => !validOptionIndices.has(index))
+      ) {
+        throw new InvalidInputError("optionIndices");
+      }
+
+      const persistedVotes = await vote(
+        ctx.fedCtx,
+        ctx.account,
+        question.poll,
+        optionIndices,
+      );
+      if (persistedVotes.length < 1) {
+        throw new InvalidInputError("questionId");
+      }
+
+      const updatedPoll = await ctx.db.query.pollTable.findFirst({
+        extras: {
+          votesCount: (table) =>
+            ctx.db.$count(
+              pollVoteTable,
+              eq(pollVoteTable.postId, table.postId),
+            ),
+        },
+        with: {
+          options: {
+            orderBy: (table, { asc }) => [asc(table.index)],
+            with: {
+              votes: true,
+            },
+          },
+          votes: true,
+          voters: true,
+        },
+        where: {
+          postId: question.id,
+        },
+      });
+      if (updatedPoll == null) {
+        throw new InvalidInputError("questionId");
+      }
+
+      const votes = persistedVotes
+        .toSorted((a, b) => a.optionIndex - b.optionIndex)
+        .map((pollVote) => {
+          const option = updatedPoll.options.find((option) =>
+            option.index === pollVote.optionIndex
+          );
+          if (option == null) {
+            throw new InvalidInputError("optionIndices");
+          }
+          return { ...pollVote, option };
+        });
+
+      const updatedQuestion = { ...question, poll: updatedPoll };
+
+      return { question: updatedQuestion, poll: updatedPoll, votes };
+    },
+  },
+  {
+    outputFields: (t) => ({
+      question: t.field({
+        type: Question,
+        resolve(result) {
+          return result.question;
+        },
+      }),
+      poll: t.field({
+        type: Poll,
+        resolve(result) {
+          return result.poll;
+        },
+      }),
+      votes: t.field({
+        type: [PollVote],
+        resolve(result) {
+          return result.votes;
+        },
+      }),
+    }),
+  },
 );

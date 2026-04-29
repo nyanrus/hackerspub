@@ -30,6 +30,16 @@ msgstr "{0, plural, other {# 팔로잉}}"
 msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {남은 초대 #건}}"
 
+#. placeholder {0}: votes()
+#: src/components/QuestionCard.tsx:351
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, other {#표}}"
+
+#. placeholder {0}: props.poll.voters.totalCount
+#: src/components/QuestionCard.tsx:295
+msgid "{0, plural, one {# voter} other {# voters}}"
+msgstr "{0, plural, other {투표자 #명}}"
+
 #. placeholder {0}: edge.node.tags.length - 3
 #: src/routes/(root)/[handle]/drafts/index.tsx:277
 msgid "{0, plural, one {+1 more} other {+# more}}"
@@ -129,11 +139,11 @@ msgid "{0} shared your post"
 msgstr "{0} 님이 회원님의 콘텐츠를 공유했습니다"
 
 #. placeholder {0}: article().actor.rawName
-#. placeholder {0}: note().actor.name
-#. placeholder {1}: note().excerpt
+#. placeholder {0}: post().actor.name
+#. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:154
-#: src/routes/(root)/[handle]/[noteId].tsx:144
+#: src/routes/(root)/[handle]/[noteId].tsx:194
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
@@ -306,7 +316,7 @@ msgstr "북마크"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
-#: src/components/PostActionMenu.tsx:284
+#: src/components/PostActionMenu.tsx:290
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:339
@@ -335,6 +345,10 @@ msgstr "초대장을 받을 친구가 사용하는 언어를 선택하세요. �
 #: src/routes/(root)/[handle]/invite/[id].tsx:391
 msgid "Choose your preferred language for the verification email."
 msgstr "인증 이메일의 언어를 선택해 주세요."
+
+#: src/components/QuestionCard.tsx:287
+msgid "Closed"
+msgstr "닫힘"
 
 #: src/components/ui/markdown-editor.tsx:279
 msgid "Code"
@@ -386,6 +400,10 @@ msgstr "클립보드에 링크를 복사할 수 없습니다."
 msgid "Could not find a post at this URL"
 msgstr "이 URL에서 콘텐츠를 찾을 수 없습니다"
 
+#: src/components/QuestionCard.tsx:251
+msgid "Could not vote on this poll"
+msgstr "이 투표에 참여할 수 없습니다"
+
 #: src/components/AppSidebar.tsx:490
 #: src/components/FloatingComposeButton.tsx:123
 msgid "Create Article"
@@ -436,8 +454,8 @@ msgstr "기본 단문 공개 범위"
 msgid "Default share privacy"
 msgstr "기본 공유 공개 범위"
 
-#: src/components/PostActionMenu.tsx:270
-#: src/components/PostActionMenu.tsx:290
+#: src/components/PostActionMenu.tsx:276
+#: src/components/PostActionMenu.tsx:296
 #: src/routes/(root)/[handle]/drafts/index.tsx:302
 #: src/routes/(root)/[handle]/settings/invite.tsx:667
 msgid "Delete"
@@ -447,7 +465,7 @@ msgstr "삭제"
 msgid "Delete Draft"
 msgstr "임시 보관 삭제"
 
-#: src/components/PostActionMenu.tsx:278
+#: src/components/PostActionMenu.tsx:284
 msgid "Delete post?"
 msgstr "콘텐츠를 삭제할까요?"
 
@@ -524,6 +542,14 @@ msgstr "이메일 주소"
 msgid "Email or username"
 msgstr "이메일 또는 아이디"
 
+#: src/components/QuestionCard.tsx:290
+msgid "Ended"
+msgstr "종료됨"
+
+#: src/components/QuestionCard.tsx:290
+msgid "Ends"
+msgstr "종료까지"
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:277
 msgid "Enter your email address below to get started."
 msgstr "아래에 이메일 주소를 입력하여 시작하세요."
@@ -596,8 +622,8 @@ msgstr "초대 링크 생성에 실패했습니다"
 msgid "Failed to delete invitation link"
 msgstr "초대 링크 삭제에 실패했습니다"
 
-#: src/components/PostActionMenu.tsx:218
-#: src/components/PostActionMenu.tsx:225
+#: src/components/PostActionMenu.tsx:224
+#: src/components/PostActionMenu.tsx:231
 msgid "Failed to delete post"
 msgstr "콘텐츠 삭제에 실패했습니다"
 
@@ -657,8 +683,8 @@ msgstr "인용 콘텐츠를 불러오지 못했습니다"
 msgid "Failed to look up user."
 msgstr "사용자 조회에 실패했습니다."
 
-#: src/components/PostActionMenu.tsx:188
-#: src/components/PostActionMenu.tsx:195
+#: src/components/PostActionMenu.tsx:189
+#: src/components/PostActionMenu.tsx:196
 msgid "Failed to pin post"
 msgstr "콘텐츠를 고정하지 못했습니다"
 
@@ -717,8 +743,8 @@ msgstr "로그아웃 실패: {0}"
 msgid "Failed to unfollow"
 msgstr "언팔로에 실패했습니다"
 
-#: src/components/PostActionMenu.tsx:164
-#: src/components/PostActionMenu.tsx:171
+#: src/components/PostActionMenu.tsx:165
+#: src/components/PostActionMenu.tsx:172
 msgid "Failed to unpin post"
 msgstr "콘텐츠 고정을 해제하지 못했습니다"
 
@@ -733,6 +759,10 @@ msgstr "게시글을 수정하지 못했습니다. 다시 시도해 주세요."
 #: src/components/article-composer/ArticleComposerForm.tsx:29
 msgid "Failed to upload image"
 msgstr "이미지 업로드에 실패했습니다"
+
+#: src/components/QuestionCard.tsx:259
+msgid "Failed to vote"
+msgstr "투표에 실패했습니다"
 
 #: src/components/AppSidebar.tsx:261
 msgid "Fediverse"
@@ -851,9 +881,14 @@ msgid "If you have a fediverse account, you can reply to this article from your 
 msgstr "연합우주(fediverse) 계정이 있으시다면, 이 게시글에 댓글을 달 수 있습니다. 사용하시는 인스턴스의 검색창에 {0}로 검색하신 뒤, 해당 게시글에 댓글을 남기시면 됩니다."
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[noteId].tsx:254
+#: src/routes/(root)/[handle]/[noteId].tsx:299
 msgid "If you have a fediverse account, you can reply to this note from your own instance. Search {0} on your instance and reply to it."
 msgstr "연합우주(fediverse) 계정이 있으시다면, 이 단문에 댓글을 달 수 있습니다. 사용하시는 인스턴스의 검색창에 {0}로 검색하신 뒤, 해당 단문에 댓글을 남기시면 됩니다."
+
+#. placeholder {0}: "ACTIVITYPUB_URI"
+#: src/routes/(root)/[handle]/[noteId].tsx:440
+msgid "If you have a fediverse account, you can reply to this post from your own instance. Search {0} on your instance and reply to it."
+msgstr "연합우주 계정이 있으시다면, 이 콘텐츠에 댓글을 달 수 있습니다. 사용하시는 인스턴스에서 {0}을 검색한 뒤 댓글을 남기세요."
 
 #: src/components/ui/markdown-editor.tsx:572
 #: src/components/ui/markdown-editor.tsx:573
@@ -1108,6 +1143,10 @@ msgstr "맨 위로 이동"
 msgid "Move up"
 msgstr "위로 이동"
 
+#: src/components/QuestionCard.tsx:284
+msgid "Multiple choice"
+msgstr "복수 선택"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:387
 msgid "My passkey"
 msgstr "내 패스키"
@@ -1226,6 +1265,10 @@ msgstr "알림"
 msgid "Number of invitations"
 msgstr "초대 횟수"
 
+#: src/components/QuestionCard.tsx:287
+msgid "Open"
+msgstr "진행 중"
+
 #: src/routes/applink/sign/in/[token].tsx:47
 msgid "Open in app"
 msgstr "앱에서 열기"
@@ -1276,11 +1319,11 @@ msgstr "패스키"
 msgid "Permission Denied"
 msgstr "권한이 거부되었습니다"
 
-#: src/components/PostActionMenu.tsx:260
+#: src/components/PostActionMenu.tsx:266
 msgid "Pin to profile"
 msgstr "프로필에 고정"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:104
+#: src/routes/(root)/[handle]/(profile)/index.tsx:179
 msgid "Pinned posts"
 msgstr "고정된 콘텐츠"
 
@@ -1308,15 +1351,23 @@ msgstr "연합우주 핸들을 입력해 주세요."
 msgid "Please sign in to access this page"
 msgstr "이 페이지에 접근하려면 로그인하세요"
 
-#: src/components/PostActionMenu.tsx:214
+#: src/components/QuestionCard.tsx:245
+msgid "Please sign in to vote"
+msgstr "투표하려면 로그인하세요"
+
+#: src/components/QuestionCard.tsx:220
+msgid "Poll closed"
+msgstr "투표가 마감되었습니다"
+
+#: src/components/PostActionMenu.tsx:220
 msgid "Post deleted"
 msgstr "콘텐츠가 삭제되었습니다"
 
-#: src/components/PostActionMenu.tsx:185
+#: src/components/PostActionMenu.tsx:186
 msgid "Post pinned"
 msgstr "콘텐츠를 고정했습니다"
 
-#: src/components/PostActionMenu.tsx:161
+#: src/components/PostActionMenu.tsx:162
 msgid "Post unpinned"
 msgstr "콘텐츠 고정을 해제했습니다"
 
@@ -1524,6 +1575,14 @@ msgstr "콘텐츠 검색…"
 msgid "Search results for {0}"
 msgstr "{0}의 검색 결과"
 
+#: src/components/QuestionCard.tsx:225
+msgid "Select an option"
+msgstr "선택지를 선택하세요"
+
+#: src/components/QuestionCard.tsx:225
+msgid "Select options"
+msgstr "선택지를 선택하세요"
+
 #: src/routes/(root)/[handle]/settings/language.tsx:113
 msgid "Select your preferred languages in order of preference. This will help tailor content to your preferences."
 msgstr "선호하는 언어를 우선순위에 따라 선택하세요. 콘텐츠를 사용자의 취향에 맞게 조정하는 데 도움이 됩니다."
@@ -1566,6 +1625,10 @@ msgstr "로그인"
 msgid "Sign in to Hackers' Pub"
 msgstr "Hackers' Pub 로그인"
 
+#: src/components/QuestionCard.tsx:222
+msgid "Sign in to vote"
+msgstr "로그인 후 투표"
+
 #: src/routes/(root)/sign/index.tsx:420
 msgid "Sign in with passkey"
 msgstr "패스키를 사용하여 로그인"
@@ -1594,6 +1657,10 @@ msgstr "로그인 중…"
 #: src/routes/(root)/sign/up/[token].tsx:313
 msgid "Signing up for Hackers' Pub"
 msgstr "Hackers' Pub 가입"
+
+#: src/components/QuestionCard.tsx:284
+msgid "Single choice"
+msgstr "단일 선택"
 
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:20
 msgid "Slug (URL)"
@@ -1717,7 +1784,7 @@ msgstr "이 웹사이트의 소스 코드는 {1} 라이선스로 {0}에서 배�
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
 msgstr "링크의 URL. 예: https://github.com/yourhandle."
 
-#: src/components/PostActionMenu.tsx:280
+#: src/components/PostActionMenu.tsx:286
 msgid "This action cannot be undone. This will permanently delete this post."
 msgstr "이 작업은 되돌릴 수 없습니다. 이 콘텐츠는 영구적으로 삭제됩니다."
 
@@ -1805,7 +1872,7 @@ msgstr "반응을 제거할 수 없습니다. 다시 시도해주세요."
 msgid "Unfollow"
 msgstr "언팔로"
 
-#: src/components/PostActionMenu.tsx:261
+#: src/components/PostActionMenu.tsx:267
 msgid "Unpin from profile"
 msgstr "프로필에서 고정 해제"
 
@@ -1888,6 +1955,22 @@ msgstr "모든 사람이 볼 수 있지만 공개 타임라인에는 표시되�
 #: src/components/VisibilityTag.tsx:35
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "미가입 사용자를 포함해 모든 사람이 볼 수 있습니다. 공개 타임라인에도 표시됩니다."
+
+#: src/components/QuestionCard.tsx:227
+msgid "Vote"
+msgstr "투표"
+
+#: src/components/QuestionCard.tsx:241
+msgid "Vote recorded"
+msgstr "투표했습니다"
+
+#: src/components/QuestionCard.tsx:221
+msgid "Voted"
+msgstr "투표함"
+
+#: src/components/QuestionCard.tsx:223
+msgid "Voting…"
+msgstr "투표 중…"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:551
 msgid "Website"
