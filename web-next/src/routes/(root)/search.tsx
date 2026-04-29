@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "@solidjs/router";
 import { graphql } from "relay-runtime";
-import { Accessor, createSignal, Show } from "solid-js";
+import { Accessor, createEffect, Show } from "solid-js";
 import {
   createPreloadedQuery,
   loadQuery,
@@ -116,12 +116,9 @@ export default function SearchPage() {
   const { t } = useLingui();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = createSignal(
-    (Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q) ?? "",
-  );
-  const [searchType, setSearchType] = createSignal(
-    getSearchType(searchQuery()),
-  );
+  const searchQuery = () =>
+    (Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q) ?? "";
+  const searchType = () => getSearchType(searchQuery());
 
   return (
     <NarrowContainer class="p-4">
@@ -134,8 +131,6 @@ export default function SearchPage() {
             const formData = new FormData(e.currentTarget);
             const query = formData.get("q")?.toString() ?? "";
             navigate(`?q=${encodeURIComponent(query)}`);
-            setSearchQuery(query);
-            setSearchType(getSearchType(query));
           }}
         >
           <input
@@ -161,7 +156,6 @@ export default function SearchPage() {
         <SearchPageContent
           searchQuery={searchQuery}
           searchType={searchType}
-          setSearchType={setSearchType}
         />
       </Show>
     </NarrowContainer>
@@ -172,7 +166,6 @@ function SearchPageContent(
   props: {
     searchQuery: Accessor<string>;
     searchType: Accessor<"posts" | "url" | "handle">;
-    setSearchType: (type: "posts" | "url" | "handle") => void;
   },
 ) {
   const { t } = useLingui();
@@ -189,10 +182,7 @@ function SearchPageContent(
         <SearchPostsContent searchQuery={props.searchQuery} />
       </Show>
       <Show when={props.searchType() !== "posts"}>
-        <SearchObjectContent
-          searchQuery={props.searchQuery}
-          setSearchType={props.setSearchType}
-        />
+        <SearchObjectContent searchQuery={props.searchQuery} />
       </Show>
     </>
   );
@@ -200,14 +190,12 @@ function SearchPageContent(
 
 function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
   const { i18n } = useLingui();
-  // prevent fetching query here. SearchResults should handle it
-  const query = props.searchQuery();
 
   const data = createPreloadedQuery<searchPostsPageQuery>(
     searchPostsPageQuery,
     () =>
       loadSearchPostsQuery(
-        query,
+        props.searchQuery(),
         i18n.locale,
         i18n.locales != null && Array.isArray(i18n.locales) ? i18n.locales : [],
       ),
@@ -225,7 +213,6 @@ function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
 function SearchObjectContent(
   props: {
     searchQuery: Accessor<string>;
-    setSearchType: (type: "posts" | "url" | "handle") => void;
   },
 ) {
   const { t } = useLingui();
@@ -235,13 +222,19 @@ function SearchObjectContent(
     () => loadSearchObjectQuery(props.searchQuery()),
   );
 
+  createEffect(() => {
+    const searchResult = data()?.searchObject;
+    if (searchResult != null && "url" in searchResult && searchResult.url) {
+      navigate(searchResult.url);
+    }
+  });
+
   return (
     <Show when={data()}>
       {(data) => {
         const searchResult = data()?.searchObject;
         if (searchResult == null) {
-          props.setSearchType("posts");
-          return null;
+          return <SearchPostsContent searchQuery={props.searchQuery} />;
         }
         if (searchResult?.__typename === "EmptySearchQueryError") {
           return (
@@ -250,12 +243,7 @@ function SearchObjectContent(
             </div>
           );
         }
-        const redirectUrl = searchResult?.url;
-        if (redirectUrl) {
-          navigate(redirectUrl);
-          return null;
-        }
-        return <div class="text-gray-500">{t`Not found.`}</div>;
+        return null;
       }}
     </Show>
   );
