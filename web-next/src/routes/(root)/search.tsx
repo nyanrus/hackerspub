@@ -3,13 +3,14 @@ import {
   HANDLE_REGEXP,
 } from "@hackerspub/models/searchPatterns";
 import {
+  Navigate,
   query,
   type RouteDefinition,
   useNavigate,
   useSearchParams,
 } from "@solidjs/router";
 import { graphql } from "relay-runtime";
-import { Accessor, createSignal, Show } from "solid-js";
+import { type Accessor, Show } from "solid-js";
 import {
   createPreloadedQuery,
   loadQuery,
@@ -21,6 +22,7 @@ import { SearchResults } from "~/components/SearchResults.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { searchObjectPageQuery } from "./__generated__/searchObjectPageQuery.graphql.ts";
+import type { searchObjectPageQuery$data } from "./__generated__/searchObjectPageQuery.graphql.ts";
 import type { searchPostsPageQuery } from "./__generated__/searchPostsPageQuery.graphql.ts";
 
 export const route = {
@@ -116,12 +118,9 @@ export default function SearchPage() {
   const { t } = useLingui();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = createSignal(
-    (Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q) ?? "",
-  );
-  const [searchType, setSearchType] = createSignal(
-    getSearchType(searchQuery()),
-  );
+  const searchQuery = () =>
+    (Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q) ?? "";
+  const searchType = () => getSearchType(searchQuery());
 
   return (
     <NarrowContainer class="p-4">
@@ -134,8 +133,6 @@ export default function SearchPage() {
             const formData = new FormData(e.currentTarget);
             const query = formData.get("q")?.toString() ?? "";
             navigate(`?q=${encodeURIComponent(query)}`);
-            setSearchQuery(query);
-            setSearchType(getSearchType(query));
           }}
         >
           <input
@@ -161,7 +158,6 @@ export default function SearchPage() {
         <SearchPageContent
           searchQuery={searchQuery}
           searchType={searchType}
-          setSearchType={setSearchType}
         />
       </Show>
     </NarrowContainer>
@@ -172,7 +168,6 @@ function SearchPageContent(
   props: {
     searchQuery: Accessor<string>;
     searchType: Accessor<"posts" | "url" | "handle">;
-    setSearchType: (type: "posts" | "url" | "handle") => void;
   },
 ) {
   const { t } = useLingui();
@@ -188,11 +183,8 @@ function SearchPageContent(
       <Show when={props.searchType() === "posts"}>
         <SearchPostsContent searchQuery={props.searchQuery} />
       </Show>
-      <Show when={props.searchType() !== "posts"}>
-        <SearchObjectContent
-          searchQuery={props.searchQuery}
-          setSearchType={props.setSearchType}
-        />
+      <Show when={props.searchType() !== "posts" && props.searchQuery()} keyed>
+        {(searchQuery) => <SearchObjectContent searchQuery={searchQuery} />}
       </Show>
     </>
   );
@@ -200,14 +192,13 @@ function SearchPageContent(
 
 function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
   const { i18n } = useLingui();
-  // prevent fetching query here. SearchResults should handle it
-  const query = props.searchQuery();
+  const initialSearchQuery = props.searchQuery();
 
   const data = createPreloadedQuery<searchPostsPageQuery>(
     searchPostsPageQuery,
     () =>
       loadSearchPostsQuery(
-        query,
+        initialSearchQuery,
         i18n.locale,
         i18n.locales != null && Array.isArray(i18n.locales) ? i18n.locales : [],
       ),
@@ -224,39 +215,48 @@ function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
 
 function SearchObjectContent(
   props: {
-    searchQuery: Accessor<string>;
-    setSearchType: (type: "posts" | "url" | "handle") => void;
+    searchQuery: string;
   },
 ) {
-  const { t } = useLingui();
-  const navigate = useNavigate();
   const data = createPreloadedQuery<searchObjectPageQuery>(
     searchObjectPageQuery,
-    () => loadSearchObjectQuery(props.searchQuery()),
+    () => loadSearchObjectQuery(props.searchQuery),
   );
 
   return (
-    <Show when={data()}>
-      {(data) => {
-        const searchResult = data()?.searchObject;
-        if (searchResult == null) {
-          props.setSearchType("posts");
-          return null;
-        }
-        if (searchResult?.__typename === "EmptySearchQueryError") {
-          return (
-            <div class="text-red-500">
-              {t`Query cannot be empty`}
-            </div>
-          );
-        }
-        const redirectUrl = searchResult?.url;
-        if (redirectUrl) {
-          navigate(redirectUrl);
-          return null;
-        }
-        return <div class="text-gray-500">{t`Not found.`}</div>;
-      }}
+    <Show when={data()} keyed>
+      {(data) => (
+        <SearchObjectResult
+          searchResult={data.searchObject}
+          searchQuery={props.searchQuery}
+        />
+      )}
     </Show>
   );
+}
+
+type SearchObjectResultData = searchObjectPageQuery$data["searchObject"];
+
+function SearchObjectResult(
+  props: {
+    searchResult: SearchObjectResultData;
+    searchQuery: string;
+  },
+) {
+  const { t } = useLingui();
+
+  if (props.searchResult == null) {
+    return <SearchPostsContent searchQuery={() => props.searchQuery} />;
+  }
+  if ("url" in props.searchResult && props.searchResult.url) {
+    return <Navigate href={props.searchResult.url} />;
+  }
+  if (props.searchResult.__typename === "EmptySearchQueryError") {
+    return (
+      <div class="text-red-500">
+        {t`Query cannot be empty`}
+      </div>
+    );
+  }
+  return <div>{t`No matching object found`}</div>;
 }
