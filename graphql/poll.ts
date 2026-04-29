@@ -1,4 +1,6 @@
 import * as vocab from "@fedify/vocab";
+import { renderCustomEmojis } from "@hackerspub/models/emoji";
+import { addExternalLinkTargets } from "@hackerspub/models/html";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { eq } from "drizzle-orm";
 import { vote } from "@hackerspub/models/poll";
@@ -9,7 +11,76 @@ import { Actor } from "./actor.ts";
 import { builder, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { Post, Question } from "./post.ts";
+import { PostVisibility, toPostVisibility } from "./postvisibility.ts";
 import { NotAuthenticatedError } from "./session.ts";
+
+const pollBranchComplexity = { field: 0, multiplier: 0 } as const;
+const questionPollComplexity = { field: 0, multiplier: 0 } as const;
+
+builder.drizzleObjectFields(Question, (t) => ({
+  uuid: t.expose("id", { type: "UUID", complexity: questionPollComplexity }),
+  iri: t.field({
+    type: "URL",
+    complexity: questionPollComplexity,
+    select: {
+      columns: { iri: true },
+    },
+    resolve: (post) => new URL(post.iri),
+  }),
+  visibility: t.field({
+    type: PostVisibility,
+    complexity: questionPollComplexity,
+    select: {
+      columns: { visibility: true },
+    },
+    resolve(post) {
+      return toPostVisibility(post.visibility);
+    },
+  }),
+  content: t.field({
+    type: "HTML",
+    complexity: questionPollComplexity,
+    select: {
+      columns: {
+        contentHtml: true,
+        emojis: true,
+      },
+    },
+    resolve: (post, _, ctx) =>
+      addExternalLinkTargets(
+        renderCustomEmojis(post.contentHtml, post.emojis),
+        new URL(ctx.fedCtx.canonicalOrigin),
+      ),
+  }),
+  language: t.exposeString("language", {
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+  url: t.field({
+    type: "URL",
+    nullable: true,
+    complexity: questionPollComplexity,
+    select: {
+      columns: { url: true },
+    },
+    resolve: (post) => post.url ? new URL(post.url) : null,
+  }),
+  published: t.expose("published", {
+    type: "DateTime",
+    complexity: questionPollComplexity,
+  }),
+  actor: t.relation("actor", { complexity: questionPollComplexity }),
+  quotedPost: t.relation("quotedPost", {
+    type: Post,
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+  sharedPost: t.relation("sharedPost", {
+    type: Post,
+    nullable: true,
+    complexity: questionPollComplexity,
+  }),
+}));
 
 const Poll = builder.drizzleNode("pollTable", {
   name: "Poll",
@@ -42,6 +113,7 @@ const Poll = builder.drizzleNode("pollTable", {
     post: t.relation("post", { type: Post }),
     options: t.field({
       type: [PollOption],
+      complexity: pollBranchComplexity,
       select: (_, __, nestedSelect) => ({
         with: {
           options: nestedSelect(),
@@ -53,6 +125,7 @@ const Poll = builder.drizzleNode("pollTable", {
     }),
     votes: t.connection({
       type: PollVote,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           votes: pollVoteConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -81,6 +154,7 @@ const Poll = builder.drizzleNode("pollTable", {
     }),
     voters: t.connection({
       type: Actor,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           voters: actorConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -124,6 +198,7 @@ const PollOption = builder.drizzleObject("pollOptionTable", {
     }),
     votes: t.connection({
       type: PollVote,
+      complexity: pollBranchComplexity,
       select: (args, ctx, nestedSelect) => ({
         with: {
           votes: pollVoteConnectionHelpers.getQuery(args, ctx, nestedSelect),
@@ -197,6 +272,7 @@ builder.drizzleObjectField(Question, "poll", (t) =>
   t.field({
     type: Poll,
     nullable: true,
+    complexity: questionPollComplexity,
     select: (_, __, nestedSelect) => ({
       columns: {
         id: true,

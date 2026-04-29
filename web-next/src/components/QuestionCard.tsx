@@ -22,12 +22,12 @@ import type { QuestionCard_question$key } from "./__generated__/QuestionCard_que
 import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
 import { InternalLink } from "./InternalLink.tsx";
-import { PostActionMenu } from "./PostActionMenu.tsx";
+import { QuestionActionMenu } from "./PostActionMenu.tsx";
 import { PostAvatar } from "./PostAvatar.tsx";
 import { PostControls } from "./PostControls.tsx";
-import { PostSharer } from "./PostSharer.tsx";
 import { QuotedPostCard } from "./QuotedPostCard.tsx";
 import { Timestamp } from "./Timestamp.tsx";
+import { Trans } from "./Trans.tsx";
 import { VisibilityTag } from "./VisibilityTag.tsx";
 
 export interface QuestionCardProps {
@@ -42,7 +42,13 @@ export function QuestionCard(props: QuestionCardProps) {
   const question = createFragment(
     graphql`
       fragment QuestionCard_question on Question {
-        ...PostSharer_post
+        actor {
+          name
+          local
+          username
+          handle
+        }
+        published
         ...QuestionCardContent_question
         sharedPost {
           __typename
@@ -54,6 +60,7 @@ export function QuestionCard(props: QuestionCardProps) {
     `,
     () => props.$question,
   );
+  const { t } = useLingui();
 
   return (
     <Show when={question()}>
@@ -66,7 +73,26 @@ export function QuestionCard(props: QuestionCardProps) {
           <article class="px-4 py-3 border-b-1">
             <div class="flex flex-col gap-0.5">
               <Show when={sharedQuestion()}>
-                <PostSharer $post={q()} class="ml-14" />
+                <p class="ml-14 text-sm text-muted-foreground">
+                  <Trans
+                    message={t`${"SHARER"} shared ${"RELATIVE_TIME"}`}
+                    values={{
+                      SHARER: () => (
+                        <a
+                          href={`/${
+                            q().actor.local
+                              ? `@${q().actor.username}`
+                              : q().actor.handle
+                          }`}
+                          class="font-semibold"
+                        >
+                          {q().actor.name}
+                        </a>
+                      ),
+                      RELATIVE_TIME: () => <Timestamp value={q().published} />,
+                    }}
+                  />
+                </p>
               </Show>
               <QuestionCardContent
                 $question={sharedQuestion() ?? q()}
@@ -136,7 +162,7 @@ function QuestionCardContent(props: QuestionCardContentProps) {
         quotedPost {
           ...QuotedPostCard_post
         }
-        ...PostActionMenu_post
+        ...PostActionMenu_question
         ...PostControls_post
       }
     `,
@@ -219,8 +245,8 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                 </InternalLink>
                 &middot;
                 <VisibilityTag visibility={q().visibility} />
-                <PostActionMenu
-                  $post={q()}
+                <QuestionActionMenu
+                  $question={q()}
                   connections={props.connections}
                   pinConnections={props.pinConnections}
                   onDeleted={props.onDeleted}
