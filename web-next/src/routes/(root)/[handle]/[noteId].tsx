@@ -17,6 +17,7 @@ import {
 } from "solid-relay";
 import { NarrowContainer } from "~/components/NarrowContainer.tsx";
 import { NoteCard } from "~/components/NoteCard.tsx";
+import { PostCard } from "~/components/PostCard.tsx";
 import { QuestionCard } from "~/components/QuestionCard.tsx";
 import { Title } from "~/components/Title.tsx";
 import { Trans } from "~/components/Trans.tsx";
@@ -320,6 +321,16 @@ function QuestionInternal(props: QuestionInternalProps) {
         iri
         url
         ...QuestionCard_question
+        replyTarget {
+          ...PostCard_post
+        }
+        replies {
+          edges {
+            node {
+              ...PostCard_post
+            }
+          }
+        }
       }
     `,
     () => props.$question,
@@ -329,6 +340,13 @@ function QuestionInternal(props: QuestionInternalProps) {
       {(question) => (
         <NarrowContainer>
           <div class="my-4">
+            <Show when={question().replyTarget}>
+              {(parent) => (
+                <div class="border-x border-t rounded-t-xl">
+                  <PostCard $post={parent()} />
+                </div>
+              )}
+            </Show>
             <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl text-xl">
               <QuestionCard
                 $question={question()}
@@ -349,6 +367,17 @@ function QuestionInternal(props: QuestionInternalProps) {
                 </p>
               </Show>
             </div>
+            <Show when={question().replies?.edges.length}>
+              <div class="border-x border-b rounded-b-xl">
+                <For each={question().replies?.edges}>
+                  {(edge) => (
+                    <Show when={edge.node}>
+                      {(reply) => <PostCard $post={reply()} />}
+                    </Show>
+                  )}
+                </For>
+              </div>
+            </Show>
           </div>
         </NarrowContainer>
       )}
