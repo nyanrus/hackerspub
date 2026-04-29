@@ -352,60 +352,47 @@ builder.relayMutationField(
         question.poll,
         optionIndices,
       );
+      if (persistedVotes.length < 1) {
+        throw new InvalidInputError("questionId");
+      }
 
-      const votes = await ctx.db.query.pollVoteTable.findMany({
+      const votes = persistedVotes
+        .toSorted((a, b) => a.optionIndex - b.optionIndex)
+        .map((pollVote) => ({
+          ...pollVote,
+          option: question.poll!.options.find((option) =>
+            option.index === pollVote.optionIndex
+          ),
+        }));
+
+      const updatedPoll = await ctx.db.query.pollTable.findFirst({
+        extras: {
+          votesCount: (table) =>
+            ctx.db.$count(
+              pollVoteTable,
+              eq(pollVoteTable.postId, table.postId),
+            ),
+        },
         with: {
-          option: true,
+          options: {
+            with: {
+              votes: true,
+            },
+          },
+          votes: true,
+          voters: true,
         },
         where: {
           postId: question.id,
-          actorId: ctx.account.actor.id,
         },
-        orderBy: { optionIndex: "asc" },
       });
-      if (persistedVotes.length < 1 && votes.length < 1) {
+      if (updatedPoll == null) {
         throw new InvalidInputError("questionId");
       }
 
-      const updatedQuestion = await ctx.db.query.postTable.findFirst({
-        with: {
-          actor: {
-            with: {
-              followers: true,
-              blockees: true,
-              blockers: true,
-            },
-          },
-          mentions: true,
-          poll: {
-            extras: {
-              votesCount: (table) =>
-                ctx.db.$count(
-                  pollVoteTable,
-                  eq(pollVoteTable.postId, table.postId),
-                ),
-            },
-            with: {
-              options: {
-                with: {
-                  votes: true,
-                },
-              },
-              votes: true,
-              voters: true,
-            },
-          },
-        },
-        where: {
-          id: question.id,
-          type: "Question",
-        },
-      });
-      if (updatedQuestion == null || updatedQuestion.poll == null) {
-        throw new InvalidInputError("questionId");
-      }
+      const updatedQuestion = { ...question, poll: updatedPoll };
 
-      return { question: updatedQuestion, poll: updatedQuestion.poll, votes };
+      return { question: updatedQuestion, poll: updatedPoll, votes };
     },
   },
   {
