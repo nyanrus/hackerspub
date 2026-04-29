@@ -520,9 +520,8 @@ interface RecentDraftsSectionProps {
 function RecentDraftsSection(props: RecentDraftsSectionProps) {
   const { t } = useLingui();
   const visibleDrafts = () =>
-    props.signedAccount?.articleDrafts.edges.slice(0, 3).filter((edge) =>
-      edge.node != null
-    ) ?? [];
+    props.signedAccount?.articleDrafts.edges.filter((edge) => edge.node != null)
+      .slice(0, 3) ?? [];
   const hasMoreDrafts = () => {
     const articleDrafts = props.signedAccount?.articleDrafts;
     if (articleDrafts == null) return false;
@@ -643,6 +642,7 @@ function AppSidebarFooter() {
               <a
                 href="https://github.com/hackers-pub/hackerspub"
                 target="_blank"
+                rel="noopener noreferrer"
                 class="underline"
               >
                 {t`GitHub repository`}
@@ -652,6 +652,7 @@ function AppSidebarFooter() {
               <a
                 href="https://www.gnu.org/licenses/agpl-3.0.en.html"
                 target="_blank"
+                rel="noopener noreferrer"
                 class="underline"
               >
                 AGPL 3.0
