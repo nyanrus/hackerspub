@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "@solidjs/router";
 import { graphql } from "relay-runtime";
-import { Accessor, createEffect, Show } from "solid-js";
+import { type Accessor, createEffect, Show } from "solid-js";
 import {
   createPreloadedQuery,
   loadQuery,
@@ -190,12 +190,13 @@ function SearchPageContent(
 
 function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
   const { i18n } = useLingui();
+  const initialSearchQuery = props.searchQuery();
 
   const data = createPreloadedQuery<searchPostsPageQuery>(
     searchPostsPageQuery,
     () =>
       loadSearchPostsQuery(
-        props.searchQuery(),
+        initialSearchQuery,
         i18n.locale,
         i18n.locales != null && Array.isArray(i18n.locales) ? i18n.locales : [],
       ),
