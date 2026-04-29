@@ -230,7 +230,6 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                 <PollPanel
                   questionId={q().id}
                   poll={poll()}
-                  totalVotes={poll().votes.totalCount}
                 />
               )}
             </Show>
@@ -250,9 +249,12 @@ function QuestionCardContent(props: QuestionCardContentProps) {
   function PollPanel(props: {
     questionId: string;
     poll: NonNullable<NonNullable<ReturnType<typeof question>>["poll"]>;
-    totalVotes: number;
   }) {
-    const totalVotes = () => Math.max(props.totalVotes, 0);
+    const totalVotes = () =>
+      props.poll.options.reduce(
+        (sum, option) => sum + Math.max(option.votes.totalCount, 0),
+        0,
+      );
     const percent = (count: number) =>
       totalVotes() < 1 ? 0 : Math.round((count / totalVotes()) * 100);
     const canVote = () =>
