@@ -22,6 +22,7 @@ import { SearchResults } from "~/components/SearchResults.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { searchObjectPageQuery } from "./__generated__/searchObjectPageQuery.graphql.ts";
+import type { searchObjectPageQuery$data } from "./__generated__/searchObjectPageQuery.graphql.ts";
 import type { searchPostsPageQuery } from "./__generated__/searchPostsPageQuery.graphql.ts";
 
 export const route = {
@@ -182,8 +183,8 @@ function SearchPageContent(
       <Show when={props.searchType() === "posts"}>
         <SearchPostsContent searchQuery={props.searchQuery} />
       </Show>
-      <Show when={props.searchType() !== "posts"}>
-        <SearchObjectContent searchQuery={props.searchQuery} />
+      <Show when={props.searchType() !== "posts" && props.searchQuery()} keyed>
+        {(searchQuery) => <SearchObjectContent searchQuery={searchQuery} />}
       </Show>
     </>
   );
@@ -214,34 +215,48 @@ function SearchPostsContent(props: { searchQuery: Accessor<string> }) {
 
 function SearchObjectContent(
   props: {
-    searchQuery: Accessor<string>;
+    searchQuery: string;
   },
 ) {
-  const { t } = useLingui();
   const data = createPreloadedQuery<searchObjectPageQuery>(
     searchObjectPageQuery,
-    () => loadSearchObjectQuery(props.searchQuery()),
+    () => loadSearchObjectQuery(props.searchQuery),
   );
 
   return (
-    <Show when={data()}>
-      {(data) => {
-        const searchResult = data()?.searchObject;
-        if (searchResult == null) {
-          return <SearchPostsContent searchQuery={props.searchQuery} />;
-        }
-        if ("url" in searchResult && searchResult.url) {
-          return <Navigate href={searchResult.url} />;
-        }
-        if (searchResult?.__typename === "EmptySearchQueryError") {
-          return (
-            <div class="text-red-500">
-              {t`Query cannot be empty`}
-            </div>
-          );
-        }
-        return <div>{t`No matching object found`}</div>;
-      }}
+    <Show when={data()} keyed>
+      {(data) => (
+        <SearchObjectResult
+          searchResult={data.searchObject}
+          searchQuery={props.searchQuery}
+        />
+      )}
     </Show>
   );
+}
+
+type SearchObjectResultData = searchObjectPageQuery$data["searchObject"];
+
+function SearchObjectResult(
+  props: {
+    searchResult: SearchObjectResultData;
+    searchQuery: string;
+  },
+) {
+  const { t } = useLingui();
+
+  if (props.searchResult == null) {
+    return <SearchPostsContent searchQuery={() => props.searchQuery} />;
+  }
+  if ("url" in props.searchResult && props.searchResult.url) {
+    return <Navigate href={props.searchResult.url} />;
+  }
+  if (props.searchResult.__typename === "EmptySearchQueryError") {
+    return (
+      <div class="text-red-500">
+        {t`Query cannot be empty`}
+      </div>
+    );
+  }
+  return <div>{t`No matching object found`}</div>;
 }
