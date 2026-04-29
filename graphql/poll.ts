@@ -283,8 +283,21 @@ builder.relayMutationField(
           },
           mentions: true,
           poll: {
+            extras: {
+              votesCount: (table) =>
+                ctx.db.$count(
+                  pollVoteTable,
+                  eq(pollVoteTable.postId, table.postId),
+                ),
+            },
             with: {
-              options: true,
+              options: {
+                with: {
+                  votes: true,
+                },
+              },
+              votes: true,
+              voters: true,
             },
           },
         },
