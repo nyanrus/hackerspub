@@ -1,5 +1,5 @@
 import { graphql } from "relay-runtime";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, onCleanup, Show } from "solid-js";
 import { createFragment, createMutation } from "solid-relay";
 import { Badge } from "~/components/ui/badge.tsx";
 import { Button } from "~/components/ui/button.tsx";
@@ -250,6 +250,9 @@ function QuestionCardContent(props: QuestionCardContentProps) {
     questionId: string;
     poll: NonNullable<NonNullable<ReturnType<typeof question>>["poll"]>;
   }) {
+    const [now, setNow] = createSignal(Date.now());
+    const endsAt = () => new Date(props.poll.ends).getTime();
+    const isClosed = () => props.poll.closed || endsAt() <= now();
     const totalVotes = () =>
       props.poll.options.reduce(
         (sum, option) => sum + Math.max(option.votes.totalCount, 0),
@@ -258,7 +261,7 @@ function QuestionCardContent(props: QuestionCardContentProps) {
     const percent = (count: number) =>
       totalVotes() < 1 ? 0 : Math.round((count / totalVotes()) * 100);
     const canVote = () =>
-      viewer.isAuthenticated() && !props.poll.closed &&
+      viewer.isAuthenticated() && !isClosed() &&
       !props.poll.viewerHasVoted && !isVoting();
     const hasSelection = () => selectedOptions().size > 0;
     const isSelected = (index: number, viewerHasVoted: boolean) =>
@@ -277,7 +280,7 @@ function QuestionCardContent(props: QuestionCardContentProps) {
       }
     };
     const actionLabel = () => {
-      if (props.poll.closed) return t`Poll closed`;
+      if (isClosed()) return t`Poll closed`;
       if (props.poll.viewerHasVoted) return t`Voted`;
       if (!viewer.isAuthenticated()) return t`Sign in to vote`;
       if (isVoting()) return t`Voting…`;
@@ -323,14 +326,25 @@ function QuestionCardContent(props: QuestionCardContentProps) {
       });
     };
 
+    createEffect(() => {
+      const delay = endsAt() - now();
+      if (!Number.isFinite(delay) || delay <= 0) return;
+
+      const timeout = setTimeout(
+        () => setNow(Date.now()),
+        Math.min(delay, 2_147_483_647),
+      );
+      onCleanup(() => clearTimeout(timeout));
+    });
+
     return (
       <section
         class="my-3 rounded-lg border bg-background/80 p-3"
         classList={{
-          "border-primary/30": !props.poll.closed && !props.poll.multiple,
-          "border-emerald-500/35": !props.poll.closed &&
+          "border-primary/30": !isClosed() && !props.poll.multiple,
+          "border-emerald-500/35": !isClosed() &&
             props.poll.multiple,
-          "border-muted bg-muted/20 text-muted-foreground": props.poll.closed,
+          "border-muted bg-muted/20 text-muted-foreground": isClosed(),
         }}
       >
         <div class="flex flex-wrap items-center gap-2 text-xs">
@@ -343,11 +357,11 @@ function QuestionCardContent(props: QuestionCardContentProps) {
             </Show>
             {props.poll.multiple ? t`Multiple choice` : t`Single choice`}
           </Badge>
-          <Badge variant={props.poll.closed ? "outline" : "secondary"}>
-            {props.poll.closed ? t`Closed` : t`Open`}
+          <Badge variant={isClosed() ? "outline" : "secondary"}>
+            {isClosed() ? t`Closed` : t`Open`}
           </Badge>
           <span class="text-muted-foreground">
-            {props.poll.closed ? t`Ended` : t`Ends`}{" "}
+            {isClosed() ? t`Ended` : t`Ends`}{" "}
             <Timestamp value={props.poll.ends} allowFuture />
           </span>
           <span class="text-muted-foreground">
@@ -377,14 +391,14 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                   classList={{
                     "hover:border-primary/60 hover:bg-accent/40 cursor-pointer":
                       canVote(),
-                    "border-primary/60": selected() && !props.poll.closed,
+                    "border-primary/60": selected() && !isClosed(),
                   }}
                 >
                   <div
                     class="absolute inset-y-0 left-0 bg-primary/10 transition-[width]"
                     classList={{
                       "bg-emerald-500/15": props.poll.multiple,
-                      "bg-muted": props.poll.closed,
+                      "bg-muted": isClosed(),
                       "bg-primary/20": selected() && !props.poll.multiple,
                     }}
                     style={{ width: `${percent(votes())}%` }}
