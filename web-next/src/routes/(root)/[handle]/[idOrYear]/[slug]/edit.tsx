@@ -108,7 +108,6 @@ const updateArticleMutation = graphql`
           id
           url
           ...Slug_head
-          ...Slug_body
         }
       }
       ... on InvalidInputError {

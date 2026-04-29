@@ -29,7 +29,7 @@ import {
 } from "~/components/ui/avatar.tsx";
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
-import { useLingui } from "~/lib/i18n/macro.d.ts";
+import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import type { SlugPageQuery } from "./__generated__/SlugPageQuery.graphql.ts";
 import type { Slug_articleHeader$key } from "./__generated__/Slug_articleHeader.graphql.ts";
 import type { Slug_body$key } from "./__generated__/Slug_body.graphql.ts";
@@ -359,6 +359,7 @@ function ArticleHeader(props: ArticleHeaderProps) {
             </Avatar>
             <div class="flex flex-col flex-1">
               <Show when={(article().actor.name ?? "").trim() !== ""}>
+                {/* Actor names are sanitized HTML that may include custom emoji markup. */}
                 <InternalLink
                   innerHTML={article().actor.name ?? ""}
                   href={actorHref()}
@@ -559,7 +560,7 @@ interface ArticleRepliesProps {
 }
 
 function ArticleReplies(props: ArticleRepliesProps) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const navigate = useNavigate();
   const article = createFragment(
     graphql`
@@ -600,7 +601,14 @@ function ArticleReplies(props: ArticleRepliesProps) {
         return (
           <div id="replies" class="my-8">
             <h2 class="text-xl font-bold mb-4">
-              {t`Comments (${article().replies?.edges.length ?? 0})`}
+              {i18n._(
+                msg`${
+                  plural(article().replies?.edges.length ?? 0, {
+                    one: "# comment",
+                    other: "# comments",
+                  })
+                }`,
+              )}
             </h2>
 
             <Show when={viewer() != null}>
