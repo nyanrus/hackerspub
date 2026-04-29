@@ -1,5 +1,5 @@
 import { detectLanguage } from "~/lib/langdet.ts";
-import { graphql } from "relay-runtime";
+import { ConnectionHandler, graphql } from "relay-runtime";
 import {
   type Accessor,
   createContext,
@@ -217,25 +217,17 @@ export const ArticleComposerProvider: ParentComponent<ArticleComposerProps> = (
   const [showPreview, setShowPreview] = createSignal(false);
   const [previewHtml, setPreviewHtml] = createSignal("");
 
-  // Connection IDs for Relay cache updates
-  const connectionIds = () => {
-    const ids: string[] = [];
+  const draftConnections = () => {
     const viewerId = props.viewerId;
+    if (viewerId == null) return [];
 
-    if (viewerId) {
-      const sidebarId =
-        `client:${viewerId}:__SignedAccount_articleDrafts_connection`;
-      const listId =
-        `client:${viewerId}:__draftsPaginationFragment_articleDrafts_connection`;
-      const floatingButtonId =
-        `client:${viewerId}:__FloatingComposeButton_articleDrafts_connection`;
-
-      ids.push(sidebarId);
-      ids.push(listId);
-      ids.push(floatingButtonId);
-    }
-
-    return ids;
+    return [
+      "SignedAccount_articleDrafts",
+      "draftsPaginationFragment_articleDrafts",
+      "FloatingComposeButton_articleDrafts",
+    ].map((connectionKey) =>
+      ConnectionHandler.getConnectionID(viewerId, connectionKey)
+    );
   };
 
   // Mutations
@@ -277,7 +269,7 @@ export const ArticleComposerProvider: ParentComponent<ArticleComposerProps> = (
           content: content().trim(),
           tags: tags(),
         },
-        connections: connectionIds(),
+        connections: draftConnections(),
       },
       onCompleted(response) {
         if (
@@ -424,7 +416,7 @@ export const ArticleComposerProvider: ParentComponent<ArticleComposerProps> = (
         input: {
           id: draft()!.id,
         },
-        connections: connectionIds(),
+        connections: draftConnections(),
       },
       onCompleted(response) {
         if (

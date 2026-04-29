@@ -1,6 +1,6 @@
 import { A, query, type RouteDefinition, useParams } from "@solidjs/router";
 import { HttpStatusCode } from "@solidjs/start";
-import { graphql } from "relay-runtime";
+import { ConnectionHandler, graphql } from "relay-runtime";
 import { createSignal, For, Match, Show, Switch } from "solid-js";
 import {
   createMutation,
@@ -127,6 +127,22 @@ export default function ArticleDraftsListPage() {
   const [deleteDraft, isDeleting] = createMutation<draftsDeleteMutation>(
     DeleteDraftMutation,
   );
+  const draftConnections = () => {
+    const viewerId = data()?.viewer?.id;
+    if (viewerId == null) return [];
+
+    return [
+      ConnectionHandler.getConnectionID(
+        viewerId,
+        "SignedAccount_articleDrafts",
+      ),
+      draftData()?.articleDrafts.__id,
+      ConnectionHandler.getConnectionID(
+        viewerId,
+        "FloatingComposeButton_articleDrafts",
+      ),
+    ].filter((id): id is string => id != null);
+  };
 
   const handleDelete = (draftId: string, draftTitle: string) => {
     if (
@@ -137,34 +153,12 @@ export default function ArticleDraftsListPage() {
       return;
     }
 
-    const connections: string[] = [];
-    const viewerId = data()?.viewer?.id;
-
-    if (viewerId) {
-      // Construct connection IDs manually using Relay's naming convention
-      // AppSidebar uses @connection(key: "SignedAccount_articleDrafts")
-      const sidebarId =
-        `client:${viewerId}:__SignedAccount_articleDrafts_connection`;
-
-      // Drafts list page uses @connection(key: "draftsPaginationFragment_articleDrafts")
-      const listId =
-        `client:${viewerId}:__draftsPaginationFragment_articleDrafts_connection`;
-
-      // FloatingComposeButton uses @connection(key: "FloatingComposeButton_articleDrafts")
-      const floatingButtonId =
-        `client:${viewerId}:__FloatingComposeButton_articleDrafts_connection`;
-
-      connections.push(sidebarId);
-      connections.push(listId);
-      connections.push(floatingButtonId);
-    }
-
     deleteDraft({
       variables: {
         input: {
           id: draftId,
         },
-        connections,
+        connections: draftConnections(),
       },
       onCompleted(response) {
         if (
