@@ -1,5 +1,5 @@
 import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
-import { A, useNavigate } from "@solidjs/router";
+import { A } from "@solidjs/router";
 import {
   deleteCookie,
   getCookie,
@@ -65,7 +65,6 @@ export function AppSidebar(props: AppSidebarProps) {
   const { t } = useLingui();
   const { open: openNoteCompose } = useNoteCompose();
   const { isMobile, state } = useSidebar();
-  const navigate = useNavigate();
   const signedAccount = createFragment(
     graphql`
       fragment AppSidebar_signedAccount on Account
@@ -110,7 +109,7 @@ export function AppSidebar(props: AppSidebarProps) {
           store.getRoot().setLinkedRecord(null, "viewer");
         },
         onCompleted() {
-          navigate("/local", { replace: true });
+          location.replace("/local");
         },
         onError(error) {
           window.alert(
