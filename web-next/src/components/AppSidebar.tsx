@@ -1,5 +1,5 @@
 import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
-import { A } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import {
   deleteCookie,
   getCookie,
@@ -25,7 +25,10 @@ import { useNoteCompose } from "~/contexts/NoteComposeContext.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import { Trans } from "./Trans.tsx";
 import type { AppSidebarSignOutMutation } from "./__generated__/AppSidebarSignOutMutation.graphql.ts";
-import { AppSidebar_signedAccount$key } from "./__generated__/AppSidebar_signedAccount.graphql.ts";
+import type {
+  AppSidebar_signedAccount$data,
+  AppSidebar_signedAccount$key,
+} from "./__generated__/AppSidebar_signedAccount.graphql.ts";
 import { Avatar, AvatarImage } from "./ui/avatar.tsx";
 
 const AppSidebarSignOutMutation = graphql`
@@ -62,6 +65,7 @@ export function AppSidebar(props: AppSidebarProps) {
   const { t } = useLingui();
   const { open: openNoteCompose } = useNoteCompose();
   const { isMobile, state } = useSidebar();
+  const navigate = useNavigate();
   const signedAccount = createFragment(
     graphql`
       fragment AppSidebar_signedAccount on Account
@@ -102,8 +106,11 @@ export function AppSidebar(props: AppSidebarProps) {
     if (sessionId != null) {
       signOut({
         variables: { sessionId },
+        updater(store) {
+          store.getRoot().setLinkedRecord(null, "viewer");
+        },
         onCompleted() {
-          location.reload(); // FIXME: Use a more graceful reload method
+          navigate("/local", { replace: true });
         },
         onError(error) {
           window.alert(
@@ -117,23 +124,7 @@ export function AppSidebar(props: AppSidebarProps) {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h1 class="font-bold m-2">
-          <a href="/">
-            <picture>
-              <source
-                srcset="/logo-dark.svg"
-                media="(prefers-color-scheme: dark)"
-              />
-              <img
-                src="/logo-light.svg"
-                alt={t`Hackers' Pub`}
-                width={139}
-                height={35}
-                class="w-[139px] h-[35px]"
-              />
-            </picture>
-          </a>
-        </h1>
+        <AppSidebarLogo />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -409,199 +400,270 @@ export function AppSidebar(props: AppSidebarProps) {
                       {t`Settings`}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  <SidebarMenuItem class="list-none">
-                    <SidebarMenuButton
-                      on:click={onSignOut}
-                      class="cursor-pointer"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="size-6"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
-                        />
-                      </svg>
-                      {t`Sign out`}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <SignOutMenuItem onSignOut={onSignOut} />
                 </>
               )}
             </Show>
           </SidebarGroupContent>
         </SidebarGroup>
-        <Show
-          when={props.signedAccountLoaded && signedAccount() && !isMobile() &&
-            state() !== "collapsed"}
-        >
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              {t`Compose`}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenuItem class="list-none">
-                <SidebarMenuButton
-                  onClick={openNoteCompose}
-                  class="cursor-pointer"
+        <ComposeSection
+          signedAccount={signedAccount()}
+          visible={props.signedAccountLoaded && !!signedAccount() &&
+            !isMobile() && state() !== "collapsed"}
+          onComposeNote={openNoteCompose}
+        />
+        <RecentDraftsSection
+          signedAccount={signedAccount()}
+          visible={props.signedAccountLoaded && !!signedAccount() &&
+            !isMobile() && state() !== "collapsed"}
+        />
+      </SidebarContent>
+      <AppSidebarFooter />
+    </Sidebar>
+  );
+}
+
+function AppSidebarLogo() {
+  const { t } = useLingui();
+
+  return (
+    <h1 class="font-bold m-2">
+      <a href="/">
+        <picture>
+          <source
+            srcset="/logo-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          />
+          <img
+            src="/logo-light.svg"
+            alt={t`Hackers' Pub`}
+            width={139}
+            height={35}
+            class="w-[139px] h-[35px]"
+          />
+        </picture>
+      </a>
+    </h1>
+  );
+}
+
+interface ComposeSectionProps {
+  signedAccount?: AppSidebar_signedAccount$data | null;
+  visible?: boolean;
+  onComposeNote: () => void;
+}
+
+function ComposeSection(props: ComposeSectionProps) {
+  const { t } = useLingui();
+
+  return (
+    <Show when={props.visible && props.signedAccount}>
+      {(signedAccount) => (
+        <SidebarGroup>
+          <SidebarGroupLabel>
+            {t`Compose`}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenuItem class="list-none">
+              <SidebarMenuButton
+                onClick={props.onComposeNote}
+                class="cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-6"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="size-6"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                    />
-                  </svg>
-                  {t`Create Note`}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                  />
+                </svg>
+                {t`Create Note`}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem class="list-none">
+              <SidebarMenuButton
+                as={A}
+                href={`/@${signedAccount().username}/drafts/new`}
+                class="cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                  />
+                </svg>
+                {t`Create Article`}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      )}
+    </Show>
+  );
+}
+
+interface RecentDraftsSectionProps {
+  signedAccount?: AppSidebar_signedAccount$data | null;
+  visible?: boolean;
+}
+
+function RecentDraftsSection(props: RecentDraftsSectionProps) {
+  const { t } = useLingui();
+  const visibleDrafts = () =>
+    props.signedAccount?.articleDrafts.edges.slice(0, 3).filter((edge) =>
+      edge.node != null
+    ) ?? [];
+  const hasMoreDrafts = () => {
+    const articleDrafts = props.signedAccount?.articleDrafts;
+    if (articleDrafts == null) return false;
+    const edgesCount = articleDrafts.edges.filter((edge) => edge.node != null)
+      .length;
+    return articleDrafts.pageInfo?.hasNextPage || edgesCount > 3;
+  };
+
+  return (
+    <Show
+      when={props.visible && props.signedAccount != null &&
+        visibleDrafts().length > 0}
+    >
+      <SidebarGroup>
+        <SidebarGroupLabel>
+          {t`Recent Drafts`}
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <For each={visibleDrafts()}>
+            {(edge) => (
               <SidebarMenuItem class="list-none">
                 <SidebarMenuButton
                   as={A}
-                  href={`/@${signedAccount()!.username}/drafts/new`}
-                  class="cursor-pointer"
+                  href={`/@${
+                    props.signedAccount!.username
+                  }/drafts/${edge.node.uuid}`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="size-6"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                    />
-                  </svg>
-                  {t`Create Article`}
+                  {edge.node.title}
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </Show>
-        <Show
-          when={props.signedAccountLoaded && signedAccount() &&
-            signedAccount()!.articleDrafts.edges.length > 0 && !isMobile() &&
-            state() !== "collapsed"}
+            )}
+          </For>
+          <Show when={hasMoreDrafts()}>
+            <SidebarMenuItem class="list-none">
+              <SidebarMenuButton
+                as={A}
+                href={`/@${props.signedAccount!.username}/drafts`}
+                class="text-muted-foreground"
+              >
+                {t`View all drafts →`}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </Show>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </Show>
+  );
+}
+
+interface SignOutMenuItemProps {
+  onSignOut: () => void;
+}
+
+function SignOutMenuItem(props: SignOutMenuItemProps) {
+  const { t } = useLingui();
+
+  return (
+    <SidebarMenuItem class="list-none">
+      <SidebarMenuButton
+        on:click={props.onSignOut}
+        class="cursor-pointer"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
         >
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              {t`Recent Drafts`}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <For
-                each={(() => {
-                  const drafts = signedAccount()!.articleDrafts.edges.slice(
-                    0,
-                    3,
-                  ).filter((edge) => edge.node != null);
-                  return drafts;
-                })()}
-              >
-                {(edge) => (
-                  <SidebarMenuItem class="list-none">
-                    <SidebarMenuButton
-                      as={A}
-                      href={`/@${
-                        signedAccount()!.username
-                      }/drafts/${edge.node.uuid}`}
-                    >
-                      {edge.node.title}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </For>
-              <Show
-                when={(() => {
-                  const hasNextPage = signedAccount()!.articleDrafts.pageInfo
-                    ?.hasNextPage;
-                  const edgesCount =
-                    signedAccount()!.articleDrafts.edges.filter((edge) =>
-                      edge.node != null
-                    ).length;
-                  return hasNextPage || edgesCount > 3;
-                })()}
-              >
-                <SidebarMenuItem class="list-none">
-                  <SidebarMenuButton
-                    as={A}
-                    href={`/@${signedAccount()!.username}/drafts`}
-                    class="text-muted-foreground"
-                  >
-                    {t`View all drafts →`}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </Show>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </Show>
-      </SidebarContent>
-      <SidebarFooter>
-        <p class="m-2 mb-0 text-sm underline">
-          <a href="/coc">{t`Code of conduct`}</a>
-        </p>
-        <p class="m-2 mb-0 text-sm underline">
-          <a href="/privacy">{t`Privacy policy`}</a>
-        </p>
-        <p class="m-2 mb-0 text-sm">
-          <a
-            href="https://play.google.com/store/apps/details?id=pub.hackers.android"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="underline"
-          >
-            Android
-          </a>{" "}
-          &middot;{" "}
-          <a
-            href="https://testflight.apple.com/join/wEBBtbzA"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="underline"
-          >
-            iOS/iPadOS
-          </a>
-        </p>
-        <p class="m-2 text-sm">
-          <Trans
-            message={t`The source code of this website is available on ${"GITHUB_REPOSITORY"} under the ${"AGPL-3.0"} license.`}
-            values={{
-              GITHUB_REPOSITORY: () => (
-                <a
-                  href="https://github.com/hackers-pub/hackerspub"
-                  target="_blank"
-                  class="underline"
-                >
-                  {t`GitHub repository`}
-                </a>
-              ),
-              "AGPL-3.0": () => (
-                <a
-                  href="https://www.gnu.org/licenses/agpl-3.0.en.html"
-                  target="_blank"
-                  class="underline"
-                >
-                  AGPL 3.0
-                </a>
-              ),
-            }}
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
           />
-        </p>
-      </SidebarFooter>
-    </Sidebar>
+        </svg>
+        {t`Sign out`}
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function AppSidebarFooter() {
+  const { t } = useLingui();
+
+  return (
+    <SidebarFooter>
+      <p class="m-2 mb-0 text-sm underline">
+        <a href="/coc">{t`Code of conduct`}</a>
+      </p>
+      <p class="m-2 mb-0 text-sm underline">
+        <a href="/privacy">{t`Privacy policy`}</a>
+      </p>
+      <p class="m-2 mb-0 text-sm">
+        <a
+          href="https://play.google.com/store/apps/details?id=pub.hackers.android"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline"
+        >
+          Android
+        </a>{" "}
+        &middot;{" "}
+        <a
+          href="https://testflight.apple.com/join/wEBBtbzA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline"
+        >
+          iOS/iPadOS
+        </a>
+      </p>
+      <p class="m-2 text-sm">
+        <Trans
+          message={t`The source code of this website is available on ${"GITHUB_REPOSITORY"} under the ${"AGPL-3.0"} license.`}
+          values={{
+            GITHUB_REPOSITORY: () => (
+              <a
+                href="https://github.com/hackers-pub/hackerspub"
+                target="_blank"
+                class="underline"
+              >
+                {t`GitHub repository`}
+              </a>
+            ),
+            "AGPL-3.0": () => (
+              <a
+                href="https://www.gnu.org/licenses/agpl-3.0.en.html"
+                target="_blank"
+                class="underline"
+              >
+                AGPL 3.0
+              </a>
+            ),
+          }}
+        />
+      </p>
+    </SidebarFooter>
   );
 }
