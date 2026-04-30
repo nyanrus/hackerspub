@@ -57,6 +57,8 @@ import { PostVisibility, toPostVisibility } from "./postvisibility.ts";
 import { Reactable, Reaction } from "./reactable.ts";
 import { NotAuthenticatedError } from "./session.ts";
 
+const articleContentOgImageComplexity = 2_000;
+
 class SharedPostDeletionNotAllowedError extends Error {
   public constructor(public readonly inputPath: string) {
     super("Shared posts cannot be deleted. Use unsharePost instead.");
@@ -277,6 +279,10 @@ export const Article = builder.drizzleNode("postTable", {
           defaultValue: false,
         }),
       },
+      complexity: (args) => ({
+        field: 1,
+        multiplier: args.language == null ? 10 : 1,
+      }),
       select: (args) => ({
         with: {
           articleSource: {
@@ -435,6 +441,7 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
     published: t.expose("published", { type: "DateTime" }),
     ogImageUrl: t.field({
       type: "URL",
+      complexity: articleContentOgImageComplexity,
       select: {
         columns: {
           content: true,

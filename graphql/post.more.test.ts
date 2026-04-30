@@ -18,6 +18,7 @@ import {
   createFedCtx,
   insertAccountWithActor,
   insertNotePost,
+  makeGuestContext,
   makeUserContext,
   toPlainJson,
   withRollback,
@@ -86,11 +87,48 @@ const articleByYearAndSlugQuery = parse(`
 `);
 
 const articleContentOgImageUrlQuery = parse(`
-  query ArticleContentOgImageUrl($handle: String!, $idOrYear: String!, $slug: String!) {
+  query ArticleContentOgImageUrl(
+    $handle: String!
+    $idOrYear: String!
+    $slug: String!
+    $language: Locale!
+  ) {
     articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $slug) {
-      contents {
+      contents(language: $language) {
         language
         ogImageUrl
+      }
+    }
+  }
+`);
+
+const articleContentOgImageBulkQuery = parse(`
+  query ArticleContentOgImageBulk($handle: String!) {
+    actorByHandle(handle: $handle, allowLocalHandle: true) {
+      articles(first: 20) {
+        edges {
+          node {
+            contents {
+              ogImageUrl
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
+const articleContentOgImageBulkByLanguageQuery = parse(`
+  query ArticleContentOgImageBulkByLanguage($handle: String!) {
+    actorByHandle(handle: $handle, allowLocalHandle: true) {
+      articles(first: 20) {
+        edges {
+          node {
+            contents(language: "en") {
+              ogImageUrl
+            }
+          }
+        }
       }
     }
   }
@@ -104,12 +142,12 @@ const articleContentOgImageCollisionQuery = parse(`
     $secondSlug: String!
   ) {
     first: articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $firstSlug) {
-      contents {
+      contents(language: "en") {
         ogImageUrl
       }
     }
     second: articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $secondSlug) {
-      contents {
+      contents(language: "en") {
         ogImageUrl
       }
     }
@@ -438,6 +476,45 @@ test("ArticleContent.ogImageUrl keys do not collide across articles", async () =
   });
 });
 
+test("ArticleContent.ogImageUrl rejects bulk article list queries", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "articleogbulk",
+      name: "Article OG Bulk",
+      email: "articleogbulk@example.com",
+    });
+    const disk = createOgTestDisk();
+    const result = await execute({
+      schema,
+      document: articleContentOgImageBulkQuery,
+      variableValues: { handle: author.account.username },
+      contextValue: makeGuestContext(tx, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.deepEqual(toPlainJson(result.data), { actorByHandle: null });
+    assert.match(result.errors?.[0]?.message ?? "", /Query exceeds Complexity/);
+    assert.deepEqual(disk.putKeys, []);
+
+    const byLanguageResult = await execute({
+      schema,
+      document: articleContentOgImageBulkByLanguageQuery,
+      variableValues: { handle: author.account.username },
+      contextValue: makeGuestContext(tx, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.deepEqual(toPlainJson(byLanguageResult.data), {
+      actorByHandle: null,
+    });
+    assert.match(
+      byLanguageResult.errors?.[0]?.message ?? "",
+      /Query exceeds Complexity/,
+    );
+    assert.deepEqual(disk.putKeys, []);
+  });
+});
+
 test("ArticleContent.ogImageUrl renders per-language article images", async () => {
   await withRollback(async (tx) => {
     const author = await insertAccountWithActor(tx, {
@@ -502,31 +579,33 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
     );
 
     const disk = createOgTestDisk();
-    const firstResult = await execute({
-      schema,
-      document: articleContentOgImageUrlQuery,
-      variableValues: {
-        handle: author.account.username,
-        idOrYear: "2026",
-        slug: "og-article",
-      },
-      contextValue: makeUserContext(tx, author.account, { disk: disk.disk }),
-      onError: "NO_PROPAGATE",
-    });
+    async function executeOgImageQuery(language: string) {
+      const result = await execute({
+        schema,
+        document: articleContentOgImageUrlQuery,
+        variableValues: {
+          handle: author.account.username,
+          idOrYear: "2026",
+          slug: "og-article",
+          language,
+        },
+        contextValue: makeUserContext(tx, author.account, { disk: disk.disk }),
+        onError: "NO_PROPAGATE",
+      });
+      assert.equal(result.errors, undefined);
+      const contents = (toPlainJson(result.data) as {
+        articleByYearAndSlug: {
+          contents: Array<{ language: string; ogImageUrl: string }>;
+        };
+      }).articleByYearAndSlug.contents;
+      assert.equal(contents.length, 1);
+      return contents[0];
+    }
 
-    assert.equal(firstResult.errors, undefined);
-    const firstContents = (toPlainJson(firstResult.data) as {
-      articleByYearAndSlug: {
-        contents: Array<{ language: string; ogImageUrl: string }>;
-      };
-    }).articleByYearAndSlug.contents;
-    const firstContentsByLanguage = [...firstContents].sort((a, b) =>
-      a.language.localeCompare(b.language)
-    );
-    assert.deepEqual(
-      firstContentsByLanguage.map((content) => content.language),
-      ["en", "ko-KR"],
-    );
+    const firstContentsByLanguage = [
+      await executeOgImageQuery("en"),
+      await executeOgImageQuery("ko-KR"),
+    ];
     assert.equal(
       new Set(firstContentsByLanguage.map((c) => c.ogImageUrl)).size,
       2,
@@ -553,26 +632,11 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
       stored.every((content) => content.ogImageKey?.startsWith("og/v2/")),
     );
 
-    const secondResult = await execute({
-      schema,
-      document: articleContentOgImageUrlQuery,
-      variableValues: {
-        handle: author.account.username,
-        idOrYear: "2026",
-        slug: "og-article",
-      },
-      contextValue: makeUserContext(tx, author.account, { disk: disk.disk }),
-      onError: "NO_PROPAGATE",
-    });
-
-    assert.equal(secondResult.errors, undefined);
-    const secondContents = (toPlainJson(secondResult.data) as {
-      articleByYearAndSlug: {
-        contents: Array<{ language: string; ogImageUrl: string }>;
-      };
-    }).articleByYearAndSlug.contents;
     assert.deepEqual(
-      [...secondContents].sort((a, b) => a.language.localeCompare(b.language)),
+      [
+        await executeOgImageQuery("en"),
+        await executeOgImageQuery("ko-KR"),
+      ],
       firstContentsByLanguage,
     );
     assert.equal(disk.putKeys.length, 2);
