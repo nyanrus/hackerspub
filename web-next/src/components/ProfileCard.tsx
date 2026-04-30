@@ -74,9 +74,11 @@ export function ProfileCard(props: ProfileCardProps) {
           <div class="p-4">
             <div class="flex items-center gap-4">
               <Avatar
-                class={`size-16 ${
-                  actor().viewerBlocks ? "grayscale opacity-40" : ""
-                }`}
+                classList={{
+                  "size-16": true,
+                  "grayscale": actor().viewerBlocks,
+                  "opacity-40": actor().viewerBlocks,
+                }}
               >
                 <a
                   href={actor().local

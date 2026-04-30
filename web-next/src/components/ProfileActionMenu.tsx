@@ -151,6 +151,23 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
   const displayName = () => actor()?.rawName ?? actor()?.username ?? "";
   const isPending = () => isBlocking() || isUnblocking();
   const isCurrentViewerActor = () => isViewerActor(actor(), viewer.username());
+  const showErrorToast = (title: string) => {
+    showToast({
+      title,
+      variant: "destructive",
+    });
+  };
+  const handleMutationError = (typename: string, invalidInputTitle: string) => {
+    if (typename === "NotAuthenticatedError") {
+      showErrorToast(t`You must be signed in`);
+      return true;
+    }
+    if (typename === "InvalidInputError") {
+      showErrorToast(invalidInputTitle);
+      return true;
+    }
+    return false;
+  };
 
   const handleBlockToggle = () => {
     const actorData = actor();
@@ -162,19 +179,15 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          if (response.unblockActor.__typename === "NotAuthenticatedError") {
-            showToast({
-              title: t`You must be signed in`,
-              variant: "destructive",
-            });
-          } else if (
-            response.unblockActor.__typename === "InvalidInputError"
+          if (
+            handleMutationError(
+              response.unblockActor.__typename,
+              t`Failed to unblock this user`,
+            )
           ) {
-            showToast({
-              title: t`Failed to unblock this user`,
-              variant: "destructive",
-            });
-          } else if (
+            return;
+          }
+          if (
             response.unblockActor.__typename === "UnblockActorPayload"
           ) {
             showToast({ title: t`User unblocked` });
@@ -182,10 +195,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           }
         },
         onError() {
-          showToast({
-            title: t`Failed to unblock this user`,
-            variant: "destructive",
-          });
+          showErrorToast(t`Failed to unblock this user`);
         },
       });
     } else {
@@ -194,25 +204,20 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          if (response.blockActor.__typename === "NotAuthenticatedError") {
-            showToast({
-              title: t`You must be signed in`,
-              variant: "destructive",
-            });
-          } else if (response.blockActor.__typename === "InvalidInputError") {
-            showToast({
-              title: t`Failed to block this user`,
-              variant: "destructive",
-            });
-          } else if (response.blockActor.__typename === "BlockActorPayload") {
+          if (
+            handleMutationError(
+              response.blockActor.__typename,
+              t`Failed to block this user`,
+            )
+          ) {
+            return;
+          }
+          if (response.blockActor.__typename === "BlockActorPayload") {
             showToast({ title: t`User blocked` });
           }
         },
         onError() {
-          showToast({
-            title: t`Failed to block this user`,
-            variant: "destructive",
-          });
+          showErrorToast(t`Failed to block this user`);
         },
       });
     }
@@ -239,9 +244,11 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
         />
         <DropdownMenuContent class="min-w-40">
           <DropdownMenuItem
-            class={actor()?.viewerBlocks
-              ? "cursor-pointer"
-              : "text-destructive focus:text-destructive cursor-pointer"}
+            classList={{
+              "cursor-pointer": true,
+              "text-destructive": !actor()?.viewerBlocks,
+              "focus:text-destructive": !actor()?.viewerBlocks,
+            }}
             disabled={isPending()}
             onSelect={() => setShowConfirm(true)}
           >
