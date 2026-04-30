@@ -107,10 +107,20 @@ Color system
 
 The runtime color system is defined in
 `web-next/src/app.css` as CSS custom properties in the [OKLCH][] color
-space.  All grayscale tokens have chroma `0`; only semantic colors carry
-chroma.  Tokens are exposed to Tailwind via `@theme inline`—every
-`--background` is reachable as `bg-background`, `text-background`,
-`border-background`, etc.
+space.  Every token in the surface and content table below is
+achromatic (chroma `0`); chroma is reserved for the semantic tokens
+and for the `--chart-1`…`--chart-5` data-visualization palette that
+the project inherits unchanged from shadcn's defaults.  Tokens are
+exposed to Tailwind via `@theme inline`—every `--background` is
+reachable as `bg-background`, `text-background`, `border-background`,
+etc.
+
+> [!NOTE]
+> *app.css* also still ships shadcn's default `--sidebar-primary`
+> token, which in dark mode resolves to a saturated blue
+> (`oklch(0.488 0.243 264.376)`).  Nothing in the product currently
+> renders it; treat it as a legacy default that should not be used by
+> new components.
 
 [OKLCH]: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch
 
