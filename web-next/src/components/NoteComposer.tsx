@@ -448,7 +448,7 @@ export function NoteComposer(props: NoteComposerProps) {
               (!!effectiveQuotedPostId() && !quotedPost() &&
                 !quoteFetchError())}
           >
-            <Show when={isCreating()} fallback={t`Create Note`}>
+            <Show when={isCreating()} fallback={t`Create note`}>
               {t`Creating…`}
             </Show>
           </Button>

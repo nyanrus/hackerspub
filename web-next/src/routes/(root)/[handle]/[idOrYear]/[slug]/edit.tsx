@@ -232,7 +232,7 @@ function ArticleEditForm(props: ArticleEditFormProps) {
       fallback={<HttpStatusCode code={403} />}
     >
       <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6">{t`Edit Article`}</h1>
+        <h1 class="text-2xl font-bold mb-6">{t`Edit article`}</h1>
 
         <form onSubmit={handleSave} class="flex flex-col gap-6">
           {/* Title */}
@@ -341,7 +341,7 @@ function ArticleEditForm(props: ArticleEditFormProps) {
               type="submit"
               disabled={isUpdating()}
             >
-              {isUpdating() ? t`Saving...` : t`Save Changes`}
+              {isUpdating() ? t`Saving…` : t`Save changes`}
             </Button>
           </div>
         </form>

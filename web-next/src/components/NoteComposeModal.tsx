@@ -23,7 +23,7 @@ export function NoteComposeModal() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {quotedPostId() ? t`Quote` : t`Create Note`}
+            {quotedPostId() ? t`Quote` : t`Create note`}
           </DialogTitle>
         </DialogHeader>
         <div class="py-4">

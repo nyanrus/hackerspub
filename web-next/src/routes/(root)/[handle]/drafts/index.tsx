@@ -204,8 +204,8 @@ export default function ArticleDraftsListPage() {
       fallback={
         <WideContainer class="p-6">
           <HttpStatusCode code={403} />
-          <Title>{t`Permission Denied`}</Title>
-          <h1 class="text-2xl font-bold mb-4">{t`Permission Denied`}</h1>
+          <Title>{t`Permission denied`}</Title>
+          <h1 class="text-2xl font-bold mb-4">{t`Permission denied`}</h1>
           <p class="text-muted-foreground mb-4">
             {data()?.viewer
               ? t`You can only view your own drafts`
@@ -213,12 +213,12 @@ export default function ArticleDraftsListPage() {
           </p>
           <div class="flex gap-2">
             <Button onClick={() => window.history.back()}>
-              {t`Go Back`}
+              {t`Go back`}
             </Button>
             <Show when={data()?.viewer?.username}>
               {(username) => (
                 <A href={`/@${username()}/drafts`}>
-                  <Button variant="outline">{t`Go to My Drafts`}</Button>
+                  <Button variant="outline">{t`Go to my drafts`}</Button>
                 </A>
               )}
             </Show>
@@ -228,9 +228,9 @@ export default function ArticleDraftsListPage() {
     >
       <WideContainer class="p-6">
         <div class="flex items-center justify-between mb-6">
-          <Title>{t`Article Drafts`}</Title>
+          <Title>{t`Article drafts`}</Title>
           <A href={`/@${params.handle!.substring(1)}/drafts/new`}>
-            <Button>{t`New Article`}</Button>
+            <Button>{t`New article`}</Button>
           </A>
         </div>
 
@@ -314,13 +314,13 @@ export default function ArticleDraftsListPage() {
                   <Match
                     when={draftData.pending || loadingState() === "loading"}
                   >
-                    {t`Loading...`}
+                    {t`Loading…`}
                   </Match>
                   <Match when={loadingState() === "errored"}>
                     {t`Failed to load more drafts; click to retry`}
                   </Match>
                   <Match when={loadingState() === "loaded"}>
-                    {t`Load More`}
+                    {t`Load more`}
                   </Match>
                 </Switch>
               </Button>

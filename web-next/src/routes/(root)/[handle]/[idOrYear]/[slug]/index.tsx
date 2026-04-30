@@ -292,7 +292,7 @@ function ArticleTitle(props: ArticleTitleProps) {
   return (
     <Show
       when={!props.beingTranslated}
-      fallback={<h1 class="text-4xl font-bold">{t`Translating...`}</h1>}
+      fallback={<h1 class="text-4xl font-bold">{t`Translating…`}</h1>}
     >
       <h1 class="text-4xl font-bold" lang={props.language}>
         {props.title}
@@ -615,7 +615,7 @@ function ArticleReplies(props: ArticleRepliesProps) {
               <div class="mb-4">
                 <NoteComposer
                   replyTargetId={article().id}
-                  placeholder={t`Write a reply...`}
+                  placeholder={t`Write a reply…`}
                   onSuccess={() => navigate(postUrl(), { replace: true })}
                 />
               </div>

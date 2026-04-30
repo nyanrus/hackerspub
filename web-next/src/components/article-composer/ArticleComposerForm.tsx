@@ -70,7 +70,7 @@ export function ArticleComposerForm() {
                   : "bg-background text-muted-foreground border-input hover:bg-muted"
               }`}
             >
-              {ctx.showPreview() ? t`Hide Preview` : t`Show Preview`}
+              {ctx.showPreview() ? t`Hide preview` : t`Show preview`}
             </button>
             <a
               href="/markdown"

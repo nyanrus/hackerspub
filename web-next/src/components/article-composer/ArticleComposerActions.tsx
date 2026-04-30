@@ -17,7 +17,7 @@ export function ArticleComposerActions() {
           onClick={ctx.handleDelete}
           disabled={ctx.isDeleting()}
         >
-          {ctx.isDeleting() ? t`Deleting...` : t`Delete Draft`}
+          {ctx.isDeleting() ? t`Deleting…` : t`Delete draft`}
         </Button>
       </Show>
 
@@ -29,7 +29,7 @@ export function ArticleComposerActions() {
           onClick={ctx.handleSave}
           disabled={ctx.isSaving() || !ctx.isDirty()}
         >
-          {ctx.isSaving() ? t`Saving...` : t`Save Draft`}
+          {ctx.isSaving() ? t`Saving…` : t`Save draft`}
         </Button>
 
         <Show
@@ -44,7 +44,7 @@ export function ArticleComposerActions() {
                 {t`Cancel`}
               </Button>
               <Button type="submit" disabled={ctx.isPublishingMutation()}>
-                {ctx.isPublishingMutation() ? t`Publishing...` : t`Publish Now`}
+                {ctx.isPublishingMutation() ? t`Publishing…` : t`Publish now`}
               </Button>
             </div>
           }
@@ -54,7 +54,7 @@ export function ArticleComposerActions() {
             onClick={() => ctx.setIsPublishing(true)}
             disabled={!ctx.draft()?.id}
           >
-            {t`Publish Article`}
+            {t`Publish article`}
           </Button>
         </Show>
       </div>

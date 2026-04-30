@@ -8,7 +8,7 @@ export default function NotFound() {
     <main>
       <Title>Not Found{/* Do not translate */}</Title>
       <HttpStatusCode code={404} />
-      <h1>{t`Page Not Found`}</h1>
+      <h1>{t`Page not found`}</h1>
     </main>
   );
 }
