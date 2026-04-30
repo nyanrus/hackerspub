@@ -46,6 +46,7 @@ const ProfilePageQuery = graphql`
       username
       url
       iri
+      local
       viewerBlocks
       blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
@@ -172,6 +173,16 @@ export default function ProfilePage() {
                   property="og:title"
                   content={actor().rawName ?? actor().username}
                 />
+                <Show when={profileOgImageUrl(actor())}>
+                  {(ogImageUrl) => (
+                    <>
+                      <Meta property="og:image" content={ogImageUrl()} />
+                      <Meta property="og:image:width" content="1200" />
+                      <Meta property="og:image:height" content="630" />
+                      <Meta name="twitter:card" content="summary_large_image" />
+                    </>
+                  )}
+                </Show>
                 <Meta property="profile:username" content={actor().username} />
                 <NavigateIfHandleIsNotCanonical $actor={actor()} />
                 <div>
@@ -223,4 +234,14 @@ export default function ProfilePage() {
       )}
     </Show>
   );
+}
+
+function profileOgImageUrl(actor: {
+  readonly local: boolean;
+  readonly url: string | null | undefined;
+}) {
+  if (!actor.local || actor.url == null) return undefined;
+  const url = new URL(actor.url);
+  url.pathname = `${url.pathname.replace(/\/$/, "")}/og`;
+  return url.toString();
 }
