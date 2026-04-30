@@ -36,17 +36,17 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩余 # 次邀请}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:459
+#: src/components/QuestionCard.tsx:462
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {# 票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:405
+#: src/components/QuestionCard.tsx:408
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
 #. placeholder {0}: edge.node.tags.length - 3
-#: src/routes/(root)/[handle]/drafts/index.tsx:271
+#: src/routes/(root)/[handle]/drafts/index.tsx:296
 msgid "{0, plural, one {+1 more} other {+# more}}"
 msgstr "{0, plural, other {还有#个}}"
 
@@ -248,7 +248,7 @@ msgstr "保存设置时发生错误。请重试，如果问题仍然存在，请
 msgid "An unexpected error occurred. Please try again later."
 msgstr "发生了意外错误。请稍后再试。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:150
+#: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "您确定要删除\"{draftTitle}\"吗？此操作无法撤销。"
 
@@ -261,8 +261,9 @@ msgstr "您确定要删除此草稿吗？此操作无法撤销。"
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "您确定要撤销通行密钥“{0}”吗？您将无法再使用它登录您的账户。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:231
-msgid "Article Drafts"
+#: src/routes/(root)/[handle]/drafts/index.tsx:246
+#: src/routes/(root)/[handle]/drafts/index.tsx:248
+msgid "Article drafts"
 msgstr "文章草稿"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:364
@@ -352,7 +353,7 @@ msgstr "选择你的朋友使用的语言。这个语言只会用于邀请。"
 msgid "Choose your preferred language for the verification email."
 msgstr "请选择验证邮件的语言。"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:400
 msgid "Closed"
 msgstr "已结束"
 
@@ -405,13 +406,13 @@ msgstr "无法将链接复制到剪贴板。"
 msgid "Could not find a post at this URL"
 msgstr "无法在此URL找到内容"
 
-#: src/components/QuestionCard.tsx:350
+#: src/components/QuestionCard.tsx:353
 msgid "Could not vote on this poll"
 msgstr "无法提交此投票"
 
 #: src/components/AppSidebar.tsx:505
 #: src/components/FloatingComposeButton.tsx:123
-msgid "Create Article"
+msgid "Create article"
 msgstr "创建文章"
 
 #: src/routes/(root)/[handle]/settings/invite.tsx:749
@@ -422,7 +423,7 @@ msgstr "创建邀请链接"
 #: src/components/FloatingComposeButton.tsx:99
 #: src/components/NoteComposeModal.tsx:26
 #: src/components/NoteComposer.tsx:451
-msgid "Create Note"
+msgid "Create note"
 msgstr "创建帖子"
 
 #: src/routes/(root)/[handle]/settings/invite.tsx:613
@@ -461,13 +462,13 @@ msgstr "默认转帖隐私设置"
 
 #: src/components/PostActionMenu.tsx:341
 #: src/components/PostActionMenu.tsx:361
-#: src/routes/(root)/[handle]/drafts/index.tsx:296
+#: src/routes/(root)/[handle]/drafts/index.tsx:323
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Delete"
 msgstr "删除"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:20
-msgid "Delete Draft"
+msgid "Delete draft"
 msgstr "删除草稿"
 
 #: src/components/PostActionMenu.tsx:349
@@ -475,9 +476,6 @@ msgid "Delete post?"
 msgstr "删除内容？"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:20
-msgid "Deleting..."
-msgstr "删除中..."
-
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Deleting…"
 msgstr "正在删除…"
@@ -500,7 +498,7 @@ msgid "Do you want to quote this link?"
 msgstr "要引用此链接吗？"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:429
-#: src/routes/(root)/[handle]/drafts/index.tsx:169
+#: src/routes/(root)/[handle]/drafts/index.tsx:178
 msgid "Draft deleted"
 msgstr "草稿已删除"
 
@@ -529,12 +527,12 @@ msgid "Edit"
 msgstr "编辑"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:235
-msgid "Edit Article"
+msgid "Edit article"
 msgstr "编辑文章"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:79
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
-msgid "Edit Draft"
+msgid "Edit draft"
 msgstr "编辑草稿"
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:362
@@ -547,11 +545,11 @@ msgstr "电子邮件地址"
 msgid "Email or username"
 msgstr "邮箱或用户名"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:403
 msgid "Ended"
 msgstr "已结束"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:403
 msgid "Ends"
 msgstr "截止"
 
@@ -585,9 +583,9 @@ msgstr "请在下方输入您的邮箱或用户名以登录。"
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
-#: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
-#: src/routes/(root)/[handle]/drafts/index.tsx:193
+#: src/routes/(root)/[handle]/drafts/index.tsx:194
+#: src/routes/(root)/[handle]/drafts/index.tsx:202
 #: src/routes/(root)/[handle]/invite/[id].tsx:199
 #: src/routes/(root)/sign/up/[token].tsx:295
 msgid "Error"
@@ -636,23 +634,23 @@ msgstr "删除内容失败"
 msgid "Failed to follow"
 msgstr "关注失败"
 
-#: src/components/ActorArticleList.tsx:81
+#: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
 msgstr "加载更多文章失败，点击重试"
 
-#: src/components/Bookmarks.tsx:103
+#: src/components/Bookmarks.tsx:105
 msgid "Failed to load more bookmarks; click to retry"
 msgstr "加载更多收藏失败，点击重试"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:320
+#: src/routes/(root)/[handle]/drafts/index.tsx:348
 msgid "Failed to load more drafts; click to retry"
 msgstr "加载更多草稿失败，点击重试"
 
-#: src/components/ActorFollowerList.tsx:80
+#: src/components/ActorFollowerList.tsx:82
 msgid "Failed to load more followers; click to retry"
 msgstr "加载更多粉丝失败，点击重试"
 
-#: src/components/ActorFollowingList.tsx:80
+#: src/components/ActorFollowingList.tsx:82
 msgid "Failed to load more following; click to retry"
 msgstr "加载更多关注失败，点击重试"
 
@@ -660,11 +658,11 @@ msgstr "加载更多关注失败，点击重试"
 msgid "Failed to load more invitees; click to retry"
 msgstr "加载更多受邀者失败；点击重试"
 
-#: src/components/ActorNoteList.tsx:75
+#: src/components/ActorNoteList.tsx:77
 msgid "Failed to load more notes; click to retry"
 msgstr "加载更多帖子失败，点击重试"
 
-#: src/components/NotificationList.tsx:73
+#: src/components/NotificationList.tsx:80
 msgid "Failed to load more notifications; click to retry"
 msgstr "加载更多通知失败；点击重试"
 
@@ -672,11 +670,11 @@ msgstr "加载更多通知失败；点击重试"
 msgid "Failed to load more passkeys; click to retry"
 msgstr "加载更多通行密钥失败，点击重试"
 
-#: src/components/ActorPostList.tsx:81
-#: src/components/ActorSharedPostList.tsx:81
-#: src/components/PersonalTimeline.tsx:98
-#: src/components/PublicTimeline.tsx:100
-#: src/components/SearchResults.tsx:97
+#: src/components/ActorPostList.tsx:83
+#: src/components/ActorSharedPostList.tsx:83
+#: src/components/PersonalTimeline.tsx:100
+#: src/components/PublicTimeline.tsx:102
+#: src/components/SearchResults.tsx:99
 msgid "Failed to load more posts; click to retry"
 msgstr "加载更多内容失败，点击重试"
 
@@ -765,7 +763,7 @@ msgstr "文章更新失败，请重试。"
 msgid "Failed to upload image"
 msgstr "图片上传失败"
 
-#: src/components/QuestionCard.tsx:358
+#: src/components/QuestionCard.tsx:361
 msgid "Failed to vote"
 msgstr "投票失败"
 
@@ -786,7 +784,7 @@ msgid "Follow"
 msgstr "关注"
 
 #: src/components/FollowButton.tsx:184
-msgid "Follow Back"
+msgid "Follow back"
 msgstr "回关"
 
 #: src/routes/(root)/authorize_interaction.tsx:81
@@ -816,9 +814,9 @@ msgid "GitHub repository"
 msgstr "GitHub 仓库"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:65
-#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:228
 #: src/routes/(root)/[handle]/drafts/new.tsx:81
-msgid "Go Back"
+msgid "Go back"
 msgstr "返回"
 
 #: src/components/FloatingComposeButton.tsx:148
@@ -826,25 +824,25 @@ msgid "Go to Drafts"
 msgstr "前往草稿"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
-#: src/routes/(root)/[handle]/drafts/index.tsx:221
+#: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
-msgid "Go to My Drafts"
+msgid "Go to my drafts"
 msgstr "前往我的草稿"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:90
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:74
+#: src/routes/(root).tsx:82
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub 首页"
 
-#: src/components/AboutHackersPub.tsx:232
+#: src/components/AboutHackersPub.tsx:234
 msgid "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
 msgstr "Hackers' Pub 是个为软件工程师共同分享知识和经验的地方。它也是启用了 ActivityPub 的社交网络，这样你可以在联邦宇宙里关注你喜爱的黑客，并获取最新的帖子。"
 
@@ -865,7 +863,7 @@ msgid "Heading 3"
 msgstr "标题 3"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:73
-msgid "Hide Preview"
+msgid "Hide preview"
 msgstr "隐藏预览"
 
 #: src/components/TopBreadcrumb.tsx:21
@@ -911,7 +909,7 @@ msgstr "联邦宇宙用户名格式无效。"
 #: src/components/article-composer/ArticleComposerContext.tsx:373
 #: src/components/article-composer/ArticleComposerContext.tsx:438
 #: src/components/NoteComposer.tsx:281
-#: src/routes/(root)/[handle]/drafts/index.tsx:178
+#: src/routes/(root)/[handle]/drafts/index.tsx:187
 msgid "Invalid input: {0}"
 msgstr "无效输入：{0}"
 
@@ -945,7 +943,7 @@ msgid "Invitation sent"
 msgstr "邀请已发送"
 
 #: src/components/AppSidebar.tsx:365
-#: src/components/SettingsTabs.tsx:63
+#: src/components/SettingsTabs.tsx:68
 #: src/routes/(root)/[handle]/settings/invite.tsx:282
 msgid "Invite"
 msgstr "邀请"
@@ -979,7 +977,7 @@ msgstr "语言"
 msgid "Language code"
 msgstr "语言代码"
 
-#: src/components/SettingsTabs.tsx:56
+#: src/components/SettingsTabs.tsx:60
 #: src/routes/(root)/[handle]/settings/language.tsx:74
 msgid "Language settings"
 msgstr "语言设置"
@@ -993,9 +991,13 @@ msgstr "{0}最后使用"
 msgid "Link"
 msgstr "链接"
 
-#: src/components/LinkPreview.tsx:135
-msgid "Link author: "
+#: src/components/LinkPreview.tsx:140
+msgid "Link author:"
 msgstr "链接作者："
+
+#: src/components/LinkPreview.tsx:140
+#~ msgid "Link author: "
+#~ msgstr "链接作者："
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:253
 msgid "Link expired"
@@ -1009,23 +1011,23 @@ msgstr "链接名"
 msgid "List"
 msgstr "列表"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:323
-msgid "Load More"
+#: src/routes/(root)/[handle]/drafts/index.tsx:351
+msgid "Load more"
 msgstr "加载更多"
 
-#: src/components/ActorArticleList.tsx:84
+#: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
 msgstr "加载更多文章"
 
-#: src/components/Bookmarks.tsx:106
+#: src/components/Bookmarks.tsx:108
 msgid "Load more bookmarks"
 msgstr "加载更多收藏"
 
-#: src/components/ActorFollowerList.tsx:83
+#: src/components/ActorFollowerList.tsx:85
 msgid "Load more followers"
 msgstr "加载更多粉丝"
 
-#: src/components/ActorFollowingList.tsx:83
+#: src/components/ActorFollowingList.tsx:85
 msgid "Load more following"
 msgstr "加载更多关注"
 
@@ -1033,11 +1035,11 @@ msgstr "加载更多关注"
 msgid "Load more invitees"
 msgstr "加载更多受邀者"
 
-#: src/components/ActorNoteList.tsx:78
+#: src/components/ActorNoteList.tsx:80
 msgid "Load more notes"
 msgstr "加载更多帖子"
 
-#: src/components/NotificationList.tsx:76
+#: src/components/NotificationList.tsx:83
 msgid "Load more notifications"
 msgstr "加载更多通知"
 
@@ -1045,31 +1047,31 @@ msgstr "加载更多通知"
 msgid "Load more passkeys"
 msgstr "加载更多通行密钥"
 
-#: src/components/ActorPostList.tsx:84
-#: src/components/ActorSharedPostList.tsx:84
-#: src/components/PersonalTimeline.tsx:101
-#: src/components/PublicTimeline.tsx:103
-#: src/components/SearchResults.tsx:100
+#: src/components/ActorPostList.tsx:86
+#: src/components/ActorSharedPostList.tsx:86
+#: src/components/PersonalTimeline.tsx:103
+#: src/components/PublicTimeline.tsx:105
+#: src/components/SearchResults.tsx:102
 msgid "Load more posts"
 msgstr "加载更多内容"
 
 #: src/components/article-composer/ArticleComposer.tsx:31
-msgid "Loading draft..."
-msgstr "加载草稿中..."
+msgid "Loading draft…"
+msgstr "加载草稿中…"
 
-#: src/components/ActorArticleList.tsx:78
+#: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
 msgstr "加载更多文章中…"
 
-#: src/components/Bookmarks.tsx:100
+#: src/components/Bookmarks.tsx:102
 msgid "Loading more bookmarks…"
 msgstr "加载更多收藏中…"
 
-#: src/components/ActorFollowerList.tsx:77
+#: src/components/ActorFollowerList.tsx:79
 msgid "Loading more followers…"
 msgstr "加载更多粉丝中…"
 
-#: src/components/ActorFollowingList.tsx:77
+#: src/components/ActorFollowingList.tsx:79
 msgid "Loading more following…"
 msgstr "正在加载更多关注…"
 
@@ -1077,11 +1079,11 @@ msgstr "正在加载更多关注…"
 msgid "Loading more invitees…"
 msgstr "正在加载更多受邀者…"
 
-#: src/components/ActorNoteList.tsx:72
+#: src/components/ActorNoteList.tsx:74
 msgid "Loading more notes…"
 msgstr "加载更多帖子中…"
 
-#: src/components/NotificationList.tsx:70
+#: src/components/NotificationList.tsx:77
 msgid "Loading more notifications"
 msgstr "正在加载更多通知…"
 
@@ -1089,11 +1091,11 @@ msgstr "正在加载更多通知…"
 msgid "Loading more passkeys…"
 msgstr "正在加载更多通行密钥…"
 
-#: src/components/ActorPostList.tsx:78
-#: src/components/ActorSharedPostList.tsx:78
-#: src/components/PersonalTimeline.tsx:95
-#: src/components/PublicTimeline.tsx:97
-#: src/components/SearchResults.tsx:94
+#: src/components/ActorPostList.tsx:80
+#: src/components/ActorSharedPostList.tsx:80
+#: src/components/PersonalTimeline.tsx:97
+#: src/components/PublicTimeline.tsx:99
+#: src/components/SearchResults.tsx:96
 msgid "Loading more posts…"
 msgstr "加载更多内容中…"
 
@@ -1101,10 +1103,7 @@ msgstr "加载更多内容中…"
 msgid "Loading quoted post…"
 msgstr "正在加载引用内容…"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:317
-msgid "Loading..."
-msgstr "加载中..."
-
+#: src/routes/(root)/[handle]/drafts/index.tsx:345
 #: src/routes/(root)/sign/up/[token].tsx:469
 msgid "Loading…"
 msgstr "正在加载…"
@@ -1114,7 +1113,7 @@ msgid "Look up user"
 msgstr "查找用户"
 
 #: src/components/RemoteFollowButton.tsx:207
-msgid "Looking up user..."
+msgid "Looking up user…"
 msgstr "正在查找用户信息…"
 
 #: src/routes/(root)/markdown.tsx:48
@@ -1148,7 +1147,7 @@ msgstr "移动到顶部"
 msgid "Move up"
 msgstr "向上移动"
 
-#: src/components/QuestionCard.tsx:394
+#: src/components/QuestionCard.tsx:397
 msgid "Multiple choice"
 msgstr "多选"
 
@@ -1177,12 +1176,12 @@ msgstr "永不过期"
 msgid "Never used"
 msgstr "从未使用过"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:233
+#: src/routes/(root)/[handle]/drafts/index.tsx:254
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
-msgid "New Article"
+msgid "New article"
 msgstr "新建文章"
 
-#: src/components/Bookmarks.tsx:113
+#: src/components/Bookmarks.tsx:115
 msgid "No bookmarks yet"
 msgstr "暂无收藏"
 
@@ -1190,15 +1189,15 @@ msgstr "暂无收藏"
 msgid "No draft to delete"
 msgstr "没有要删除的草稿"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:243
+#: src/routes/(root)/[handle]/drafts/index.tsx:265
 msgid "No drafts yet. Create your first article!"
 msgstr "还没有草稿。创建您的第一篇文章！"
 
-#: src/components/ActorFollowerList.tsx:90
+#: src/components/ActorFollowerList.tsx:92
 msgid "No followers found"
 msgstr "未找到粉丝"
 
-#: src/components/ActorFollowingList.tsx:90
+#: src/components/ActorFollowingList.tsx:92
 msgid "No following found"
 msgstr "没有找到关注的用户"
 
@@ -1208,23 +1207,23 @@ msgstr "没有找到关注的用户"
 msgid "No invitations left"
 msgstr "没有剩余邀请名额"
 
-#: src/routes/(root)/search.tsx:243
+#: src/routes/(root)/search.tsx:261
 msgid "No matching object found"
 msgstr "未找到匹配的对象"
 
-#: src/components/ActorArticleList.tsx:91
+#: src/components/ActorArticleList.tsx:93
 msgid "No notes articles"
 msgstr "未找到文章"
 
-#: src/components/ActorNoteList.tsx:85
+#: src/components/ActorNoteList.tsx:87
 msgid "No notes found"
 msgstr "未找到帖子"
 
-#: src/components/ActorPostList.tsx:91
-#: src/components/ActorSharedPostList.tsx:91
-#: src/components/PersonalTimeline.tsx:108
-#: src/components/PublicTimeline.tsx:110
-#: src/components/SearchResults.tsx:107
+#: src/components/ActorPostList.tsx:93
+#: src/components/ActorSharedPostList.tsx:93
+#: src/components/PersonalTimeline.tsx:110
+#: src/components/PublicTimeline.tsx:112
+#: src/components/SearchResults.tsx:109
 msgid "No posts found"
 msgstr "未找到内容"
 
@@ -1274,7 +1273,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀请次数"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:400
 msgid "Open"
 msgstr "进行中"
 
@@ -1295,7 +1294,7 @@ msgid "Other languages"
 msgstr "其他语言"
 
 #: src/routes/[...404].tsx:11
-msgid "Page Not Found"
+msgid "Page not found"
 msgstr "页面未找到"
 
 #: src/routes/(root)/sign/index.tsx:346
@@ -1314,18 +1313,18 @@ msgstr "通行密钥注册成功"
 msgid "Passkey revoked"
 msgstr "通行密钥已撤销"
 
-#: src/components/SettingsTabs.tsx:70
+#: src/components/SettingsTabs.tsx:76
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:347
 msgid "Passkeys"
 msgstr "通行密钥"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:56
 #: src/routes/(root)/[handle]/drafts/[id].tsx:57
-#: src/routes/(root)/[handle]/drafts/index.tsx:207
-#: src/routes/(root)/[handle]/drafts/index.tsx:208
+#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:219
 #: src/routes/(root)/[handle]/drafts/new.tsx:72
 #: src/routes/(root)/[handle]/drafts/new.tsx:73
-msgid "Permission Denied"
+msgid "Permission denied"
 msgstr "权限被拒绝"
 
 #: src/components/PostActionMenu.tsx:331
@@ -1355,16 +1354,16 @@ msgid "Please enter your Fediverse handle."
 msgstr "请输入你的联邦宇宙用户名。"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:61
-#: src/routes/(root)/[handle]/drafts/index.tsx:212
+#: src/routes/(root)/[handle]/drafts/index.tsx:223
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "请登录以访问此页面"
 
-#: src/components/QuestionCard.tsx:344
+#: src/components/QuestionCard.tsx:347
 msgid "Please sign in to vote"
 msgstr "请登录后投票"
 
-#: src/components/QuestionCard.tsx:319
+#: src/components/QuestionCard.tsx:322
 msgid "Poll closed"
 msgstr "投票已结束"
 
@@ -1393,7 +1392,7 @@ msgstr "{0} 内容"
 msgid "Prefer AI-generated summary"
 msgstr "优先使用 AI 生成的摘要"
 
-#: src/components/SettingsTabs.tsx:49
+#: src/components/SettingsTabs.tsx:52
 #: src/routes/(root)/[handle]/settings/preferences.tsx:146
 #: src/routes/(root)/[handle]/settings/preferences.tsx:147
 msgid "Preferences"
@@ -1416,7 +1415,7 @@ msgstr "优先级"
 msgid "Privacy policy"
 msgstr "隐私政策"
 
-#: src/components/SettingsTabs.tsx:42
+#: src/components/SettingsTabs.tsx:44
 #: src/routes/(root)/[handle]/settings/index.tsx:115
 #: src/routes/(root)/[handle]/settings/index.tsx:116
 msgid "Profile settings"
@@ -1428,18 +1427,18 @@ msgid "Public"
 msgstr "公开"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:57
-msgid "Publish Article"
+msgid "Publish article"
 msgstr "发布文章"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
-msgid "Publish Now"
+msgid "Publish now"
 msgstr "立即发布"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
-msgid "Publishing..."
-msgstr "发布中..."
+msgid "Publishing…"
+msgstr "发布中…"
 
-#: src/routes/(root)/search.tsx:239
+#: src/routes/(root)/search.tsx:257
 msgid "Query cannot be empty"
 msgstr "搜索关键词不能为空"
 
@@ -1467,8 +1466,8 @@ msgstr "用{emoji}反应"
 msgid "reaction"
 msgstr "反应"
 
-#: src/components/ArticleCard.tsx:358
-#: src/components/ArticleCard.tsx:378
+#: src/components/ArticleCard.tsx:360
+#: src/components/ArticleCard.tsx:380
 msgid "Read full article"
 msgstr "阅读完整文章"
 
@@ -1477,7 +1476,7 @@ msgid "Read the full Code of conduct"
 msgstr "阅读完整的行为准则"
 
 #: src/components/AppSidebar.tsx:540
-msgid "Recent Drafts"
+msgid "Recent drafts"
 msgstr "最近的草稿"
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:378
@@ -1503,7 +1502,7 @@ msgstr "正在注册…"
 #: src/components/RemoteFollowButton.tsx:174
 #: src/components/RemoteFollowButton.tsx:180
 #: src/components/RemoteFollowButton.tsx:282
-msgid "Remote Follow"
+msgid "Remote follow"
 msgstr "远程关注"
 
 #: src/components/LanguageList.tsx:225
@@ -1544,11 +1543,11 @@ msgid "Save"
 msgstr "保存"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
-msgid "Save Changes"
+msgid "Save changes"
 msgstr "保存更改"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:32
-msgid "Save Draft"
+msgid "Save draft"
 msgstr "保存草稿"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:126
@@ -1557,9 +1556,6 @@ msgstr "保存草稿以查看预览"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:32
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
-msgid "Saving..."
-msgstr "保存中..."
-
 #: src/routes/(root)/[handle]/settings/index.tsx:482
 #: src/routes/(root)/[handle]/settings/language.tsx:192
 #: src/routes/(root)/[handle]/settings/preferences.tsx:198
@@ -1567,7 +1563,7 @@ msgid "Saving…"
 msgstr "保存中…"
 
 #: src/components/AppSidebar.tsx:267
-#: src/routes/(root)/search.tsx:148
+#: src/routes/(root)/search.tsx:149
 msgid "Search"
 msgstr "搜索"
 
@@ -1575,20 +1571,20 @@ msgstr "搜索"
 msgid "Search a language…"
 msgstr "搜索语言…"
 
-#: src/routes/(root)/search.tsx:141
+#: src/routes/(root)/search.tsx:142
 msgid "Search posts…"
 msgstr "搜索内容…"
 
 #. placeholder {0}: "KEYWORD"
-#: src/routes/(root)/search.tsx:178
+#: src/routes/(root)/search.tsx:179
 msgid "Search results for {0}"
 msgstr "{0}的搜索结果"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:327
 msgid "Select an option"
 msgstr "请选择一个选项"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:327
 msgid "Select options"
 msgstr "请选择选项"
 
@@ -1622,7 +1618,7 @@ msgid "Shares"
 msgstr "转帖"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:73
-msgid "Show Preview"
+msgid "Show preview"
 msgstr "显示预览"
 
 #: src/components/AppSidebar.tsx:300
@@ -1634,7 +1630,7 @@ msgstr "登录"
 msgid "Sign in to Hackers' Pub"
 msgstr "登录 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:321
+#: src/components/QuestionCard.tsx:324
 msgid "Sign in to vote"
 msgstr "登录后投票"
 
@@ -1667,7 +1663,7 @@ msgstr "登录中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "注册 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:394
+#: src/components/QuestionCard.tsx:397
 msgid "Single choice"
 msgstr "单选"
 
@@ -1688,7 +1684,7 @@ msgstr "出现错误，请重试。"
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
-#: src/routes/(root)/[handle]/drafts/index.tsx:168
+#: src/routes/(root)/[handle]/drafts/index.tsx:177
 msgid "Success"
 msgstr "成功"
 
@@ -1704,8 +1700,8 @@ msgstr "设置已成功保存"
 msgid "Successfully saved settings"
 msgstr "设置保存成功"
 
-#: src/components/ArticleCard.tsx:311
-#: src/components/ArticleCard.tsx:330
+#: src/components/ArticleCard.tsx:313
+#: src/components/ArticleCard.tsx:332
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
@@ -1848,18 +1844,18 @@ msgstr "标题不能为空"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "要关注{0}，请输入你的联邦宇宙用户名。"
 
-#: src/routes/(root).tsx:72
+#: src/routes/(root).tsx:80
 msgid "Toggle sidebar"
 msgstr "切换侧边栏"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:194
+#: src/components/ArticleCard.tsx:196
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "翻译自{0}"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:295
-msgid "Translating..."
+msgid "Translating…"
 msgstr "正在翻译…"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
@@ -1894,7 +1890,7 @@ msgid "Update your profile information, including your avatar, username, display
 msgstr "更新您的个人资料信息，包括头像、用户名、昵称、个人简介和链接。"
 
 #. placeholder {0}: new Date(edge.node.updated).toLocaleDateString()
-#: src/routes/(root)/[handle]/drafts/index.tsx:282
+#: src/routes/(root)/[handle]/drafts/index.tsx:307
 msgid "Updated {0}"
 msgstr "更新于 {0}"
 
@@ -1965,19 +1961,19 @@ msgstr "所有人都可以看到，但不会出现在公共时间线中。只有
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未注册用户在内的所有人都可以看到。内容也会出现在公共时间线中。"
 
-#: src/components/QuestionCard.tsx:326
+#: src/components/QuestionCard.tsx:329
 msgid "Vote"
 msgstr "投票"
 
-#: src/components/QuestionCard.tsx:340
+#: src/components/QuestionCard.tsx:343
 msgid "Vote recorded"
 msgstr "已记录投票"
 
-#: src/components/QuestionCard.tsx:320
+#: src/components/QuestionCard.tsx:323
 msgid "Voted"
 msgstr "已投票"
 
-#: src/components/QuestionCard.tsx:322
+#: src/components/QuestionCard.tsx:325
 msgid "Voting…"
 msgstr "正在投票…"
 
@@ -1989,7 +1985,7 @@ msgstr "网站"
 msgid "Welcome to Hackers' Pub! Please fill out the form below to complete your sign-up."
 msgstr "欢迎来到 Hackers' Pub！请填写以下表单完成注册。"
 
-#: src/components/AboutHackersPub.tsx:230
+#: src/components/AboutHackersPub.tsx:231
 msgid "What is Hackers' Pub?"
 msgstr "什么是 Hackers' Pub？"
 
@@ -2002,7 +1998,7 @@ msgid "Without shares"
 msgstr "不含转帖"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:618
-msgid "Write a reply..."
+msgid "Write a reply…"
 msgstr "写个回复…"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:284
@@ -2039,7 +2035,7 @@ msgstr "您只能为自己的账户创建草稿"
 msgid "You can only edit your own drafts"
 msgstr "您只能编辑自己的草稿"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:211
+#: src/routes/(root)/[handle]/drafts/index.tsx:222
 msgid "You can only view your own drafts"
 msgstr "您只能查看自己的草稿"
 
@@ -2062,7 +2058,7 @@ msgid "You must be signed in to create a note"
 msgstr "你必须登录才能创建帖子"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:446
-#: src/routes/(root)/[handle]/drafts/index.tsx:186
+#: src/routes/(root)/[handle]/drafts/index.tsx:195
 msgid "You must be signed in to delete a draft"
 msgstr "您必须登录才能删除草稿"
 

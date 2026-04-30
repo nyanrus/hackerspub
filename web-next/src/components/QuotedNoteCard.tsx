@@ -45,8 +45,8 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
         <div class={props.class} classList={props.classList}>
           <div class="w-0 h-0 border-l-[15px] border-r-[15px] border-b-[20px] border-l-transparent border-r-transparent border-b-muted ml-4" />
           <div class="flex flex-col bg-muted p-4">
-            <div class="flex gap-4">
-              <Avatar class="size-12">
+            <div class="flex min-w-0 gap-4">
+              <Avatar class="size-12 shrink-0">
                 <InternalLink
                   href={note().actor.url ?? note().actor.iri}
                   internalHref={note().actor.local
@@ -56,8 +56,8 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
                   <AvatarImage src={note().actor.avatarUrl} class="size-12" />
                 </InternalLink>
               </Avatar>
-              <div class="flex flex-col">
-                <div>
+              <div class="flex min-w-0 flex-col">
+                <div class="min-w-0">
                   <Show when={(note().actor.name ?? "").trim() !== ""}>
                     <InternalLink
                       href={note().actor.url ?? note().actor.iri}
@@ -69,11 +69,14 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
                     />
                     {" "}
                   </Show>
-                  <span class="select-all text-muted-foreground">
+                  <span
+                    class="break-all select-all text-muted-foreground"
+                    title={note().actor.handle}
+                  >
                     {note().actor.handle}
                   </span>
                 </div>
-                <div class="flex flex-row text-muted-foreground gap-1">
+                <div class="flex min-w-0 flex-row flex-wrap gap-1 text-muted-foreground">
                   <InternalLink
                     href={note().url ?? note().iri}
                     internalHref={note().actor.local

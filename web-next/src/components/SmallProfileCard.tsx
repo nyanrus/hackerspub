@@ -29,8 +29,8 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
     <Show when={actor()}>
       {(actor) => (
         <div class="flex flex-col gap-4 p-4">
-          <div class="flex flex-row gap-4 items-center">
-            <Avatar class="size-16">
+          <div class="flex min-w-0 flex-row items-start gap-4">
+            <Avatar class="size-16 shrink-0">
               <a
                 href={`/${
                   actor().local ? `@${actor().username}` : actor().handle
@@ -39,23 +39,32 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
                 <AvatarImage src={actor().avatarUrl} class="size-16" />
               </a>
             </Avatar>
-            <div class="flex flex-col flex-1">
+            <div class="flex min-w-0 flex-1 flex-col">
               <a
                 href={`/${
                   actor().local ? `@${actor().username}` : actor().handle
                 }`}
                 innerHTML={actor().name ?? actor().username}
-                class="font-semibold text-lg"
+                class="truncate text-lg font-semibold"
               />
-              <span class="text-muted-foreground select-all">
+              <span
+                class="truncate text-muted-foreground select-all"
+                title={actor().handle}
+              >
                 {actor().handle}
               </span>
             </div>
-            <FollowButton $actor={actor()} />
+            <div class="shrink-0">
+              <FollowButton $actor={actor()} />
+            </div>
           </div>
           <Show when={actor().bio}>
             {(bio) => (
-              <div innerHTML={bio()} class="prose dark:prose-invert"></div>
+              <div
+                innerHTML={bio()}
+                class="prose dark:prose-invert break-words"
+              >
+              </div>
             )}
           </Show>
         </div>

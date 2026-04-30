@@ -40,7 +40,7 @@ export function NoteHeader(props: NoteHeaderProps) {
   return (
     <Show when={note()}>
       {(n) => (
-        <div class="flex items-center gap-1 flex-wrap">
+        <div class="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
           <Show when={(n().actor.name ?? "").trim() !== ""}>
             <InternalLink
               href={n().actor.url ?? n().actor.iri}
@@ -52,10 +52,13 @@ export function NoteHeader(props: NoteHeaderProps) {
             />
             {" "}
           </Show>
-          <span class="select-all text-muted-foreground grow">
+          <span
+            class="min-w-0 grow truncate select-all text-muted-foreground"
+            title={n().actor.handle}
+          >
             {n().actor.handle}
           </span>
-          <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
+          <span class="flex items-center gap-1.5 text-sm text-muted-foreground/70">
             <InternalLink
               href={n().url ?? n().iri}
               internalHref={`/${

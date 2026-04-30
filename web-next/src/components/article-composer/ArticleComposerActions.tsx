@@ -8,7 +8,7 @@ export function ArticleComposerActions() {
   const ctx = useArticleComposer();
 
   return (
-    <div class="flex gap-3 justify-between">
+    <div class="flex flex-wrap justify-between gap-3">
       {/* Delete button (left side) */}
       <Show when={ctx.draft()?.id}>
         <Button
@@ -17,19 +17,19 @@ export function ArticleComposerActions() {
           onClick={ctx.handleDelete}
           disabled={ctx.isDeleting()}
         >
-          {ctx.isDeleting() ? t`Deleting...` : t`Delete Draft`}
+          {ctx.isDeleting() ? t`Deleting…` : t`Delete draft`}
         </Button>
       </Show>
 
       {/* Save/Publish buttons (right side) */}
-      <div class="flex gap-3 ml-auto">
+      <div class="ml-auto flex flex-wrap justify-end gap-3">
         <Button
           type="button"
           variant="outline"
           onClick={ctx.handleSave}
           disabled={ctx.isSaving() || !ctx.isDirty()}
         >
-          {ctx.isSaving() ? t`Saving...` : t`Save Draft`}
+          {ctx.isSaving() ? t`Saving…` : t`Save draft`}
         </Button>
 
         <Show
@@ -44,7 +44,7 @@ export function ArticleComposerActions() {
                 {t`Cancel`}
               </Button>
               <Button type="submit" disabled={ctx.isPublishingMutation()}>
-                {ctx.isPublishingMutation() ? t`Publishing...` : t`Publish Now`}
+                {ctx.isPublishingMutation() ? t`Publishing…` : t`Publish now`}
               </Button>
             </div>
           }
@@ -54,7 +54,7 @@ export function ArticleComposerActions() {
             onClick={() => ctx.setIsPublishing(true)}
             disabled={!ctx.draft()?.id}
           >
-            {t`Publish Article`}
+            {t`Publish article`}
           </Button>
         </Show>
       </div>

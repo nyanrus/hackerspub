@@ -181,7 +181,7 @@ export function FollowButton(props: FollowButtonProps) {
               {actor().viewerFollows
                 ? t`Unfollow`
                 : actor().followsViewer
-                ? t`Follow Back`
+                ? t`Follow back`
                 : t`Follow`}
             </Button>
           </Show>

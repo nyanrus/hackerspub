@@ -69,17 +69,20 @@ export function LinkPreview(props: LinkPreviewProps) {
         const author = link().author;
 
         return (
-          <div class="mt-4">
+          <div class="mt-4 overflow-hidden rounded-lg border bg-card shadow-sm">
             <a
               href={link().url}
               target="_blank"
               rel="noopener noreferrer"
               data-layout={layoutMode}
-              class="border-t border-border bg-muted grid data-[layout=wide]:grid-cols-1 data-[layout=compact]:grid-cols-[auto_1fr] gap-0"
+              class="grid gap-0 bg-background transition-colors hover:bg-muted/30 data-[layout=compact]:grid-cols-[7rem_1fr] data-[layout=wide]:grid-cols-1 sm:data-[layout=compact]:grid-cols-[9rem_1fr]"
             >
               <Show when={image}>
                 {(img) => (
-                  <div class="min-w-0">
+                  <div
+                    data-layout={layoutMode}
+                    class="min-w-0 bg-muted/40 data-[layout=compact]:border-r data-[layout=wide]:border-b"
+                  >
                     <img
                       src={img().url}
                       alt={img().alt ?? undefined}
@@ -88,19 +91,21 @@ export function LinkPreview(props: LinkPreviewProps) {
                       style={img().width != null && img().height != null
                         ? `aspect-ratio: ${img().width} / ${img().height}`
                         : undefined}
-                      class="m-auto data-[layout=wide]:w-full data-[layout=wide]:h-auto data-[layout=compact]:max-h-40 data-[layout=compact]:w-auto"
+                      class="h-full w-full object-cover data-[layout=wide]:max-h-64"
                       data-layout={layoutMode}
                     />
                   </div>
                 )}
               </Show>
-              <div>
-                <p class="m-4 font-bold break-words">{link().title}</p>
+              <div class="min-w-0 p-4">
+                <p class="font-semibold leading-snug break-words">
+                  {link().title}
+                </p>
                 <Show
                   when={link().description ||
                     (author && !URL.canParse(author))}
                 >
-                  <p class="m-4 text-muted-foreground line-clamp-2 break-words">
+                  <p class="mt-2 line-clamp-2 break-words text-sm leading-6 text-muted-foreground">
                     <Show when={author}>
                       {(author) => (
                         <>
@@ -112,8 +117,8 @@ export function LinkPreview(props: LinkPreviewProps) {
                     {link().description}
                   </p>
                 </Show>
-                <p class="m-4">
-                  <span class="text-muted-foreground uppercase">
+                <p class="mt-3 text-xs">
+                  <span class="font-medium uppercase text-muted-foreground">
                     {new URL(link().url).host}
                   </span>
                   <Show when={link().siteName}>
@@ -131,8 +136,8 @@ export function LinkPreview(props: LinkPreviewProps) {
             </a>
             <Show when={link().creator}>
               {(creator) => (
-                <div class="bg-border p-4 flex gap-1.5">
-                  <span>{t`Link author: `}</span>
+                <div class="flex gap-1.5 border-t bg-muted/40 p-4">
+                  <span>{t`Link author:`}</span>
                   <Avatar class="size-6">
                     <InternalLink
                       href={creator().url ?? creator().iri}

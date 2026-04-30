@@ -45,9 +45,9 @@ export function ArticleCard(props: ArticleCardProps) {
   const [hover, setHover] = createSignal(false);
 
   return (
-    <div
-      class="flex flex-col border-b last:border-none last:rounded-b-xl group"
-      classList={{ "bg-accent": hover() }}
+    <article
+      class="group flex flex-col border-b transition-colors last:border-none"
+      classList={{ "bg-muted/40": hover() }}
     >
       <Show when={article()}>
         {(article) => (
@@ -86,7 +86,7 @@ export function ArticleCard(props: ArticleCardProps) {
           </Show>
         )}
       </Show>
-    </div>
+    </article>
   );
 }
 
@@ -143,7 +143,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
     <Show when={article()}>
       {(article) => (
         <>
-          <div class="flex gap-4 m-4 mb-0">
+          <div class="m-4 mb-0 flex gap-3 sm:gap-4">
             <Avatar class="size-12">
               <InternalLink
                 href={article().actor.url ?? article().actor.iri}
@@ -157,8 +157,8 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 </AvatarFallback>
               </InternalLink>
             </Avatar>
-            <div class="flex flex-col">
-              <div>
+            <div class="flex min-w-0 flex-col">
+              <div class="flex min-w-0 items-baseline gap-x-1">
                 <Show when={(article().actor.name ?? "").trim() !== ""}>
                   <InternalLink
                     innerHTML={article().actor.name ?? ""}
@@ -166,15 +166,17 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                     internalHref={article().actor.local
                       ? `/@${article().actor.username}`
                       : `/${article().actor.handle}`}
-                    class="font-semibold"
+                    class="shrink-0 font-semibold"
                   />
-                  {" "}
                 </Show>
-                <span class="select-all text-muted-foreground">
+                <span
+                  class="min-w-0 truncate select-all text-muted-foreground"
+                  title={article().actor.handle}
+                >
                   {article().actor.handle}
                 </span>
               </div>
-              <div class="flex flex-row items-center text-muted-foreground gap-1">
+              <div class="flex flex-row items-center gap-1 text-sm text-muted-foreground/70">
                 <Timestamp value={article().published} capitalizeFirstLetter />
                 <PostActionMenu
                   $post={article()}
@@ -216,7 +218,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
             <h1
               lang={article().contents?.[0]?.language ?? article().language ??
                 undefined}
-              class="text-xl font-semibold"
+              class="text-xl font-semibold leading-snug"
             >
               <Show
                 when={article().actor.local}
@@ -347,7 +349,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 target="_blank"
                 on:mouseover={() => props.setHover?.(true)}
                 on:mouseout={() => props.setHover?.(false)}
-                class="block p-4 border-t bg-muted text-center group-last:rounded-b-xl"
+                class="block p-4 border-t bg-muted text-center"
                 classList={{
                   "text-muted-foreground": !props.hover?.(),
                   "text-accent-foreground": props.hover?.(),
@@ -367,7 +369,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 article().language ?? undefined}
               on:mouseover={() => props.setHover?.(true)}
               on:mouseout={() => props.setHover?.(false)}
-              class="block p-4 border-t bg-muted text-center group-last:rounded-b-xl"
+              class="block p-4 border-t bg-muted text-center"
               classList={{
                 "text-muted-foreground": !props.hover?.(),
                 "text-accent-foreground": props.hover?.(),

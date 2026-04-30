@@ -40,7 +40,7 @@ export function NotificationActor(props: NotificationActorProps) {
       {(notification) => (
         <Show when={firstActor(notification())}>
           {(firstActor) => (
-            <a href={`/${firstActor().handle}`}>
+            <a href={`/${firstActor().handle}`} class="min-w-0">
               <Show
                 when={firstActor().name}
                 fallback={
@@ -50,12 +50,15 @@ export function NotificationActor(props: NotificationActorProps) {
                 }
               >
                 {(name) => (
-                  <>
+                  <span class="inline min-w-0">
                     <span innerHTML={name()} class="font-semibold" />{" "}
-                    <span class="text-muted-foreground">
+                    <span
+                      class="break-all text-muted-foreground"
+                      title={firstActor().handle}
+                    >
                       ({firstActor().handle})
                     </span>
-                  </>
+                  </span>
                 )}
               </Show>
             </a>

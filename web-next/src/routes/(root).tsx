@@ -3,6 +3,7 @@ import {
   query,
   type RouteDefinition,
   type RouteSectionProps,
+  useLocation,
 } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import {
@@ -49,10 +50,17 @@ const loadRootLayoutQuery = query(
 
 export default function RootLayout(props: RouteSectionProps) {
   const { i18n, t } = useLingui();
+  const location = useLocation();
   const signedAccount = createPreloadedQuery<RootLayoutQuery>(
     RootLayoutQuery,
     () => loadRootLayoutQuery(),
   );
+  const showFloatingCompose = () => {
+    if (signedAccount.pending || !signedAccount()?.viewer) return false;
+    return !/^\/(?:@[^/]+\/(?:drafts|settings)|sign)(?:\/|$)/.test(
+      location.pathname,
+    );
+  };
   return (
     <ViewerProvider
       isAuthenticated={() =>
@@ -93,6 +101,7 @@ export default function RootLayout(props: RouteSectionProps) {
             lang={new Intl.Locale(i18n.locale).minimize().baseName}
             class="w-full pt-14 md:pt-0"
             classList={{
+              "pb-24 md:pb-0": showFloatingCompose(),
               "bg-[url(/dev-bg-light.svg)]": import.meta.env.DEV,
               "dark:bg-[url(/dev-bg-dark.svg)]": import.meta.env.DEV,
             }}
@@ -100,7 +109,7 @@ export default function RootLayout(props: RouteSectionProps) {
             {props.children}
           </main>
           <FloatingComposeButton
-            show={!signedAccount.pending && !!signedAccount()?.viewer}
+            show={showFloatingCompose()}
             username={signedAccount()?.viewer?.username}
             $signedAccount={signedAccount()?.viewer}
           />

@@ -31,7 +31,7 @@ export function NoteCard(props: NoteCardProps) {
       {(note) => {
         const displayPost = () => note().sharedPost ?? note();
         return (
-          <article class="px-4 py-2 border-b-1">
+          <article class="border-b px-4 py-4 transition-colors hover:bg-muted/30 last:border-none">
             <div class="flex flex-col gap-0.5">
               <Show when={note().sharedPost}>
                 <PostSharer $post={note()} class="ml-14" />

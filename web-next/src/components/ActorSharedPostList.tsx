@@ -54,7 +54,7 @@ export function ActorSharedPostList(props: ActorSharedPostListProps) {
   }
 
   return (
-    <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl my-4">
+    <div class="my-4 overflow-hidden rounded-lg border bg-card shadow-sm">
       <Show when={sharedPosts()}>
         {(data) => (
           <>
@@ -67,9 +67,11 @@ export function ActorSharedPostList(props: ActorSharedPostListProps) {
               )}
             </For>
             <Show when={sharedPosts.hasNext}>
-              <div
+              <button
+                type="button"
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                disabled={sharedPosts.pending || loadingState() === "loading"}
+                class="block w-full cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Switch>
                   <Match
@@ -84,7 +86,7 @@ export function ActorSharedPostList(props: ActorSharedPostListProps) {
                     {t`Load more posts`}
                   </Match>
                 </Switch>
-              </div>
+              </button>
             </Show>
             <Show when={data().sharedPosts.edges.length < 1}>
               <div class="px-4 py-8 text-center text-muted-foreground">

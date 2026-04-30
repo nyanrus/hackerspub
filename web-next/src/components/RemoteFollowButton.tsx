@@ -171,13 +171,13 @@ export function RemoteFollowButton(props: RemoteFollowButtonProps) {
             class="cursor-pointer"
             {...triggerProps}
           >
-            {t`Remote Follow`}
+            {t`Remote follow`}
           </Button>
         )}
       />
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t`Remote Follow`}</DialogTitle>
+          <DialogTitle>{t`Remote follow`}</DialogTitle>
           <DialogDescription>
             {t`To follow ${displayName()}, enter your Fediverse handle.`}
           </DialogDescription>
@@ -204,7 +204,7 @@ export function RemoteFollowButton(props: RemoteFollowButtonProps) {
 
                 <Show when={isLoading()}>
                   <p class="text-sm text-muted-foreground">
-                    {t`Looking up user...`}
+                    {t`Looking up user…`}
                   </p>
                 </Show>
 
@@ -279,7 +279,7 @@ export function RemoteFollowButton(props: RemoteFollowButtonProps) {
                   {t`Cancel`}
                 </Button>
                 <Button type="button" onClick={handleFollow}>
-                  {t`Remote Follow`}
+                  {t`Remote follow`}
                 </Button>
               </DialogFooter>
             </div>

@@ -69,8 +69,8 @@ export default function NewArticleDraftPage() {
       fallback={
         <WideContainer class="p-6">
           <HttpStatusCode code={403} />
-          <Title>{t`Permission Denied`}</Title>
-          <h1 class="text-2xl font-bold mb-4">{t`Permission Denied`}</h1>
+          <Title>{t`Permission denied`}</Title>
+          <h1 class="text-2xl font-bold mb-4">{t`Permission denied`}</h1>
           <p class="text-muted-foreground mb-4">
             {connectionsData()?.viewer
               ? t`You can only create drafts for your own account`
@@ -78,12 +78,12 @@ export default function NewArticleDraftPage() {
           </p>
           <div class="flex gap-2">
             <Button onClick={() => window.history.back()}>
-              {t`Go Back`}
+              {t`Go back`}
             </Button>
             <Show when={connectionsData()?.viewer?.username}>
               {(username) => (
                 <A href={`/@${username()}/drafts`}>
-                  <Button variant="outline">{t`Go to My Drafts`}</Button>
+                  <Button variant="outline">{t`Go to my drafts`}</Button>
                 </A>
               )}
             </Show>
@@ -92,7 +92,7 @@ export default function NewArticleDraftPage() {
       }
     >
       <WideContainer>
-        <Title>{draftId() ? t`Edit Draft` : t`New Article`}</Title>
+        <Title>{draftId() ? t`Edit draft` : t`New article`}</Title>
         <ArticleComposer
           onSaved={handleSaved}
           viewerId={connectionsData()?.viewer?.id}

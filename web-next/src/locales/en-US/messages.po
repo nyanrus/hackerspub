@@ -36,17 +36,17 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, one {# invitation left} other {# invitations left}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:459
+#: src/components/QuestionCard.tsx:462
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, one {# vote} other {# votes}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:405
+#: src/components/QuestionCard.tsx:408
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, one {# voter} other {# voters}}"
 
 #. placeholder {0}: edge.node.tags.length - 3
-#: src/routes/(root)/[handle]/drafts/index.tsx:271
+#: src/routes/(root)/[handle]/drafts/index.tsx:296
 msgid "{0, plural, one {+1 more} other {+# more}}"
 msgstr "{0, plural, one {+1 more} other {+# more}}"
 
@@ -248,7 +248,7 @@ msgstr "An error occurred while saving your settings. Please try again, or conta
 msgid "An unexpected error occurred. Please try again later."
 msgstr "An unexpected error occurred. Please try again later."
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:150
+#: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 
@@ -261,9 +261,10 @@ msgstr "Are you sure you want to delete this draft? This action cannot be undone
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:231
-msgid "Article Drafts"
-msgstr "Article Drafts"
+#: src/routes/(root)/[handle]/drafts/index.tsx:246
+#: src/routes/(root)/[handle]/drafts/index.tsx:248
+msgid "Article drafts"
+msgstr "Article drafts"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:364
 msgid "Article published"
@@ -352,7 +353,7 @@ msgstr "Choose the language your friend prefers. This language will only be used
 msgid "Choose your preferred language for the verification email."
 msgstr "Choose your preferred language for the verification email."
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:400
 msgid "Closed"
 msgstr "Closed"
 
@@ -405,14 +406,14 @@ msgstr "Could not copy the link to the clipboard."
 msgid "Could not find a post at this URL"
 msgstr "Could not find a post at this URL"
 
-#: src/components/QuestionCard.tsx:350
+#: src/components/QuestionCard.tsx:353
 msgid "Could not vote on this poll"
 msgstr "Could not vote on this poll"
 
 #: src/components/AppSidebar.tsx:505
 #: src/components/FloatingComposeButton.tsx:123
-msgid "Create Article"
-msgstr "Create Article"
+msgid "Create article"
+msgstr "Create article"
 
 #: src/routes/(root)/[handle]/settings/invite.tsx:749
 msgid "Create invitation link"
@@ -422,8 +423,8 @@ msgstr "Create invitation link"
 #: src/components/FloatingComposeButton.tsx:99
 #: src/components/NoteComposeModal.tsx:26
 #: src/components/NoteComposer.tsx:451
-msgid "Create Note"
-msgstr "Create Note"
+msgid "Create note"
+msgstr "Create note"
 
 #: src/routes/(root)/[handle]/settings/invite.tsx:613
 msgid "Create shareable invitation links. Each link can be used multiple times until the invitation count runs out or the link expires."
@@ -461,23 +462,20 @@ msgstr "Default share privacy"
 
 #: src/components/PostActionMenu.tsx:341
 #: src/components/PostActionMenu.tsx:361
-#: src/routes/(root)/[handle]/drafts/index.tsx:296
+#: src/routes/(root)/[handle]/drafts/index.tsx:323
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Delete"
 msgstr "Delete"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:20
-msgid "Delete Draft"
-msgstr "Delete Draft"
+msgid "Delete draft"
+msgstr "Delete draft"
 
 #: src/components/PostActionMenu.tsx:349
 msgid "Delete post?"
 msgstr "Delete post?"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:20
-msgid "Deleting..."
-msgstr "Deleting..."
-
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Deleting…"
 msgstr "Deleting…"
@@ -500,7 +498,7 @@ msgid "Do you want to quote this link?"
 msgstr "Do you want to quote this link?"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:429
-#: src/routes/(root)/[handle]/drafts/index.tsx:169
+#: src/routes/(root)/[handle]/drafts/index.tsx:178
 msgid "Draft deleted"
 msgstr "Draft deleted"
 
@@ -529,13 +527,13 @@ msgid "Edit"
 msgstr "Edit"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:235
-msgid "Edit Article"
-msgstr "Edit Article"
+msgid "Edit article"
+msgstr "Edit article"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:79
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
-msgid "Edit Draft"
-msgstr "Edit Draft"
+msgid "Edit draft"
+msgstr "Edit draft"
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:362
 #: src/routes/(root)/[handle]/settings/invite.tsx:321
@@ -547,11 +545,11 @@ msgstr "Email address"
 msgid "Email or username"
 msgstr "Email or username"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:403
 msgid "Ended"
 msgstr "Ended"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:403
 msgid "Ends"
 msgstr "Ends"
 
@@ -589,9 +587,9 @@ msgstr "Enter your email or username below to sign in."
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
-#: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
-#: src/routes/(root)/[handle]/drafts/index.tsx:193
+#: src/routes/(root)/[handle]/drafts/index.tsx:194
+#: src/routes/(root)/[handle]/drafts/index.tsx:202
 #: src/routes/(root)/[handle]/invite/[id].tsx:199
 #: src/routes/(root)/sign/up/[token].tsx:295
 msgid "Error"
@@ -640,23 +638,23 @@ msgstr "Failed to delete post"
 msgid "Failed to follow"
 msgstr "Failed to follow"
 
-#: src/components/ActorArticleList.tsx:81
+#: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
 msgstr "Failed to load more articles; click to retry"
 
-#: src/components/Bookmarks.tsx:103
+#: src/components/Bookmarks.tsx:105
 msgid "Failed to load more bookmarks; click to retry"
 msgstr "Failed to load more bookmarks; click to retry"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:320
+#: src/routes/(root)/[handle]/drafts/index.tsx:348
 msgid "Failed to load more drafts; click to retry"
 msgstr "Failed to load more drafts; click to retry"
 
-#: src/components/ActorFollowerList.tsx:80
+#: src/components/ActorFollowerList.tsx:82
 msgid "Failed to load more followers; click to retry"
 msgstr "Failed to load more followers; click to retry"
 
-#: src/components/ActorFollowingList.tsx:80
+#: src/components/ActorFollowingList.tsx:82
 msgid "Failed to load more following; click to retry"
 msgstr "Failed to load more following; click to retry"
 
@@ -664,11 +662,11 @@ msgstr "Failed to load more following; click to retry"
 msgid "Failed to load more invitees; click to retry"
 msgstr "Failed to load more invitees; click to retry"
 
-#: src/components/ActorNoteList.tsx:75
+#: src/components/ActorNoteList.tsx:77
 msgid "Failed to load more notes; click to retry"
 msgstr "Failed to load more notes; click to retry"
 
-#: src/components/NotificationList.tsx:73
+#: src/components/NotificationList.tsx:80
 msgid "Failed to load more notifications; click to retry"
 msgstr "Failed to load more notifications; click to retry"
 
@@ -676,11 +674,11 @@ msgstr "Failed to load more notifications; click to retry"
 msgid "Failed to load more passkeys; click to retry"
 msgstr "Failed to load more passkeys; click to retry"
 
-#: src/components/ActorPostList.tsx:81
-#: src/components/ActorSharedPostList.tsx:81
-#: src/components/PersonalTimeline.tsx:98
-#: src/components/PublicTimeline.tsx:100
-#: src/components/SearchResults.tsx:97
+#: src/components/ActorPostList.tsx:83
+#: src/components/ActorSharedPostList.tsx:83
+#: src/components/PersonalTimeline.tsx:100
+#: src/components/PublicTimeline.tsx:102
+#: src/components/SearchResults.tsx:99
 msgid "Failed to load more posts; click to retry"
 msgstr "Failed to load more posts; click to retry"
 
@@ -769,7 +767,7 @@ msgstr "Failed to update the article. Please try again."
 msgid "Failed to upload image"
 msgstr "Failed to upload image"
 
-#: src/components/QuestionCard.tsx:358
+#: src/components/QuestionCard.tsx:361
 msgid "Failed to vote"
 msgstr "Failed to vote"
 
@@ -790,8 +788,8 @@ msgid "Follow"
 msgstr "Follow"
 
 #: src/components/FollowButton.tsx:184
-msgid "Follow Back"
-msgstr "Follow Back"
+msgid "Follow back"
+msgstr "Follow back"
 
 #: src/routes/(root)/authorize_interaction.tsx:81
 #: src/routes/(root)/authorize_interaction.tsx:126
@@ -820,35 +818,35 @@ msgid "GitHub repository"
 msgstr "GitHub repository"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:65
-#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:228
 #: src/routes/(root)/[handle]/drafts/new.tsx:81
-msgid "Go Back"
-msgstr "Go Back"
+msgid "Go back"
+msgstr "Go back"
 
 #: src/components/FloatingComposeButton.tsx:148
 msgid "Go to Drafts"
 msgstr "Go to Drafts"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
-#: src/routes/(root)/[handle]/drafts/index.tsx:221
+#: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
-msgid "Go to My Drafts"
-msgstr "Go to My Drafts"
+msgid "Go to my drafts"
+msgstr "Go to my drafts"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:90
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:74
+#: src/routes/(root).tsx:82
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub home"
 
-#: src/components/AboutHackersPub.tsx:232
+#: src/components/AboutHackersPub.tsx:234
 msgid "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
 msgstr "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
 
@@ -869,8 +867,8 @@ msgid "Heading 3"
 msgstr "Heading 3"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:73
-msgid "Hide Preview"
-msgstr "Hide Preview"
+msgid "Hide preview"
+msgstr "Hide preview"
 
 #: src/components/TopBreadcrumb.tsx:21
 #~ msgid "Home"
@@ -915,7 +913,7 @@ msgstr "Invalid Fediverse handle format."
 #: src/components/article-composer/ArticleComposerContext.tsx:373
 #: src/components/article-composer/ArticleComposerContext.tsx:438
 #: src/components/NoteComposer.tsx:281
-#: src/routes/(root)/[handle]/drafts/index.tsx:178
+#: src/routes/(root)/[handle]/drafts/index.tsx:187
 msgid "Invalid input: {0}"
 msgstr "Invalid input: {0}"
 
@@ -949,7 +947,7 @@ msgid "Invitation sent"
 msgstr "Invitation sent"
 
 #: src/components/AppSidebar.tsx:365
-#: src/components/SettingsTabs.tsx:63
+#: src/components/SettingsTabs.tsx:68
 #: src/routes/(root)/[handle]/settings/invite.tsx:282
 msgid "Invite"
 msgstr "Invite"
@@ -983,7 +981,7 @@ msgstr "Language"
 msgid "Language code"
 msgstr "Language code"
 
-#: src/components/SettingsTabs.tsx:56
+#: src/components/SettingsTabs.tsx:60
 #: src/routes/(root)/[handle]/settings/language.tsx:74
 msgid "Language settings"
 msgstr "Language settings"
@@ -997,9 +995,13 @@ msgstr "Last used {0}"
 msgid "Link"
 msgstr "Link"
 
-#: src/components/LinkPreview.tsx:135
-msgid "Link author: "
-msgstr "Link author: "
+#: src/components/LinkPreview.tsx:140
+msgid "Link author:"
+msgstr "Link author:"
+
+#: src/components/LinkPreview.tsx:140
+#~ msgid "Link author: "
+#~ msgstr "Link author: "
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:253
 msgid "Link expired"
@@ -1013,23 +1015,23 @@ msgstr "Link name"
 msgid "List"
 msgstr "List"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:323
-msgid "Load More"
-msgstr "Load More"
+#: src/routes/(root)/[handle]/drafts/index.tsx:351
+msgid "Load more"
+msgstr "Load more"
 
-#: src/components/ActorArticleList.tsx:84
+#: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
 msgstr "Load more articles"
 
-#: src/components/Bookmarks.tsx:106
+#: src/components/Bookmarks.tsx:108
 msgid "Load more bookmarks"
 msgstr "Load more bookmarks"
 
-#: src/components/ActorFollowerList.tsx:83
+#: src/components/ActorFollowerList.tsx:85
 msgid "Load more followers"
 msgstr "Load more followers"
 
-#: src/components/ActorFollowingList.tsx:83
+#: src/components/ActorFollowingList.tsx:85
 msgid "Load more following"
 msgstr "Load more following"
 
@@ -1037,11 +1039,11 @@ msgstr "Load more following"
 msgid "Load more invitees"
 msgstr "Load more invitees"
 
-#: src/components/ActorNoteList.tsx:78
+#: src/components/ActorNoteList.tsx:80
 msgid "Load more notes"
 msgstr "Load more notes"
 
-#: src/components/NotificationList.tsx:76
+#: src/components/NotificationList.tsx:83
 msgid "Load more notifications"
 msgstr "Load more notifications"
 
@@ -1049,31 +1051,31 @@ msgstr "Load more notifications"
 msgid "Load more passkeys"
 msgstr "Load more passkeys"
 
-#: src/components/ActorPostList.tsx:84
-#: src/components/ActorSharedPostList.tsx:84
-#: src/components/PersonalTimeline.tsx:101
-#: src/components/PublicTimeline.tsx:103
-#: src/components/SearchResults.tsx:100
+#: src/components/ActorPostList.tsx:86
+#: src/components/ActorSharedPostList.tsx:86
+#: src/components/PersonalTimeline.tsx:103
+#: src/components/PublicTimeline.tsx:105
+#: src/components/SearchResults.tsx:102
 msgid "Load more posts"
 msgstr "Load more posts"
 
 #: src/components/article-composer/ArticleComposer.tsx:31
-msgid "Loading draft..."
-msgstr "Loading draft..."
+msgid "Loading draft…"
+msgstr "Loading draft…"
 
-#: src/components/ActorArticleList.tsx:78
+#: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
 msgstr "Loading more articles…"
 
-#: src/components/Bookmarks.tsx:100
+#: src/components/Bookmarks.tsx:102
 msgid "Loading more bookmarks…"
 msgstr "Loading more bookmarks…"
 
-#: src/components/ActorFollowerList.tsx:77
+#: src/components/ActorFollowerList.tsx:79
 msgid "Loading more followers…"
 msgstr "Loading more followers…"
 
-#: src/components/ActorFollowingList.tsx:77
+#: src/components/ActorFollowingList.tsx:79
 msgid "Loading more following…"
 msgstr "Loading more following…"
 
@@ -1081,11 +1083,11 @@ msgstr "Loading more following…"
 msgid "Loading more invitees…"
 msgstr "Loading more invitees…"
 
-#: src/components/ActorNoteList.tsx:72
+#: src/components/ActorNoteList.tsx:74
 msgid "Loading more notes…"
 msgstr "Loading more notes…"
 
-#: src/components/NotificationList.tsx:70
+#: src/components/NotificationList.tsx:77
 msgid "Loading more notifications"
 msgstr "Loading more notifications"
 
@@ -1093,11 +1095,11 @@ msgstr "Loading more notifications"
 msgid "Loading more passkeys…"
 msgstr "Loading more passkeys…"
 
-#: src/components/ActorPostList.tsx:78
-#: src/components/ActorSharedPostList.tsx:78
-#: src/components/PersonalTimeline.tsx:95
-#: src/components/PublicTimeline.tsx:97
-#: src/components/SearchResults.tsx:94
+#: src/components/ActorPostList.tsx:80
+#: src/components/ActorSharedPostList.tsx:80
+#: src/components/PersonalTimeline.tsx:97
+#: src/components/PublicTimeline.tsx:99
+#: src/components/SearchResults.tsx:96
 msgid "Loading more posts…"
 msgstr "Loading more posts…"
 
@@ -1105,10 +1107,7 @@ msgstr "Loading more posts…"
 msgid "Loading quoted post…"
 msgstr "Loading quoted post…"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:317
-msgid "Loading..."
-msgstr "Loading..."
-
+#: src/routes/(root)/[handle]/drafts/index.tsx:345
 #: src/routes/(root)/sign/up/[token].tsx:469
 msgid "Loading…"
 msgstr "Loading…"
@@ -1118,8 +1117,8 @@ msgid "Look up user"
 msgstr "Look up user"
 
 #: src/components/RemoteFollowButton.tsx:207
-msgid "Looking up user..."
-msgstr "Looking up user..."
+msgid "Looking up user…"
+msgstr "Looking up user…"
 
 #: src/routes/(root)/markdown.tsx:48
 msgid "Markdown guide"
@@ -1152,7 +1151,7 @@ msgstr "Move to the top"
 msgid "Move up"
 msgstr "Move up"
 
-#: src/components/QuestionCard.tsx:394
+#: src/components/QuestionCard.tsx:397
 msgid "Multiple choice"
 msgstr "Multiple choice"
 
@@ -1181,12 +1180,12 @@ msgstr "Never expires"
 msgid "Never used"
 msgstr "Never used"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:233
+#: src/routes/(root)/[handle]/drafts/index.tsx:254
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
-msgid "New Article"
-msgstr "New Article"
+msgid "New article"
+msgstr "New article"
 
-#: src/components/Bookmarks.tsx:113
+#: src/components/Bookmarks.tsx:115
 msgid "No bookmarks yet"
 msgstr "No bookmarks yet"
 
@@ -1194,15 +1193,15 @@ msgstr "No bookmarks yet"
 msgid "No draft to delete"
 msgstr "No draft to delete"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:243
+#: src/routes/(root)/[handle]/drafts/index.tsx:265
 msgid "No drafts yet. Create your first article!"
 msgstr "No drafts yet. Create your first article!"
 
-#: src/components/ActorFollowerList.tsx:90
+#: src/components/ActorFollowerList.tsx:92
 msgid "No followers found"
 msgstr "No followers found"
 
-#: src/components/ActorFollowingList.tsx:90
+#: src/components/ActorFollowingList.tsx:92
 msgid "No following found"
 msgstr "No following found"
 
@@ -1212,23 +1211,23 @@ msgstr "No following found"
 msgid "No invitations left"
 msgstr "No invitations left"
 
-#: src/routes/(root)/search.tsx:243
+#: src/routes/(root)/search.tsx:261
 msgid "No matching object found"
 msgstr "No matching object found"
 
-#: src/components/ActorArticleList.tsx:91
+#: src/components/ActorArticleList.tsx:93
 msgid "No notes articles"
 msgstr "No notes articles"
 
-#: src/components/ActorNoteList.tsx:85
+#: src/components/ActorNoteList.tsx:87
 msgid "No notes found"
 msgstr "No notes found"
 
-#: src/components/ActorPostList.tsx:91
-#: src/components/ActorSharedPostList.tsx:91
-#: src/components/PersonalTimeline.tsx:108
-#: src/components/PublicTimeline.tsx:110
-#: src/components/SearchResults.tsx:107
+#: src/components/ActorPostList.tsx:93
+#: src/components/ActorSharedPostList.tsx:93
+#: src/components/PersonalTimeline.tsx:110
+#: src/components/PublicTimeline.tsx:112
+#: src/components/SearchResults.tsx:109
 msgid "No posts found"
 msgstr "No posts found"
 
@@ -1279,7 +1278,7 @@ msgstr "Notifications"
 msgid "Number of invitations"
 msgstr "Number of invitations"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:400
 msgid "Open"
 msgstr "Open"
 
@@ -1300,8 +1299,8 @@ msgid "Other languages"
 msgstr "Other languages"
 
 #: src/routes/[...404].tsx:11
-msgid "Page Not Found"
-msgstr "Page Not Found"
+msgid "Page not found"
+msgstr "Page not found"
 
 #: src/routes/(root)/sign/index.tsx:346
 msgid "Passkey authentication failed"
@@ -1319,19 +1318,19 @@ msgstr "Passkey registered successfully"
 msgid "Passkey revoked"
 msgstr "Passkey revoked"
 
-#: src/components/SettingsTabs.tsx:70
+#: src/components/SettingsTabs.tsx:76
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:347
 msgid "Passkeys"
 msgstr "Passkeys"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:56
 #: src/routes/(root)/[handle]/drafts/[id].tsx:57
-#: src/routes/(root)/[handle]/drafts/index.tsx:207
-#: src/routes/(root)/[handle]/drafts/index.tsx:208
+#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:219
 #: src/routes/(root)/[handle]/drafts/new.tsx:72
 #: src/routes/(root)/[handle]/drafts/new.tsx:73
-msgid "Permission Denied"
-msgstr "Permission Denied"
+msgid "Permission denied"
+msgstr "Permission denied"
 
 #: src/components/PostActionMenu.tsx:331
 msgid "Pin to profile"
@@ -1360,16 +1359,16 @@ msgid "Please enter your Fediverse handle."
 msgstr "Please enter your Fediverse handle."
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:61
-#: src/routes/(root)/[handle]/drafts/index.tsx:212
+#: src/routes/(root)/[handle]/drafts/index.tsx:223
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "Please sign in to access this page"
 
-#: src/components/QuestionCard.tsx:344
+#: src/components/QuestionCard.tsx:347
 msgid "Please sign in to vote"
 msgstr "Please sign in to vote"
 
-#: src/components/QuestionCard.tsx:319
+#: src/components/QuestionCard.tsx:322
 msgid "Poll closed"
 msgstr "Poll closed"
 
@@ -1398,7 +1397,7 @@ msgstr "Posts tagged with {0}"
 msgid "Prefer AI-generated summary"
 msgstr "Prefer AI-generated summary"
 
-#: src/components/SettingsTabs.tsx:49
+#: src/components/SettingsTabs.tsx:52
 #: src/routes/(root)/[handle]/settings/preferences.tsx:146
 #: src/routes/(root)/[handle]/settings/preferences.tsx:147
 msgid "Preferences"
@@ -1421,7 +1420,7 @@ msgstr "Priority"
 msgid "Privacy policy"
 msgstr "Privacy policy"
 
-#: src/components/SettingsTabs.tsx:42
+#: src/components/SettingsTabs.tsx:44
 #: src/routes/(root)/[handle]/settings/index.tsx:115
 #: src/routes/(root)/[handle]/settings/index.tsx:116
 msgid "Profile settings"
@@ -1433,18 +1432,18 @@ msgid "Public"
 msgstr "Public"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:57
-msgid "Publish Article"
-msgstr "Publish Article"
+msgid "Publish article"
+msgstr "Publish article"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
-msgid "Publish Now"
-msgstr "Publish Now"
+msgid "Publish now"
+msgstr "Publish now"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
-msgid "Publishing..."
-msgstr "Publishing..."
+msgid "Publishing…"
+msgstr "Publishing…"
 
-#: src/routes/(root)/search.tsx:239
+#: src/routes/(root)/search.tsx:257
 msgid "Query cannot be empty"
 msgstr "Query cannot be empty"
 
@@ -1472,8 +1471,8 @@ msgstr "React with {emoji}"
 msgid "reaction"
 msgstr "reaction"
 
-#: src/components/ArticleCard.tsx:358
-#: src/components/ArticleCard.tsx:378
+#: src/components/ArticleCard.tsx:360
+#: src/components/ArticleCard.tsx:380
 msgid "Read full article"
 msgstr "Read full article"
 
@@ -1482,8 +1481,8 @@ msgid "Read the full Code of conduct"
 msgstr "Read the full Code of conduct"
 
 #: src/components/AppSidebar.tsx:540
-msgid "Recent Drafts"
-msgstr "Recent Drafts"
+msgid "Recent drafts"
+msgstr "Recent drafts"
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:378
 msgid "Register"
@@ -1508,8 +1507,8 @@ msgstr "Registering…"
 #: src/components/RemoteFollowButton.tsx:174
 #: src/components/RemoteFollowButton.tsx:180
 #: src/components/RemoteFollowButton.tsx:282
-msgid "Remote Follow"
-msgstr "Remote Follow"
+msgid "Remote follow"
+msgstr "Remote follow"
 
 #: src/components/LanguageList.tsx:225
 msgid "Remove"
@@ -1549,12 +1548,12 @@ msgid "Save"
 msgstr "Save"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
-msgid "Save Changes"
-msgstr "Save Changes"
+msgid "Save changes"
+msgstr "Save changes"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:32
-msgid "Save Draft"
-msgstr "Save Draft"
+msgid "Save draft"
+msgstr "Save draft"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:126
 msgid "Save draft to see preview"
@@ -1562,9 +1561,6 @@ msgstr "Save draft to see preview"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:32
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:344
-msgid "Saving..."
-msgstr "Saving..."
-
 #: src/routes/(root)/[handle]/settings/index.tsx:482
 #: src/routes/(root)/[handle]/settings/language.tsx:192
 #: src/routes/(root)/[handle]/settings/preferences.tsx:198
@@ -1572,7 +1568,7 @@ msgid "Saving…"
 msgstr "Saving…"
 
 #: src/components/AppSidebar.tsx:267
-#: src/routes/(root)/search.tsx:148
+#: src/routes/(root)/search.tsx:149
 msgid "Search"
 msgstr "Search"
 
@@ -1580,20 +1576,20 @@ msgstr "Search"
 msgid "Search a language…"
 msgstr "Search a language…"
 
-#: src/routes/(root)/search.tsx:141
+#: src/routes/(root)/search.tsx:142
 msgid "Search posts…"
 msgstr "Search posts…"
 
 #. placeholder {0}: "KEYWORD"
-#: src/routes/(root)/search.tsx:178
+#: src/routes/(root)/search.tsx:179
 msgid "Search results for {0}"
 msgstr "Search results for {0}"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:327
 msgid "Select an option"
 msgstr "Select an option"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:327
 msgid "Select options"
 msgstr "Select options"
 
@@ -1627,8 +1623,8 @@ msgid "Shares"
 msgstr "Shares"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:73
-msgid "Show Preview"
-msgstr "Show Preview"
+msgid "Show preview"
+msgstr "Show preview"
 
 #: src/components/AppSidebar.tsx:300
 #: src/routes/(root)/sign/index.tsx:396
@@ -1639,7 +1635,7 @@ msgstr "Sign in"
 msgid "Sign in to Hackers' Pub"
 msgstr "Sign in to Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:321
+#: src/components/QuestionCard.tsx:324
 msgid "Sign in to vote"
 msgstr "Sign in to vote"
 
@@ -1672,7 +1668,7 @@ msgstr "Signing in…"
 msgid "Signing up for Hackers' Pub"
 msgstr "Signing up for Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:394
+#: src/components/QuestionCard.tsx:397
 msgid "Single choice"
 msgstr "Single choice"
 
@@ -1693,7 +1689,7 @@ msgstr "Something went wrong—please try again."
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
-#: src/routes/(root)/[handle]/drafts/index.tsx:168
+#: src/routes/(root)/[handle]/drafts/index.tsx:177
 msgid "Success"
 msgstr "Success"
 
@@ -1709,8 +1705,8 @@ msgstr "Successfully saved preferences"
 msgid "Successfully saved settings"
 msgstr "Successfully saved settings"
 
-#: src/components/ArticleCard.tsx:311
-#: src/components/ArticleCard.tsx:330
+#: src/components/ArticleCard.tsx:313
+#: src/components/ArticleCard.tsx:332
 msgid "Summarized by LLM"
 msgstr "Summarized by LLM"
 
@@ -1853,19 +1849,19 @@ msgstr "Title cannot be empty"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "To follow {0}, enter your Fediverse handle."
 
-#: src/routes/(root).tsx:72
+#: src/routes/(root).tsx:80
 msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:194
+#: src/components/ArticleCard.tsx:196
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "Translated from {0}"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:295
-msgid "Translating..."
-msgstr "Translating..."
+msgid "Translating…"
+msgstr "Translating…"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:296
@@ -1899,7 +1895,7 @@ msgid "Update your profile information, including your avatar, username, display
 msgstr "Update your profile information, including your avatar, username, display name, bio, and links."
 
 #. placeholder {0}: new Date(edge.node.updated).toLocaleDateString()
-#: src/routes/(root)/[handle]/drafts/index.tsx:282
+#: src/routes/(root)/[handle]/drafts/index.tsx:307
 msgid "Updated {0}"
 msgstr "Updated {0}"
 
@@ -1970,19 +1966,19 @@ msgstr "Visible to everyone, but does not appear in the public timeline. Only th
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 
-#: src/components/QuestionCard.tsx:326
+#: src/components/QuestionCard.tsx:329
 msgid "Vote"
 msgstr "Vote"
 
-#: src/components/QuestionCard.tsx:340
+#: src/components/QuestionCard.tsx:343
 msgid "Vote recorded"
 msgstr "Vote recorded"
 
-#: src/components/QuestionCard.tsx:320
+#: src/components/QuestionCard.tsx:323
 msgid "Voted"
 msgstr "Voted"
 
-#: src/components/QuestionCard.tsx:322
+#: src/components/QuestionCard.tsx:325
 msgid "Voting…"
 msgstr "Voting…"
 
@@ -1994,7 +1990,7 @@ msgstr "Website"
 msgid "Welcome to Hackers' Pub! Please fill out the form below to complete your sign-up."
 msgstr "Welcome to Hackers' Pub! Please fill out the form below to complete your sign-up."
 
-#: src/components/AboutHackersPub.tsx:230
+#: src/components/AboutHackersPub.tsx:231
 msgid "What is Hackers' Pub?"
 msgstr "What is Hackers' Pub?"
 
@@ -2007,8 +2003,8 @@ msgid "Without shares"
 msgstr "Without shares"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:618
-msgid "Write a reply..."
-msgstr "Write a reply..."
+msgid "Write a reply…"
+msgstr "Write a reply…"
 
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:284
 msgid "Write your article here."
@@ -2044,7 +2040,7 @@ msgstr "You can only create drafts for your own account"
 msgid "You can only edit your own drafts"
 msgstr "You can only edit your own drafts"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:211
+#: src/routes/(root)/[handle]/drafts/index.tsx:222
 msgid "You can only view your own drafts"
 msgstr "You can only view your own drafts"
 
@@ -2067,7 +2063,7 @@ msgid "You must be signed in to create a note"
 msgstr "You must be signed in to create a note"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:446
-#: src/routes/(root)/[handle]/drafts/index.tsx:186
+#: src/routes/(root)/[handle]/drafts/index.tsx:195
 msgid "You must be signed in to delete a draft"
 msgstr "You must be signed in to delete a draft"
 

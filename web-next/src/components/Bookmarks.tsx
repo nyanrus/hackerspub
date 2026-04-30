@@ -77,7 +77,7 @@ export function Bookmarks(props: BookmarksProps) {
   }
 
   return (
-    <div class="border-x">
+    <div class="mb-10 overflow-hidden border bg-card md:mb-12 md:rounded-lg md:shadow-sm">
       <Show when={posts()}>
         {(data) => (
           <>
@@ -91,9 +91,11 @@ export function Bookmarks(props: BookmarksProps) {
               )}
             </For>
             <Show when={posts.hasNext}>
-              <div
+              <button
+                type="button"
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                disabled={posts.pending || loadingState() === "loading"}
+                class="block w-full cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Switch>
                   <Match when={posts.pending || loadingState() === "loading"}>
@@ -106,10 +108,10 @@ export function Bookmarks(props: BookmarksProps) {
                     {t`Load more bookmarks`}
                   </Match>
                 </Switch>
-              </div>
+              </button>
             </Show>
             <Show when={data().bookmarks.edges.length < 1}>
-              <div class="px-4 py-8 text-center text-muted-foreground">
+              <div class="px-4 py-16 text-center text-muted-foreground">
                 {t`No bookmarks yet`}
               </div>
             </Show>

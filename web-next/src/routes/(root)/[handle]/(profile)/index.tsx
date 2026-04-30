@@ -178,7 +178,7 @@ export default function ProfilePage() {
                             <IconPin class="size-4" />
                             {t`Pinned posts`}
                           </h2>
-                          <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl">
+                          <div class="overflow-hidden rounded-lg border bg-card shadow-sm">
                             <For each={pins().edges}>
                               {(edge) => (
                                 <PostCard

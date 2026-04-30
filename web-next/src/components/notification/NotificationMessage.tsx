@@ -60,7 +60,7 @@ export function NotificationMessage(props: NotificationMessageProps) {
     <Show when={notification()}>
       {(notification) => (
         <div class="m-4 flex flex-row gap-4">
-          <div class="group flex -space-x-8 hover:-space-x-5">
+          <div class="group flex shrink-0 -space-x-8 hover:-space-x-5">
             <For each={notification().actors.edges.slice(0, 4).toReversed()}>
               {({ node }) => (
                 <Avatar
@@ -80,7 +80,7 @@ export function NotificationMessage(props: NotificationMessageProps) {
           </div>
           <Switch>
             <Match when={notification().actors.edges.length === 1}>
-              <div>
+              <div class="min-w-0 leading-6">
                 <Trans
                   message={props.singleActorMessage}
                   values={{
@@ -93,7 +93,7 @@ export function NotificationMessage(props: NotificationMessageProps) {
               </div>
             </Match>
             <Match when={notification().actors.edges.length > 1}>
-              <div>
+              <div class="min-w-0 leading-6">
                 <Trans
                   message={props.multipleActorMessage}
                   values={{
