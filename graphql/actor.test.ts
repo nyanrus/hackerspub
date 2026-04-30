@@ -338,37 +338,23 @@ Deno.test({
       });
 
       assertEquals(blockResult.errors, undefined);
-      assertEquals(
-        (blockResult.data as {
-          blockActor: {
-            __typename: string;
-            blockee?: {
-              id: string;
-              viewerBlocks: boolean;
-              blocksViewer: boolean;
-              viewerFollows: boolean;
-              followsViewer: boolean;
-              followees: { totalCount: number };
-              followers: { totalCount: number };
-            };
+      const blockActorPayload = (blockResult.data as {
+        blockActor: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+            followees: { totalCount: number };
+            followers: { totalCount: number };
           };
-        }).blockActor.__typename,
-        "BlockActorPayload",
-      );
+        };
+      }).blockActor;
+      assertEquals(blockActorPayload.__typename, "BlockActorPayload");
       assertEquals(
-        (blockResult.data as {
-          blockActor: {
-            blockee?: {
-              id: string;
-              viewerBlocks: boolean;
-              blocksViewer: boolean;
-              viewerFollows: boolean;
-              followsViewer: boolean;
-              followees: { totalCount: number };
-              followers: { totalCount: number };
-            };
-          };
-        }).blockActor.blockee,
+        blockActorPayload.blockee,
         {
           id: actorId,
           viewerBlocks: true,
@@ -396,37 +382,23 @@ Deno.test({
       });
 
       assertEquals(unblockResult.errors, undefined);
-      assertEquals(
-        (unblockResult.data as {
-          unblockActor: {
-            __typename: string;
-            blockee?: {
-              id: string;
-              viewerBlocks: boolean;
-              blocksViewer: boolean;
-              viewerFollows: boolean;
-              followsViewer: boolean;
-              followees: { totalCount: number };
-              followers: { totalCount: number };
-            };
+      const unblockActorPayload = (unblockResult.data as {
+        unblockActor: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+            followees: { totalCount: number };
+            followers: { totalCount: number };
           };
-        }).unblockActor.__typename,
-        "UnblockActorPayload",
-      );
+        };
+      }).unblockActor;
+      assertEquals(unblockActorPayload.__typename, "UnblockActorPayload");
       assertEquals(
-        (unblockResult.data as {
-          unblockActor: {
-            blockee?: {
-              id: string;
-              viewerBlocks: boolean;
-              blocksViewer: boolean;
-              viewerFollows: boolean;
-              followsViewer: boolean;
-              followees: { totalCount: number };
-              followers: { totalCount: number };
-            };
-          };
-        }).unblockActor.blockee,
+        unblockActorPayload.blockee,
         {
           id: actorId,
           viewerBlocks: false,
