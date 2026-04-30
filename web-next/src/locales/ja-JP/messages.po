@@ -250,7 +250,7 @@ msgstr "予期しないエラーが発生しました。後でもう一度お試
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:219
+#: src/components/ProfileActionMenu.tsx:225
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "{0}さん（{1}）をブロックしますか？このユーザーはあなたをフォローしたり、あなたのコンテンツを見たりできなくなります。"
 
@@ -269,7 +269,7 @@ msgstr "パスキー{0}を取り消しますか？このパスキーを使用し
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:221
+#: src/components/ProfileActionMenu.tsx:227
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "{0}さん（{1}）のブロックを解除しますか？このユーザーはあなたをフォローしたり、あなたのコンテンツを見たりできるようになります。"
 
@@ -321,12 +321,13 @@ msgstr "自己紹介"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "自己紹介が長すぎます。最大512文字です。"
 
-#: src/components/ProfileActionMenu.tsx:201
-#: src/components/ProfileActionMenu.tsx:234
+#: src/components/ProfileActionMenu.tsx:207
+#: src/components/ProfileActionMenu.tsx:236
+#: src/components/ProfileActionMenu.tsx:243
 msgid "Block"
 msgstr "ブロック"
 
-#: src/components/ProfileActionMenu.tsx:212
+#: src/components/ProfileActionMenu.tsx:218
 msgid "Block user?"
 msgstr "ユーザーをブロックしますか？"
 
@@ -345,7 +346,8 @@ msgstr "ブックマーク"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:226
+#: src/components/ProfileActionMenu.tsx:232
+#: src/components/ProfileActionMenu.tsx:233
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -628,8 +630,8 @@ msgstr "有効期限"
 msgid "Extra message"
 msgstr "追加メッセージ"
 
-#: src/components/ProfileActionMenu.tsx:154
-#: src/components/ProfileActionMenu.tsx:163
+#: src/components/ProfileActionMenu.tsx:160
+#: src/components/ProfileActionMenu.tsx:169
 msgid "Failed to block this user"
 msgstr "このユーザーをブロックできませんでした"
 
@@ -657,7 +659,7 @@ msgstr "招待リンクの削除に失敗しました"
 msgid "Failed to delete post"
 msgstr "コンテンツの削除に失敗しました"
 
-#: src/components/FollowButton.tsx:155
+#: src/components/FollowButton.tsx:163
 msgid "Failed to follow"
 msgstr "フォローに失敗しました"
 
@@ -769,12 +771,12 @@ msgstr "コンテンツの共有に失敗しました"
 msgid "Failed to sign out: {0}"
 msgstr "ログアウトに失敗：{0}"
 
-#: src/components/ProfileActionMenu.tsx:127
-#: src/components/ProfileActionMenu.tsx:136
+#: src/components/ProfileActionMenu.tsx:133
+#: src/components/ProfileActionMenu.tsx:142
 msgid "Failed to unblock this user"
 msgstr "このユーザーのブロックを解除できませんでした"
 
-#: src/components/FollowButton.tsx:133
+#: src/components/FollowButton.tsx:141
 msgid "Failed to unfollow"
 msgstr "フォロー解除に失敗しました"
 
@@ -811,11 +813,11 @@ msgstr "フェディバースのハンドル"
 msgid "Feed"
 msgstr "フィード"
 
-#: src/components/FollowButton.tsx:190
+#: src/components/FollowButton.tsx:199
 msgid "Follow"
 msgstr "フォロー"
 
-#: src/components/FollowButton.tsx:189
+#: src/components/FollowButton.tsx:198
 msgid "Follow back"
 msgstr "フォローバック"
 
@@ -863,14 +865,14 @@ msgstr "マイ下書きへ"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:90
+#: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:83
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pubホーム"
 
@@ -1447,7 +1449,7 @@ msgstr "優先度"
 msgid "Privacy policy"
 msgstr "プライバシーポリシー"
 
-#: src/components/ProfileActionMenu.tsx:183
+#: src/components/ProfileActionMenu.tsx:189
 msgid "Profile actions"
 msgstr "プロフィール操作"
 
@@ -1880,7 +1882,7 @@ msgstr "タイトルは空にできません"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "{0}さんをフォローするには、フェディバースのハンドルを入力してください。"
 
-#: src/routes/(root).tsx:80
+#: src/routes/(root).tsx:81
 msgid "Toggle sidebar"
 msgstr "サイドバーを切り替える"
 
@@ -1909,16 +1911,17 @@ msgstr "リアクションを追加できませんでした。もう一度お試
 msgid "Unable to remove reaction. Please try again."
 msgstr "リアクションを削除できませんでした。もう一度お試しください。"
 
-#: src/components/ProfileActionMenu.tsx:202
-#: src/components/ProfileActionMenu.tsx:235
+#: src/components/ProfileActionMenu.tsx:208
+#: src/components/ProfileActionMenu.tsx:236
+#: src/components/ProfileActionMenu.tsx:244
 msgid "Unblock"
 msgstr "ブロック解除"
 
-#: src/components/ProfileActionMenu.tsx:213
+#: src/components/ProfileActionMenu.tsx:219
 msgid "Unblock user?"
 msgstr "ユーザーのブロックを解除しますか？"
 
-#: src/components/FollowButton.tsx:187
+#: src/components/FollowButton.tsx:196
 msgid "Unfollow"
 msgstr "フォロー解除"
 
@@ -1943,7 +1946,7 @@ msgstr "{0}に更新"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:158
+#: src/components/ProfileActionMenu.tsx:164
 msgid "User blocked"
 msgstr "ユーザーをブロックしました"
 
@@ -1951,7 +1954,7 @@ msgstr "ユーザーをブロックしました"
 msgid "User not found."
 msgstr "ユーザー情報が見つかりません。"
 
-#: src/components/ProfileActionMenu.tsx:131
+#: src/components/ProfileActionMenu.tsx:137
 msgid "User unblocked"
 msgstr "ユーザーのブロックを解除しました"
 
@@ -2109,10 +2112,10 @@ msgstr "まだパスキーが登録されていません。"
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "招待状が残っていません。追加されるまでお待ちください。"
 
-#: src/components/FollowButton.tsx:126
-#: src/components/FollowButton.tsx:144
-#: src/components/ProfileActionMenu.tsx:120
-#: src/components/ProfileActionMenu.tsx:149
+#: src/components/FollowButton.tsx:134
+#: src/components/FollowButton.tsx:152
+#: src/components/ProfileActionMenu.tsx:126
+#: src/components/ProfileActionMenu.tsx:155
 msgid "You must be signed in"
 msgstr "ログインが必要です"
 

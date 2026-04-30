@@ -250,7 +250,7 @@ msgstr "An unexpected error occurred. Please try again later."
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:219
+#: src/components/ProfileActionMenu.tsx:225
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 
@@ -269,7 +269,7 @@ msgstr "Are you sure you want to revoke passkey {0}? You won't be able to use it
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:221
+#: src/components/ProfileActionMenu.tsx:227
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 
@@ -321,12 +321,13 @@ msgstr "Bio"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "Bio is too long. Maximum length is 512 characters."
 
-#: src/components/ProfileActionMenu.tsx:201
-#: src/components/ProfileActionMenu.tsx:234
+#: src/components/ProfileActionMenu.tsx:207
+#: src/components/ProfileActionMenu.tsx:236
+#: src/components/ProfileActionMenu.tsx:243
 msgid "Block"
 msgstr "Block"
 
-#: src/components/ProfileActionMenu.tsx:212
+#: src/components/ProfileActionMenu.tsx:218
 msgid "Block user?"
 msgstr "Block user?"
 
@@ -345,7 +346,8 @@ msgstr "Bookmarks"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:226
+#: src/components/ProfileActionMenu.tsx:232
+#: src/components/ProfileActionMenu.tsx:233
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -632,8 +634,8 @@ msgstr "Expiry"
 msgid "Extra message"
 msgstr "Extra message"
 
-#: src/components/ProfileActionMenu.tsx:154
-#: src/components/ProfileActionMenu.tsx:163
+#: src/components/ProfileActionMenu.tsx:160
+#: src/components/ProfileActionMenu.tsx:169
 msgid "Failed to block this user"
 msgstr "Failed to block this user"
 
@@ -661,7 +663,7 @@ msgstr "Failed to delete invitation link"
 msgid "Failed to delete post"
 msgstr "Failed to delete post"
 
-#: src/components/FollowButton.tsx:155
+#: src/components/FollowButton.tsx:163
 msgid "Failed to follow"
 msgstr "Failed to follow"
 
@@ -773,12 +775,12 @@ msgstr "Failed to share post"
 msgid "Failed to sign out: {0}"
 msgstr "Failed to sign out: {0}"
 
-#: src/components/ProfileActionMenu.tsx:127
-#: src/components/ProfileActionMenu.tsx:136
+#: src/components/ProfileActionMenu.tsx:133
+#: src/components/ProfileActionMenu.tsx:142
 msgid "Failed to unblock this user"
 msgstr "Failed to unblock this user"
 
-#: src/components/FollowButton.tsx:133
+#: src/components/FollowButton.tsx:141
 msgid "Failed to unfollow"
 msgstr "Failed to unfollow"
 
@@ -815,11 +817,11 @@ msgstr "Fediverse handle"
 msgid "Feed"
 msgstr "Feed"
 
-#: src/components/FollowButton.tsx:190
+#: src/components/FollowButton.tsx:199
 msgid "Follow"
 msgstr "Follow"
 
-#: src/components/FollowButton.tsx:189
+#: src/components/FollowButton.tsx:198
 msgid "Follow back"
 msgstr "Follow back"
 
@@ -867,14 +869,14 @@ msgstr "Go to my drafts"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:90
+#: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:83
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub home"
 
@@ -1452,7 +1454,7 @@ msgstr "Priority"
 msgid "Privacy policy"
 msgstr "Privacy policy"
 
-#: src/components/ProfileActionMenu.tsx:183
+#: src/components/ProfileActionMenu.tsx:189
 msgid "Profile actions"
 msgstr "Profile actions"
 
@@ -1885,7 +1887,7 @@ msgstr "Title cannot be empty"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "To follow {0}, enter your Fediverse handle."
 
-#: src/routes/(root).tsx:80
+#: src/routes/(root).tsx:81
 msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
 
@@ -1914,16 +1916,17 @@ msgstr "Unable to add reaction. Please try again."
 msgid "Unable to remove reaction. Please try again."
 msgstr "Unable to remove reaction. Please try again."
 
-#: src/components/ProfileActionMenu.tsx:202
-#: src/components/ProfileActionMenu.tsx:235
+#: src/components/ProfileActionMenu.tsx:208
+#: src/components/ProfileActionMenu.tsx:236
+#: src/components/ProfileActionMenu.tsx:244
 msgid "Unblock"
 msgstr "Unblock"
 
-#: src/components/ProfileActionMenu.tsx:213
+#: src/components/ProfileActionMenu.tsx:219
 msgid "Unblock user?"
 msgstr "Unblock user?"
 
-#: src/components/FollowButton.tsx:187
+#: src/components/FollowButton.tsx:196
 msgid "Unfollow"
 msgstr "Unfollow"
 
@@ -1948,7 +1951,7 @@ msgstr "Updated {0}"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:158
+#: src/components/ProfileActionMenu.tsx:164
 msgid "User blocked"
 msgstr "User blocked"
 
@@ -1956,7 +1959,7 @@ msgstr "User blocked"
 msgid "User not found."
 msgstr "User not found."
 
-#: src/components/ProfileActionMenu.tsx:131
+#: src/components/ProfileActionMenu.tsx:137
 msgid "User unblocked"
 msgstr "User unblocked"
 
@@ -2114,10 +2117,10 @@ msgstr "You don't have any passkeys registered yet."
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "You have no invitations left. Please wait until you receive more."
 
-#: src/components/FollowButton.tsx:126
-#: src/components/FollowButton.tsx:144
-#: src/components/ProfileActionMenu.tsx:120
-#: src/components/ProfileActionMenu.tsx:149
+#: src/components/FollowButton.tsx:134
+#: src/components/FollowButton.tsx:152
+#: src/components/ProfileActionMenu.tsx:126
+#: src/components/ProfileActionMenu.tsx:155
 msgid "You must be signed in"
 msgstr "You must be signed in"
 
