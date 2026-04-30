@@ -425,6 +425,23 @@ Deno.test({
         "BlockActorPayload",
       );
 
+      const guestAfterBlock = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(guestAfterBlock.errors, undefined);
+      assertEquals(guestAfterBlock.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
+
       const outgoingState = await execute({
         schema,
         document: actorBlockStateQuery,
