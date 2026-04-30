@@ -229,8 +229,11 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogClose>{t`Cancel`}</AlertDialogClose>
+            <AlertDialogClose aria-label={t`Cancel`}>
+              {t`Cancel`}
+            </AlertDialogClose>
             <AlertDialogAction
+              aria-label={actor()?.viewerBlocks ? t`Unblock` : t`Block`}
               class={actor()?.viewerBlocks
                 ? undefined
                 : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
