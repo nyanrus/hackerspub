@@ -14,7 +14,10 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import { PROFILE_ARTICLES_QUERY_KEY } from "~/lib/profileContentQueries.ts";
+import {
+  PROFILE_ARTICLES_QUERY_KEY,
+  profileContentRevalidating,
+} from "~/lib/profileContentQueries.ts";
 import type { articlesPageQuery } from "./__generated__/articlesPageQuery.graphql.ts";
 
 export const route = {
@@ -78,7 +81,10 @@ export default function ProfileArticlesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
                   <div class="p-4">
                     <ProfileTabs selected="articles" $actor={actor()} />
                     <ActorArticleList $articles={actor()} />

@@ -170,7 +170,7 @@ export function FollowButton(props: FollowButtonProps) {
       {(actor) => (
         <Show
           when={!isCurrentViewerActor() && !actor().viewerBlocks &&
-            viewer.isLoaded()}
+            !actor().blocksViewer && viewer.isLoaded()}
         >
           <Show
             when={viewer.isAuthenticated()}
@@ -187,7 +187,6 @@ export function FollowButton(props: FollowButtonProps) {
               size="sm"
               class="cursor-pointer"
               onClick={handleClick}
-              disabled={actor().blocksViewer}
             >
               {actor().viewerFollows
                 ? t`Unfollow`

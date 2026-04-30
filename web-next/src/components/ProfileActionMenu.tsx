@@ -1,4 +1,3 @@
-import { revalidate } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, Show } from "solid-js";
 import { createFragment, createMutation } from "solid-relay";
@@ -26,7 +25,11 @@ import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
 import { isViewerActor } from "~/lib/actorUtils.ts";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import { PROFILE_CONTENT_QUERY_KEYS } from "~/lib/profileContentQueries.ts";
+import {
+  holdProfileContentGate,
+  releaseProfileContentGate,
+  revalidateProfileContent,
+} from "~/lib/profileContentQueries.ts";
 import type { ProfileActionMenu_actor$key } from "./__generated__/ProfileActionMenu_actor.graphql.ts";
 import type { ProfileActionMenu_blockActor_Mutation } from "./__generated__/ProfileActionMenu_blockActor_Mutation.graphql.ts";
 import type { ProfileActionMenu_unblockActor_Mutation } from "./__generated__/ProfileActionMenu_unblockActor_Mutation.graphql.ts";
@@ -168,24 +171,29 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
     }
     return false;
   };
-  const handleBlockToggleResult = (
+  const handleBlockToggleResult = async (
     typename: string,
     successTypename: "BlockActorPayload" | "UnblockActorPayload",
     invalidInputTitle: string,
     successTitle: string,
   ) => {
     if (handleMutationError(typename, invalidInputTitle)) {
+      releaseProfileContentGate();
       return;
     }
     if (typename === successTypename) {
       showToast({ title: successTitle });
-      void revalidate(PROFILE_CONTENT_QUERY_KEYS);
+      await revalidateProfileContent();
+      return;
     }
+    releaseProfileContentGate();
   };
 
   const handleBlockToggle = () => {
     const actorData = actor();
     if (!actorData) return;
+
+    holdProfileContentGate();
 
     if (actorData.viewerBlocks) {
       unblockActor({
@@ -193,7 +201,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          handleBlockToggleResult(
+          void handleBlockToggleResult(
             response.unblockActor.__typename,
             "UnblockActorPayload",
             t`Failed to unblock this user`,
@@ -201,6 +209,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           );
         },
         onError() {
+          releaseProfileContentGate();
           showErrorToast(t`Failed to unblock this user`);
         },
       });
@@ -210,7 +219,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          handleBlockToggleResult(
+          void handleBlockToggleResult(
             response.blockActor.__typename,
             "BlockActorPayload",
             t`Failed to block this user`,
@@ -218,6 +227,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           );
         },
         onError() {
+          releaseProfileContentGate();
           showErrorToast(t`Failed to block this user`);
         },
       });

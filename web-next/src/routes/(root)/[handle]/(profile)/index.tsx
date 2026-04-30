@@ -18,6 +18,7 @@ import { useLingui } from "~/lib/i18n/macro.d.ts";
 import {
   PROFILE_PAGE_PINS_QUERY_KEY,
   PROFILE_PAGE_POSTS_QUERY_KEY,
+  profileContentRevalidating,
 } from "~/lib/profileContentQueries.ts";
 import IconPin from "~icons/lucide/pin";
 import type { ProfilePagePinsQuery } from "./__generated__/ProfilePagePinsQuery.graphql.ts";
@@ -176,7 +177,10 @@ export default function ProfilePage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
                   <div class="p-4">
                     <ProfileTabs selected="posts" $actor={actor()} />
                     <Show when={pinnedPostsData()?.actorByHandle?.pins}>
