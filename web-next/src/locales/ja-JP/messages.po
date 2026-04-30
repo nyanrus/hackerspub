@@ -46,7 +46,7 @@ msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {投票者 #人}}"
 
 #. placeholder {0}: edge.node.tags.length - 3
-#: src/routes/(root)/[handle]/drafts/index.tsx:271
+#: src/routes/(root)/[handle]/drafts/index.tsx:296
 msgid "{0, plural, one {+1 more} other {+# more}}"
 msgstr "{0, plural, other {他#件}}"
 
@@ -248,7 +248,7 @@ msgstr "設定の保存中にエラーが発生しました。再度お試しい
 msgid "An unexpected error occurred. Please try again later."
 msgstr "予期しないエラーが発生しました。後でもう一度お試しください。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:150
+#: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "「{draftTitle}」を削除してもよろしいですか？この操作は元に戻せません。"
 
@@ -261,7 +261,8 @@ msgstr "この下書きを削除してもよろしいですか？この操作は
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "パスキー{0}を取り消しますか？このパスキーを使用してアカウントにログインできなくなります。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:231
+#: src/routes/(root)/[handle]/drafts/index.tsx:246
+#: src/routes/(root)/[handle]/drafts/index.tsx:248
 msgid "Article drafts"
 msgstr "記事の下書き"
 
@@ -461,7 +462,7 @@ msgstr "共有のデフォルト公開範囲"
 
 #: src/components/PostActionMenu.tsx:341
 #: src/components/PostActionMenu.tsx:361
-#: src/routes/(root)/[handle]/drafts/index.tsx:296
+#: src/routes/(root)/[handle]/drafts/index.tsx:323
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Delete"
 msgstr "削除"
@@ -497,7 +498,7 @@ msgid "Do you want to quote this link?"
 msgstr "このリンクを引用しますか？"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:429
-#: src/routes/(root)/[handle]/drafts/index.tsx:169
+#: src/routes/(root)/[handle]/drafts/index.tsx:178
 msgid "Draft deleted"
 msgstr "下書きを削除しました"
 
@@ -582,9 +583,9 @@ msgstr "以下にメールアドレスまたはユーザー名を入力してロ
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
-#: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
-#: src/routes/(root)/[handle]/drafts/index.tsx:193
+#: src/routes/(root)/[handle]/drafts/index.tsx:194
+#: src/routes/(root)/[handle]/drafts/index.tsx:202
 #: src/routes/(root)/[handle]/invite/[id].tsx:199
 #: src/routes/(root)/sign/up/[token].tsx:295
 msgid "Error"
@@ -633,23 +634,23 @@ msgstr "コンテンツの削除に失敗しました"
 msgid "Failed to follow"
 msgstr "フォローに失敗しました"
 
-#: src/components/ActorArticleList.tsx:81
+#: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
 msgstr "記事の読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/Bookmarks.tsx:103
+#: src/components/Bookmarks.tsx:105
 msgid "Failed to load more bookmarks; click to retry"
 msgstr "ブックマークの読み込みに失敗しました。クリックして再試行してください"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:320
+#: src/routes/(root)/[handle]/drafts/index.tsx:348
 msgid "Failed to load more drafts; click to retry"
 msgstr "下書きの読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/ActorFollowerList.tsx:80
+#: src/components/ActorFollowerList.tsx:82
 msgid "Failed to load more followers; click to retry"
 msgstr "フォロワーの読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/ActorFollowingList.tsx:80
+#: src/components/ActorFollowingList.tsx:82
 msgid "Failed to load more following; click to retry"
 msgstr "フォロー中の読み込みに失敗しました。クリックして再試行してください"
 
@@ -657,11 +658,11 @@ msgstr "フォロー中の読み込みに失敗しました。クリックして
 msgid "Failed to load more invitees; click to retry"
 msgstr "招待された人々の読み込みに失敗しました。クリックして再試行"
 
-#: src/components/ActorNoteList.tsx:75
+#: src/components/ActorNoteList.tsx:77
 msgid "Failed to load more notes; click to retry"
 msgstr "投稿の読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/NotificationList.tsx:73
+#: src/components/NotificationList.tsx:80
 msgid "Failed to load more notifications; click to retry"
 msgstr "通知の読み込みに失敗しました。クリックして再試行してください"
 
@@ -669,11 +670,11 @@ msgstr "通知の読み込みに失敗しました。クリックして再試行
 msgid "Failed to load more passkeys; click to retry"
 msgstr "パスキーの読み込みに失敗しました。クリックして再試行してください"
 
-#: src/components/ActorPostList.tsx:81
-#: src/components/ActorSharedPostList.tsx:81
-#: src/components/PersonalTimeline.tsx:98
-#: src/components/PublicTimeline.tsx:100
-#: src/components/SearchResults.tsx:97
+#: src/components/ActorPostList.tsx:83
+#: src/components/ActorSharedPostList.tsx:83
+#: src/components/PersonalTimeline.tsx:100
+#: src/components/PublicTimeline.tsx:102
+#: src/components/SearchResults.tsx:99
 msgid "Failed to load more posts; click to retry"
 msgstr "コンテンツの読み込みに失敗しました。クリックして再試行してください"
 
@@ -813,7 +814,7 @@ msgid "GitHub repository"
 msgstr "GitHubリポジトリ"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:65
-#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:228
 #: src/routes/(root)/[handle]/drafts/new.tsx:81
 msgid "Go back"
 msgstr "戻る"
@@ -823,7 +824,7 @@ msgid "Go to Drafts"
 msgstr "下書きへ"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
-#: src/routes/(root)/[handle]/drafts/index.tsx:221
+#: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
 msgid "Go to my drafts"
 msgstr "マイ下書きへ"
@@ -908,7 +909,7 @@ msgstr "無効なフェディバースのハンドルの形式です。"
 #: src/components/article-composer/ArticleComposerContext.tsx:373
 #: src/components/article-composer/ArticleComposerContext.tsx:438
 #: src/components/NoteComposer.tsx:281
-#: src/routes/(root)/[handle]/drafts/index.tsx:178
+#: src/routes/(root)/[handle]/drafts/index.tsx:187
 msgid "Invalid input: {0}"
 msgstr "無効な入力：{0}"
 
@@ -991,8 +992,12 @@ msgid "Link"
 msgstr "リンク"
 
 #: src/components/LinkPreview.tsx:140
-msgid "Link author: "
+msgid "Link author:"
 msgstr "リンクの著者："
+
+#: src/components/LinkPreview.tsx:140
+#~ msgid "Link author: "
+#~ msgstr "リンクの著者："
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:253
 msgid "Link expired"
@@ -1006,23 +1011,23 @@ msgstr "リンク名"
 msgid "List"
 msgstr "リスト"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:323
+#: src/routes/(root)/[handle]/drafts/index.tsx:351
 msgid "Load more"
 msgstr "さらに読み込む"
 
-#: src/components/ActorArticleList.tsx:84
+#: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
 msgstr "記事をもっと読み込む"
 
-#: src/components/Bookmarks.tsx:106
+#: src/components/Bookmarks.tsx:108
 msgid "Load more bookmarks"
 msgstr "ブックマークをもっと読み込む"
 
-#: src/components/ActorFollowerList.tsx:83
+#: src/components/ActorFollowerList.tsx:85
 msgid "Load more followers"
 msgstr "フォロワーをもっと読み込む"
 
-#: src/components/ActorFollowingList.tsx:83
+#: src/components/ActorFollowingList.tsx:85
 msgid "Load more following"
 msgstr "フォロー中をもっと読み込む"
 
@@ -1030,11 +1035,11 @@ msgstr "フォロー中をもっと読み込む"
 msgid "Load more invitees"
 msgstr "もっと招待された人々を読み込む"
 
-#: src/components/ActorNoteList.tsx:78
+#: src/components/ActorNoteList.tsx:80
 msgid "Load more notes"
 msgstr "投稿をもっと読み込む"
 
-#: src/components/NotificationList.tsx:76
+#: src/components/NotificationList.tsx:83
 msgid "Load more notifications"
 msgstr "通知をもっと読み込む"
 
@@ -1042,31 +1047,31 @@ msgstr "通知をもっと読み込む"
 msgid "Load more passkeys"
 msgstr "パスキーを読み込む"
 
-#: src/components/ActorPostList.tsx:84
-#: src/components/ActorSharedPostList.tsx:84
-#: src/components/PersonalTimeline.tsx:101
-#: src/components/PublicTimeline.tsx:103
-#: src/components/SearchResults.tsx:100
+#: src/components/ActorPostList.tsx:86
+#: src/components/ActorSharedPostList.tsx:86
+#: src/components/PersonalTimeline.tsx:103
+#: src/components/PublicTimeline.tsx:105
+#: src/components/SearchResults.tsx:102
 msgid "Load more posts"
 msgstr "コンテンツをもっと読み込む"
 
 #: src/components/article-composer/ArticleComposer.tsx:31
 msgid "Loading draft…"
-msgstr "下書きを読み込み中..."
+msgstr "下書きを読み込み中…"
 
-#: src/components/ActorArticleList.tsx:78
+#: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
 msgstr "記事を読み込み中…"
 
-#: src/components/Bookmarks.tsx:100
+#: src/components/Bookmarks.tsx:102
 msgid "Loading more bookmarks…"
 msgstr "ブックマークを読み込み中…"
 
-#: src/components/ActorFollowerList.tsx:77
+#: src/components/ActorFollowerList.tsx:79
 msgid "Loading more followers…"
 msgstr "フォロワーを読み込み中…"
 
-#: src/components/ActorFollowingList.tsx:77
+#: src/components/ActorFollowingList.tsx:79
 msgid "Loading more following…"
 msgstr "フォロー中を読み込み中…"
 
@@ -1074,11 +1079,11 @@ msgstr "フォロー中を読み込み中…"
 msgid "Loading more invitees…"
 msgstr "招待された人々を読み込み中…"
 
-#: src/components/ActorNoteList.tsx:72
+#: src/components/ActorNoteList.tsx:74
 msgid "Loading more notes…"
 msgstr "投稿を読み込み中…"
 
-#: src/components/NotificationList.tsx:70
+#: src/components/NotificationList.tsx:77
 msgid "Loading more notifications"
 msgstr "通知を読み込み中…"
 
@@ -1086,11 +1091,11 @@ msgstr "通知を読み込み中…"
 msgid "Loading more passkeys…"
 msgstr "パスキーを読み込み中…"
 
-#: src/components/ActorPostList.tsx:78
-#: src/components/ActorSharedPostList.tsx:78
-#: src/components/PersonalTimeline.tsx:95
-#: src/components/PublicTimeline.tsx:97
-#: src/components/SearchResults.tsx:94
+#: src/components/ActorPostList.tsx:80
+#: src/components/ActorSharedPostList.tsx:80
+#: src/components/PersonalTimeline.tsx:97
+#: src/components/PublicTimeline.tsx:99
+#: src/components/SearchResults.tsx:96
 msgid "Loading more posts…"
 msgstr "コンテンツを読み込み中…"
 
@@ -1098,7 +1103,7 @@ msgstr "コンテンツを読み込み中…"
 msgid "Loading quoted post…"
 msgstr "引用コンテンツを読み込み中…"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:317
+#: src/routes/(root)/[handle]/drafts/index.tsx:345
 #: src/routes/(root)/sign/up/[token].tsx:469
 msgid "Loading…"
 msgstr "読み込み中…"
@@ -1171,12 +1176,12 @@ msgstr "有効期限なし"
 msgid "Never used"
 msgstr "使用履歴なし"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:233
+#: src/routes/(root)/[handle]/drafts/index.tsx:254
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
 msgid "New article"
 msgstr "新しい記事"
 
-#: src/components/Bookmarks.tsx:113
+#: src/components/Bookmarks.tsx:115
 msgid "No bookmarks yet"
 msgstr "ブックマークはまだありません"
 
@@ -1184,15 +1189,15 @@ msgstr "ブックマークはまだありません"
 msgid "No draft to delete"
 msgstr "削除する下書きがありません"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:243
+#: src/routes/(root)/[handle]/drafts/index.tsx:265
 msgid "No drafts yet. Create your first article!"
 msgstr "まだ下書きがありません。最初の記事を作成しましょう！"
 
-#: src/components/ActorFollowerList.tsx:90
+#: src/components/ActorFollowerList.tsx:92
 msgid "No followers found"
 msgstr "フォロワーはいません"
 
-#: src/components/ActorFollowingList.tsx:90
+#: src/components/ActorFollowingList.tsx:92
 msgid "No following found"
 msgstr "フォロー中のユーザーはいません"
 
@@ -1206,19 +1211,19 @@ msgstr "招待状が残っていません"
 msgid "No matching object found"
 msgstr "一致するオブジェクトが見つかりません"
 
-#: src/components/ActorArticleList.tsx:91
+#: src/components/ActorArticleList.tsx:93
 msgid "No notes articles"
 msgstr "記事はありません"
 
-#: src/components/ActorNoteList.tsx:85
+#: src/components/ActorNoteList.tsx:87
 msgid "No notes found"
 msgstr "投稿はありません"
 
-#: src/components/ActorPostList.tsx:91
-#: src/components/ActorSharedPostList.tsx:91
-#: src/components/PersonalTimeline.tsx:108
-#: src/components/PublicTimeline.tsx:110
-#: src/components/SearchResults.tsx:107
+#: src/components/ActorPostList.tsx:93
+#: src/components/ActorSharedPostList.tsx:93
+#: src/components/PersonalTimeline.tsx:110
+#: src/components/PublicTimeline.tsx:112
+#: src/components/SearchResults.tsx:109
 msgid "No posts found"
 msgstr "コンテンツはありません"
 
@@ -1315,8 +1320,8 @@ msgstr "パスキー"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:56
 #: src/routes/(root)/[handle]/drafts/[id].tsx:57
-#: src/routes/(root)/[handle]/drafts/index.tsx:207
-#: src/routes/(root)/[handle]/drafts/index.tsx:208
+#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:219
 #: src/routes/(root)/[handle]/drafts/new.tsx:72
 #: src/routes/(root)/[handle]/drafts/new.tsx:73
 msgid "Permission denied"
@@ -1349,7 +1354,7 @@ msgid "Please enter your Fediverse handle."
 msgstr "フェディバースのハンドルを入力してください。"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:61
-#: src/routes/(root)/[handle]/drafts/index.tsx:212
+#: src/routes/(root)/[handle]/drafts/index.tsx:223
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "このページにアクセスするにはログインしてください"
@@ -1431,7 +1436,7 @@ msgstr "今すぐ公開"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
 msgid "Publishing…"
-msgstr "公開中..."
+msgstr "公開中…"
 
 #: src/routes/(root)/search.tsx:257
 msgid "Query cannot be empty"
@@ -1461,8 +1466,8 @@ msgstr "{emoji}でリアクション"
 msgid "reaction"
 msgstr "リアクション"
 
-#: src/components/ArticleCard.tsx:361
-#: src/components/ArticleCard.tsx:381
+#: src/components/ArticleCard.tsx:360
+#: src/components/ArticleCard.tsx:380
 msgid "Read full article"
 msgstr "記事全文を読む"
 
@@ -1679,7 +1684,7 @@ msgstr "問題が発生しました。再度お試しください。"
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
-#: src/routes/(root)/[handle]/drafts/index.tsx:168
+#: src/routes/(root)/[handle]/drafts/index.tsx:177
 msgid "Success"
 msgstr "成功"
 
@@ -1695,8 +1700,8 @@ msgstr "環境設定を正常に保存しました"
 msgid "Successfully saved settings"
 msgstr "設定を正常に保存しました"
 
-#: src/components/ArticleCard.tsx:314
-#: src/components/ArticleCard.tsx:333
+#: src/components/ArticleCard.tsx:313
+#: src/components/ArticleCard.tsx:332
 msgid "Summarized by LLM"
 msgstr "LLMによる要約"
 
@@ -1844,7 +1849,7 @@ msgid "Toggle sidebar"
 msgstr "サイドバーを切り替える"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:197
+#: src/components/ArticleCard.tsx:196
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "{0}から翻訳"
@@ -1885,7 +1890,7 @@ msgid "Update your profile information, including your avatar, username, display
 msgstr "アイコン、ユーザー名、名前、自己紹介、リンクなどのプロフィール情報を更新してください。"
 
 #. placeholder {0}: new Date(edge.node.updated).toLocaleDateString()
-#: src/routes/(root)/[handle]/drafts/index.tsx:282
+#: src/routes/(root)/[handle]/drafts/index.tsx:307
 msgid "Updated {0}"
 msgstr "{0}に更新"
 
@@ -2030,7 +2035,7 @@ msgstr "自分のアカウントの下書きのみ作成できます"
 msgid "You can only edit your own drafts"
 msgstr "自分の下書きのみ編集できます"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:211
+#: src/routes/(root)/[handle]/drafts/index.tsx:222
 msgid "You can only view your own drafts"
 msgstr "自分の下書きのみ表示できます"
 
@@ -2053,7 +2058,7 @@ msgid "You must be signed in to create a note"
 msgstr "投稿を作成するにはログインが必要です"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:446
-#: src/routes/(root)/[handle]/drafts/index.tsx:186
+#: src/routes/(root)/[handle]/drafts/index.tsx:195
 msgid "You must be signed in to delete a draft"
 msgstr "下書きを削除するにはログインする必要があります"
 

@@ -137,7 +137,7 @@ export function LinkPreview(props: LinkPreviewProps) {
             <Show when={link().creator}>
               {(creator) => (
                 <div class="flex gap-1.5 border-t bg-muted/40 p-4">
-                  <span>{t`Link author: `}</span>
+                  <span>{t`Link author:`}</span>
                   <Avatar class="size-6">
                     <InternalLink
                       href={creator().url ?? creator().iri}

@@ -46,7 +46,7 @@ msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {투표자 #명}}"
 
 #. placeholder {0}: edge.node.tags.length - 3
-#: src/routes/(root)/[handle]/drafts/index.tsx:271
+#: src/routes/(root)/[handle]/drafts/index.tsx:296
 msgid "{0, plural, one {+1 more} other {+# more}}"
 msgstr "{0, plural, other {외 #개}}"
 
@@ -248,7 +248,7 @@ msgstr "설정 저장 중 오류가 발생했습니다. 다시 시도하거나 �
 msgid "An unexpected error occurred. Please try again later."
 msgstr "예상치 못한 오류가 발생했습니다. 나중에 다시 시도해주세요."
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:150
+#: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "「{draftTitle}」을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
 
@@ -261,7 +261,8 @@ msgstr "이 임시 보관을 삭제하시겠습니까? 이 작업은 취소할 �
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "{0} 패스키를 취소하시겠습니까? 이 패스키를 사용하여 계정에 로그인할 수 없게 됩니다."
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:231
+#: src/routes/(root)/[handle]/drafts/index.tsx:246
+#: src/routes/(root)/[handle]/drafts/index.tsx:248
 msgid "Article drafts"
 msgstr "게시글 임시 보관"
 
@@ -461,7 +462,7 @@ msgstr "기본 공유 공개 범위"
 
 #: src/components/PostActionMenu.tsx:341
 #: src/components/PostActionMenu.tsx:361
-#: src/routes/(root)/[handle]/drafts/index.tsx:296
+#: src/routes/(root)/[handle]/drafts/index.tsx:323
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Delete"
 msgstr "삭제"
@@ -497,7 +498,7 @@ msgid "Do you want to quote this link?"
 msgstr "이 링크를 인용하시겠습니까?"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:429
-#: src/routes/(root)/[handle]/drafts/index.tsx:169
+#: src/routes/(root)/[handle]/drafts/index.tsx:178
 msgid "Draft deleted"
 msgstr "임시 보관을 삭제했습니다"
 
@@ -582,9 +583,9 @@ msgstr "로그인하려면 아래에 이메일 또는 아이디를 입력해주�
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
-#: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
-#: src/routes/(root)/[handle]/drafts/index.tsx:193
+#: src/routes/(root)/[handle]/drafts/index.tsx:194
+#: src/routes/(root)/[handle]/drafts/index.tsx:202
 #: src/routes/(root)/[handle]/invite/[id].tsx:199
 #: src/routes/(root)/sign/up/[token].tsx:295
 msgid "Error"
@@ -633,23 +634,23 @@ msgstr "콘텐츠 삭제에 실패했습니다"
 msgid "Failed to follow"
 msgstr "팔로에 실패했습니다"
 
-#: src/components/ActorArticleList.tsx:81
+#: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
 msgstr "게시글 불러오기 실패. 클릭하여 재시도하세요"
 
-#: src/components/Bookmarks.tsx:103
+#: src/components/Bookmarks.tsx:105
 msgid "Failed to load more bookmarks; click to retry"
 msgstr "북마크 불러오기 실패. 클릭하여 재시도하세요"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:320
+#: src/routes/(root)/[handle]/drafts/index.tsx:348
 msgid "Failed to load more drafts; click to retry"
 msgstr "임시 보관 불러오기 실패, 클릭하여 재시도"
 
-#: src/components/ActorFollowerList.tsx:80
+#: src/components/ActorFollowerList.tsx:82
 msgid "Failed to load more followers; click to retry"
 msgstr "팔로워 불러오기 실패. 클릭하여 재시도하세요"
 
-#: src/components/ActorFollowingList.tsx:80
+#: src/components/ActorFollowingList.tsx:82
 msgid "Failed to load more following; click to retry"
 msgstr "팔로잉 불러오기 실패. 클릭하여 재시도하세요"
 
@@ -657,11 +658,11 @@ msgstr "팔로잉 불러오기 실패. 클릭하여 재시도하세요"
 msgid "Failed to load more invitees; click to retry"
 msgstr "초대받은 사람들을 불러오지 못했습니다. 클릭하여 다시 시도"
 
-#: src/components/ActorNoteList.tsx:75
+#: src/components/ActorNoteList.tsx:77
 msgid "Failed to load more notes; click to retry"
 msgstr "단문 불러오기 실패. 클릭하여 재시도하세요"
 
-#: src/components/NotificationList.tsx:73
+#: src/components/NotificationList.tsx:80
 msgid "Failed to load more notifications; click to retry"
 msgstr "알림을 더 불러오지 못했습니다. 클릭해서 다시 시도하세요"
 
@@ -669,11 +670,11 @@ msgstr "알림을 더 불러오지 못했습니다. 클릭해서 다시 시도�
 msgid "Failed to load more passkeys; click to retry"
 msgstr "패스키를 더 불러오지 못했습니다. 클릭해서 다시 시도하세요"
 
-#: src/components/ActorPostList.tsx:81
-#: src/components/ActorSharedPostList.tsx:81
-#: src/components/PersonalTimeline.tsx:98
-#: src/components/PublicTimeline.tsx:100
-#: src/components/SearchResults.tsx:97
+#: src/components/ActorPostList.tsx:83
+#: src/components/ActorSharedPostList.tsx:83
+#: src/components/PersonalTimeline.tsx:100
+#: src/components/PublicTimeline.tsx:102
+#: src/components/SearchResults.tsx:99
 msgid "Failed to load more posts; click to retry"
 msgstr "콘텐츠 불러오기 실패. 클릭하여 재시도하세요"
 
@@ -813,7 +814,7 @@ msgid "GitHub repository"
 msgstr "GitHub 저장소"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:65
-#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:228
 #: src/routes/(root)/[handle]/drafts/new.tsx:81
 msgid "Go back"
 msgstr "돌아가기"
@@ -823,7 +824,7 @@ msgid "Go to Drafts"
 msgstr "임시 보관으로"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
-#: src/routes/(root)/[handle]/drafts/index.tsx:221
+#: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
 msgid "Go to my drafts"
 msgstr "내 임시 보관으로"
@@ -908,7 +909,7 @@ msgstr "올바른 연합우주 핸들 형식이 아닙니다."
 #: src/components/article-composer/ArticleComposerContext.tsx:373
 #: src/components/article-composer/ArticleComposerContext.tsx:438
 #: src/components/NoteComposer.tsx:281
-#: src/routes/(root)/[handle]/drafts/index.tsx:178
+#: src/routes/(root)/[handle]/drafts/index.tsx:187
 msgid "Invalid input: {0}"
 msgstr "잘못된 입력: {0}"
 
@@ -991,8 +992,12 @@ msgid "Link"
 msgstr "링크"
 
 #: src/components/LinkPreview.tsx:140
-msgid "Link author: "
-msgstr "링크 저자: "
+msgid "Link author:"
+msgstr "링크 저자:"
+
+#: src/components/LinkPreview.tsx:140
+#~ msgid "Link author: "
+#~ msgstr "링크 저자: "
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:253
 msgid "Link expired"
@@ -1006,23 +1011,23 @@ msgstr "링크 이름"
 msgid "List"
 msgstr "목록"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:323
+#: src/routes/(root)/[handle]/drafts/index.tsx:351
 msgid "Load more"
 msgstr "더 보기"
 
-#: src/components/ActorArticleList.tsx:84
+#: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
 msgstr "게시글 더 불러오기"
 
-#: src/components/Bookmarks.tsx:106
+#: src/components/Bookmarks.tsx:108
 msgid "Load more bookmarks"
 msgstr "북마크 더 불러오기"
 
-#: src/components/ActorFollowerList.tsx:83
+#: src/components/ActorFollowerList.tsx:85
 msgid "Load more followers"
 msgstr "팔로워 더 불러오기"
 
-#: src/components/ActorFollowingList.tsx:83
+#: src/components/ActorFollowingList.tsx:85
 msgid "Load more following"
 msgstr "팔로잉 더 불러오기"
 
@@ -1030,11 +1035,11 @@ msgstr "팔로잉 더 불러오기"
 msgid "Load more invitees"
 msgstr "초대받은 사람 더 보기"
 
-#: src/components/ActorNoteList.tsx:78
+#: src/components/ActorNoteList.tsx:80
 msgid "Load more notes"
 msgstr "단문 더 불러오기"
 
-#: src/components/NotificationList.tsx:76
+#: src/components/NotificationList.tsx:83
 msgid "Load more notifications"
 msgstr "알림 더 불러오기"
 
@@ -1042,31 +1047,31 @@ msgstr "알림 더 불러오기"
 msgid "Load more passkeys"
 msgstr "패스키 더 불러오기"
 
-#: src/components/ActorPostList.tsx:84
-#: src/components/ActorSharedPostList.tsx:84
-#: src/components/PersonalTimeline.tsx:101
-#: src/components/PublicTimeline.tsx:103
-#: src/components/SearchResults.tsx:100
+#: src/components/ActorPostList.tsx:86
+#: src/components/ActorSharedPostList.tsx:86
+#: src/components/PersonalTimeline.tsx:103
+#: src/components/PublicTimeline.tsx:105
+#: src/components/SearchResults.tsx:102
 msgid "Load more posts"
 msgstr "콘텐츠 더 불러오기"
 
 #: src/components/article-composer/ArticleComposer.tsx:31
 msgid "Loading draft…"
-msgstr "임시 보관 불러오는 중..."
+msgstr "임시 보관 불러오는 중…"
 
-#: src/components/ActorArticleList.tsx:78
+#: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
 msgstr "게시글 불러오는 중…"
 
-#: src/components/Bookmarks.tsx:100
+#: src/components/Bookmarks.tsx:102
 msgid "Loading more bookmarks…"
 msgstr "북마크 불러오는 중…"
 
-#: src/components/ActorFollowerList.tsx:77
+#: src/components/ActorFollowerList.tsx:79
 msgid "Loading more followers…"
 msgstr "팔로워 불러오는 중…"
 
-#: src/components/ActorFollowingList.tsx:77
+#: src/components/ActorFollowingList.tsx:79
 msgid "Loading more following…"
 msgstr "팔로잉 불러오는 중…"
 
@@ -1074,11 +1079,11 @@ msgstr "팔로잉 불러오는 중…"
 msgid "Loading more invitees…"
 msgstr "초대받은 사람들을 불러오는 중…"
 
-#: src/components/ActorNoteList.tsx:72
+#: src/components/ActorNoteList.tsx:74
 msgid "Loading more notes…"
 msgstr "단문 불러오는 중…"
 
-#: src/components/NotificationList.tsx:70
+#: src/components/NotificationList.tsx:77
 msgid "Loading more notifications"
 msgstr "알림을 더 불러오는 중…"
 
@@ -1086,11 +1091,11 @@ msgstr "알림을 더 불러오는 중…"
 msgid "Loading more passkeys…"
 msgstr "패스키를 더 불러오는 중…"
 
-#: src/components/ActorPostList.tsx:78
-#: src/components/ActorSharedPostList.tsx:78
-#: src/components/PersonalTimeline.tsx:95
-#: src/components/PublicTimeline.tsx:97
-#: src/components/SearchResults.tsx:94
+#: src/components/ActorPostList.tsx:80
+#: src/components/ActorSharedPostList.tsx:80
+#: src/components/PersonalTimeline.tsx:97
+#: src/components/PublicTimeline.tsx:99
+#: src/components/SearchResults.tsx:96
 msgid "Loading more posts…"
 msgstr "콘텐츠 불러오는 중…"
 
@@ -1098,7 +1103,7 @@ msgstr "콘텐츠 불러오는 중…"
 msgid "Loading quoted post…"
 msgstr "인용 콘텐츠를 불러오는 중…"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:317
+#: src/routes/(root)/[handle]/drafts/index.tsx:345
 #: src/routes/(root)/sign/up/[token].tsx:469
 msgid "Loading…"
 msgstr "로딩 중…"
@@ -1171,12 +1176,12 @@ msgstr "유효기간 없음"
 msgid "Never used"
 msgstr "사용된 적 없음"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:233
+#: src/routes/(root)/[handle]/drafts/index.tsx:254
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
 msgid "New article"
 msgstr "새 게시글"
 
-#: src/components/Bookmarks.tsx:113
+#: src/components/Bookmarks.tsx:115
 msgid "No bookmarks yet"
 msgstr "아직 북마크가 없습니다"
 
@@ -1184,15 +1189,15 @@ msgstr "아직 북마크가 없습니다"
 msgid "No draft to delete"
 msgstr "삭제할 임시 보관이 없습니다"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:243
+#: src/routes/(root)/[handle]/drafts/index.tsx:265
 msgid "No drafts yet. Create your first article!"
 msgstr "아직 임시 보관이 없습니다. 첫 게시글을 작성하세요!"
 
-#: src/components/ActorFollowerList.tsx:90
+#: src/components/ActorFollowerList.tsx:92
 msgid "No followers found"
 msgstr "팔로워가 없습니다"
 
-#: src/components/ActorFollowingList.tsx:90
+#: src/components/ActorFollowingList.tsx:92
 msgid "No following found"
 msgstr "팔로잉하는 사용자가 없습니다"
 
@@ -1206,19 +1211,19 @@ msgstr "남은 초대장이 없습니다"
 msgid "No matching object found"
 msgstr "일치하는 객체를 찾을 수 없습니다"
 
-#: src/components/ActorArticleList.tsx:91
+#: src/components/ActorArticleList.tsx:93
 msgid "No notes articles"
 msgstr "게시글이 없습니다"
 
-#: src/components/ActorNoteList.tsx:85
+#: src/components/ActorNoteList.tsx:87
 msgid "No notes found"
 msgstr "단문이 없습니다"
 
-#: src/components/ActorPostList.tsx:91
-#: src/components/ActorSharedPostList.tsx:91
-#: src/components/PersonalTimeline.tsx:108
-#: src/components/PublicTimeline.tsx:110
-#: src/components/SearchResults.tsx:107
+#: src/components/ActorPostList.tsx:93
+#: src/components/ActorSharedPostList.tsx:93
+#: src/components/PersonalTimeline.tsx:110
+#: src/components/PublicTimeline.tsx:112
+#: src/components/SearchResults.tsx:109
 msgid "No posts found"
 msgstr "콘텐츠가 없습니다"
 
@@ -1315,8 +1320,8 @@ msgstr "패스키"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:56
 #: src/routes/(root)/[handle]/drafts/[id].tsx:57
-#: src/routes/(root)/[handle]/drafts/index.tsx:207
-#: src/routes/(root)/[handle]/drafts/index.tsx:208
+#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:219
 #: src/routes/(root)/[handle]/drafts/new.tsx:72
 #: src/routes/(root)/[handle]/drafts/new.tsx:73
 msgid "Permission denied"
@@ -1349,7 +1354,7 @@ msgid "Please enter your Fediverse handle."
 msgstr "연합우주 핸들을 입력해 주세요."
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:61
-#: src/routes/(root)/[handle]/drafts/index.tsx:212
+#: src/routes/(root)/[handle]/drafts/index.tsx:223
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "이 페이지에 접근하려면 로그인하세요"
@@ -1431,7 +1436,7 @@ msgstr "지금 공개"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
 msgid "Publishing…"
-msgstr "공개하는 중..."
+msgstr "공개하는 중…"
 
 #: src/routes/(root)/search.tsx:257
 msgid "Query cannot be empty"
@@ -1461,8 +1466,8 @@ msgstr "{emoji}로 반응"
 msgid "reaction"
 msgstr "반응"
 
-#: src/components/ArticleCard.tsx:361
-#: src/components/ArticleCard.tsx:381
+#: src/components/ArticleCard.tsx:360
+#: src/components/ArticleCard.tsx:380
 msgid "Read full article"
 msgstr "게시글 전체 읽기"
 
@@ -1679,7 +1684,7 @@ msgstr "문제가 발생했습니다. 다시 시도해주세요."
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
-#: src/routes/(root)/[handle]/drafts/index.tsx:168
+#: src/routes/(root)/[handle]/drafts/index.tsx:177
 msgid "Success"
 msgstr "성공"
 
@@ -1695,8 +1700,8 @@ msgstr "환경 설정이 성공적으로 저장되었습니다"
 msgid "Successfully saved settings"
 msgstr "설정이 성공적으로 저장되었습니다"
 
-#: src/components/ArticleCard.tsx:314
-#: src/components/ArticleCard.tsx:333
+#: src/components/ArticleCard.tsx:313
+#: src/components/ArticleCard.tsx:332
 msgid "Summarized by LLM"
 msgstr "LLM 요약"
 
@@ -1844,7 +1849,7 @@ msgid "Toggle sidebar"
 msgstr "사이드바 전환"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:197
+#: src/components/ArticleCard.tsx:196
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "{0}에서 번역됨"
@@ -1885,7 +1890,7 @@ msgid "Update your profile information, including your avatar, username, display
 msgstr "프로필 사진, 아이디, 이름, 약력, 링크 등의 프로필 정보를 업데이트하세요."
 
 #. placeholder {0}: new Date(edge.node.updated).toLocaleDateString()
-#: src/routes/(root)/[handle]/drafts/index.tsx:282
+#: src/routes/(root)/[handle]/drafts/index.tsx:307
 msgid "Updated {0}"
 msgstr "{0}에 업데이트됨"
 
@@ -2030,7 +2035,7 @@ msgstr "자신의 계정에 대한 임시 보관만 만들 수 있습니다"
 msgid "You can only edit your own drafts"
 msgstr "자신의 임시 보관만 수정할 수 있습니다"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:211
+#: src/routes/(root)/[handle]/drafts/index.tsx:222
 msgid "You can only view your own drafts"
 msgstr "자신의 임시 보관만 볼 수 있습니다"
 
@@ -2053,7 +2058,7 @@ msgid "You must be signed in to create a note"
 msgstr "단문을 작성하려면 로그인해야 합니다"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:446
-#: src/routes/(root)/[handle]/drafts/index.tsx:186
+#: src/routes/(root)/[handle]/drafts/index.tsx:195
 msgid "You must be signed in to delete a draft"
 msgstr "임시 보관을 삭제하려면 로그인해야 합니다"
 

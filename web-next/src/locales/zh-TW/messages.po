@@ -46,7 +46,7 @@ msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
 #. placeholder {0}: edge.node.tags.length - 3
-#: src/routes/(root)/[handle]/drafts/index.tsx:271
+#: src/routes/(root)/[handle]/drafts/index.tsx:296
 msgid "{0, plural, one {+1 more} other {+# more}}"
 msgstr "{0, plural, other {還有#個}}"
 
@@ -248,7 +248,7 @@ msgstr "儲存設定時發生錯誤。請重試，如果問題仍然存在，請
 msgid "An unexpected error occurred. Please try again later."
 msgstr "發生了意外錯誤。請稍後再試。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:150
+#: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "您確定要刪除「{draftTitle}」嗎？此操作無法復原。"
 
@@ -261,7 +261,8 @@ msgstr "您確定要刪除此草稿嗎？此操作無法復原。"
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "您確定要取消密碼{0}嗎？您將無法再使用它登入您的帳戶。"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:231
+#: src/routes/(root)/[handle]/drafts/index.tsx:246
+#: src/routes/(root)/[handle]/drafts/index.tsx:248
 msgid "Article drafts"
 msgstr "文章草稿"
 
@@ -461,7 +462,7 @@ msgstr "預設轉貼隱私設定"
 
 #: src/components/PostActionMenu.tsx:341
 #: src/components/PostActionMenu.tsx:361
-#: src/routes/(root)/[handle]/drafts/index.tsx:296
+#: src/routes/(root)/[handle]/drafts/index.tsx:323
 #: src/routes/(root)/[handle]/settings/invite.tsx:646
 msgid "Delete"
 msgstr "刪除"
@@ -497,7 +498,7 @@ msgid "Do you want to quote this link?"
 msgstr "要引用此連結嗎？"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:429
-#: src/routes/(root)/[handle]/drafts/index.tsx:169
+#: src/routes/(root)/[handle]/drafts/index.tsx:178
 msgid "Draft deleted"
 msgstr "草稿已刪除"
 
@@ -582,9 +583,9 @@ msgstr "請在下方輸入您的電子郵件或使用者名稱以登入。"
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:202
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:212
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:221
-#: src/routes/(root)/[handle]/drafts/index.tsx:176
 #: src/routes/(root)/[handle]/drafts/index.tsx:185
-#: src/routes/(root)/[handle]/drafts/index.tsx:193
+#: src/routes/(root)/[handle]/drafts/index.tsx:194
+#: src/routes/(root)/[handle]/drafts/index.tsx:202
 #: src/routes/(root)/[handle]/invite/[id].tsx:199
 #: src/routes/(root)/sign/up/[token].tsx:295
 msgid "Error"
@@ -633,23 +634,23 @@ msgstr "刪除內容失敗"
 msgid "Failed to follow"
 msgstr "關注失敗"
 
-#: src/components/ActorArticleList.tsx:81
+#: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
 msgstr "載入更多文章失敗，點擊重試"
 
-#: src/components/Bookmarks.tsx:103
+#: src/components/Bookmarks.tsx:105
 msgid "Failed to load more bookmarks; click to retry"
 msgstr "載入更多收藏失敗，點擊重試"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:320
+#: src/routes/(root)/[handle]/drafts/index.tsx:348
 msgid "Failed to load more drafts; click to retry"
 msgstr "載入更多草稿失敗，點擊重試"
 
-#: src/components/ActorFollowerList.tsx:80
+#: src/components/ActorFollowerList.tsx:82
 msgid "Failed to load more followers; click to retry"
 msgstr "載入更多粉絲失敗，點擊重試"
 
-#: src/components/ActorFollowingList.tsx:80
+#: src/components/ActorFollowingList.tsx:82
 msgid "Failed to load more following; click to retry"
 msgstr "載入更多關注失敗，點擊重試"
 
@@ -657,11 +658,11 @@ msgstr "載入更多關注失敗，點擊重試"
 msgid "Failed to load more invitees; click to retry"
 msgstr "載入更多受邀者失敗；點擊重試"
 
-#: src/components/ActorNoteList.tsx:75
+#: src/components/ActorNoteList.tsx:77
 msgid "Failed to load more notes; click to retry"
 msgstr "載入更多貼文失敗，點擊重試"
 
-#: src/components/NotificationList.tsx:73
+#: src/components/NotificationList.tsx:80
 msgid "Failed to load more notifications; click to retry"
 msgstr "無法載入更多通知；點擊重試"
 
@@ -669,11 +670,11 @@ msgstr "無法載入更多通知；點擊重試"
 msgid "Failed to load more passkeys; click to retry"
 msgstr "載入更多通行金鑰失敗；點擊重試"
 
-#: src/components/ActorPostList.tsx:81
-#: src/components/ActorSharedPostList.tsx:81
-#: src/components/PersonalTimeline.tsx:98
-#: src/components/PublicTimeline.tsx:100
-#: src/components/SearchResults.tsx:97
+#: src/components/ActorPostList.tsx:83
+#: src/components/ActorSharedPostList.tsx:83
+#: src/components/PersonalTimeline.tsx:100
+#: src/components/PublicTimeline.tsx:102
+#: src/components/SearchResults.tsx:99
 msgid "Failed to load more posts; click to retry"
 msgstr "載入更多內容失敗，點擊重試"
 
@@ -813,7 +814,7 @@ msgid "GitHub repository"
 msgstr "GitHub 儲存庫"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:65
-#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:228
 #: src/routes/(root)/[handle]/drafts/new.tsx:81
 msgid "Go back"
 msgstr "返回"
@@ -823,7 +824,7 @@ msgid "Go to Drafts"
 msgstr "前往草稿"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
-#: src/routes/(root)/[handle]/drafts/index.tsx:221
+#: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
 msgid "Go to my drafts"
 msgstr "前往我的草稿"
@@ -908,7 +909,7 @@ msgstr "聯邦宇宙使用者名稱格式無效。"
 #: src/components/article-composer/ArticleComposerContext.tsx:373
 #: src/components/article-composer/ArticleComposerContext.tsx:438
 #: src/components/NoteComposer.tsx:281
-#: src/routes/(root)/[handle]/drafts/index.tsx:178
+#: src/routes/(root)/[handle]/drafts/index.tsx:187
 msgid "Invalid input: {0}"
 msgstr "無效輸入：{0}"
 
@@ -991,8 +992,12 @@ msgid "Link"
 msgstr "連結"
 
 #: src/components/LinkPreview.tsx:140
-msgid "Link author: "
+msgid "Link author:"
 msgstr "連結作者："
+
+#: src/components/LinkPreview.tsx:140
+#~ msgid "Link author: "
+#~ msgstr "連結作者："
 
 #: src/routes/(root)/[handle]/invite/[id].tsx:253
 msgid "Link expired"
@@ -1006,23 +1011,23 @@ msgstr "連結名"
 msgid "List"
 msgstr "列表"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:323
+#: src/routes/(root)/[handle]/drafts/index.tsx:351
 msgid "Load more"
 msgstr "載入更多"
 
-#: src/components/ActorArticleList.tsx:84
+#: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
 msgstr "載入更多文章"
 
-#: src/components/Bookmarks.tsx:106
+#: src/components/Bookmarks.tsx:108
 msgid "Load more bookmarks"
 msgstr "載入更多收藏"
 
-#: src/components/ActorFollowerList.tsx:83
+#: src/components/ActorFollowerList.tsx:85
 msgid "Load more followers"
 msgstr "載入更多粉絲"
 
-#: src/components/ActorFollowingList.tsx:83
+#: src/components/ActorFollowingList.tsx:85
 msgid "Load more following"
 msgstr "載入更多關注"
 
@@ -1030,11 +1035,11 @@ msgstr "載入更多關注"
 msgid "Load more invitees"
 msgstr "載入更多受邀者"
 
-#: src/components/ActorNoteList.tsx:78
+#: src/components/ActorNoteList.tsx:80
 msgid "Load more notes"
 msgstr "載入更多貼文"
 
-#: src/components/NotificationList.tsx:76
+#: src/components/NotificationList.tsx:83
 msgid "Load more notifications"
 msgstr "載入更多通知"
 
@@ -1042,31 +1047,31 @@ msgstr "載入更多通知"
 msgid "Load more passkeys"
 msgstr "載入更多通行金鑰"
 
-#: src/components/ActorPostList.tsx:84
-#: src/components/ActorSharedPostList.tsx:84
-#: src/components/PersonalTimeline.tsx:101
-#: src/components/PublicTimeline.tsx:103
-#: src/components/SearchResults.tsx:100
+#: src/components/ActorPostList.tsx:86
+#: src/components/ActorSharedPostList.tsx:86
+#: src/components/PersonalTimeline.tsx:103
+#: src/components/PublicTimeline.tsx:105
+#: src/components/SearchResults.tsx:102
 msgid "Load more posts"
 msgstr "載入更多內容"
 
 #: src/components/article-composer/ArticleComposer.tsx:31
 msgid "Loading draft…"
-msgstr "載入草稿中..."
+msgstr "載入草稿中…"
 
-#: src/components/ActorArticleList.tsx:78
+#: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
 msgstr "載入更多文章中…"
 
-#: src/components/Bookmarks.tsx:100
+#: src/components/Bookmarks.tsx:102
 msgid "Loading more bookmarks…"
 msgstr "載入更多收藏中…"
 
-#: src/components/ActorFollowerList.tsx:77
+#: src/components/ActorFollowerList.tsx:79
 msgid "Loading more followers…"
 msgstr "載入更多粉絲中…"
 
-#: src/components/ActorFollowingList.tsx:77
+#: src/components/ActorFollowingList.tsx:79
 msgid "Loading more following…"
 msgstr "正在載入更多關注…"
 
@@ -1074,11 +1079,11 @@ msgstr "正在載入更多關注…"
 msgid "Loading more invitees…"
 msgstr "正在載入更多受邀者…"
 
-#: src/components/ActorNoteList.tsx:72
+#: src/components/ActorNoteList.tsx:74
 msgid "Loading more notes…"
 msgstr "載入更多貼文中…"
 
-#: src/components/NotificationList.tsx:70
+#: src/components/NotificationList.tsx:77
 msgid "Loading more notifications"
 msgstr "正在載入更多通知…"
 
@@ -1086,11 +1091,11 @@ msgstr "正在載入更多通知…"
 msgid "Loading more passkeys…"
 msgstr "正在載入更多通行金鑰…"
 
-#: src/components/ActorPostList.tsx:78
-#: src/components/ActorSharedPostList.tsx:78
-#: src/components/PersonalTimeline.tsx:95
-#: src/components/PublicTimeline.tsx:97
-#: src/components/SearchResults.tsx:94
+#: src/components/ActorPostList.tsx:80
+#: src/components/ActorSharedPostList.tsx:80
+#: src/components/PersonalTimeline.tsx:97
+#: src/components/PublicTimeline.tsx:99
+#: src/components/SearchResults.tsx:96
 msgid "Loading more posts…"
 msgstr "載入更多內容中…"
 
@@ -1098,7 +1103,7 @@ msgstr "載入更多內容中…"
 msgid "Loading quoted post…"
 msgstr "正在載入引用內容…"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:317
+#: src/routes/(root)/[handle]/drafts/index.tsx:345
 #: src/routes/(root)/sign/up/[token].tsx:469
 msgid "Loading…"
 msgstr "載入中…"
@@ -1171,12 +1176,12 @@ msgstr "永不過期"
 msgid "Never used"
 msgstr "從未使用過"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:233
+#: src/routes/(root)/[handle]/drafts/index.tsx:254
 #: src/routes/(root)/[handle]/drafts/new.tsx:95
 msgid "New article"
 msgstr "新建文章"
 
-#: src/components/Bookmarks.tsx:113
+#: src/components/Bookmarks.tsx:115
 msgid "No bookmarks yet"
 msgstr "暫無收藏"
 
@@ -1184,15 +1189,15 @@ msgstr "暫無收藏"
 msgid "No draft to delete"
 msgstr "沒有要刪除的草稿"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:243
+#: src/routes/(root)/[handle]/drafts/index.tsx:265
 msgid "No drafts yet. Create your first article!"
 msgstr "還沒有草稿。建立您的第一篇文章！"
 
-#: src/components/ActorFollowerList.tsx:90
+#: src/components/ActorFollowerList.tsx:92
 msgid "No followers found"
 msgstr "未找到粉絲"
 
-#: src/components/ActorFollowingList.tsx:90
+#: src/components/ActorFollowingList.tsx:92
 msgid "No following found"
 msgstr "沒有找到關注的使用者"
 
@@ -1206,19 +1211,19 @@ msgstr "沒有剩餘邀請名額"
 msgid "No matching object found"
 msgstr "找不到相符的物件"
 
-#: src/components/ActorArticleList.tsx:91
+#: src/components/ActorArticleList.tsx:93
 msgid "No notes articles"
 msgstr "未找到文章"
 
-#: src/components/ActorNoteList.tsx:85
+#: src/components/ActorNoteList.tsx:87
 msgid "No notes found"
 msgstr "未找到貼文"
 
-#: src/components/ActorPostList.tsx:91
-#: src/components/ActorSharedPostList.tsx:91
-#: src/components/PersonalTimeline.tsx:108
-#: src/components/PublicTimeline.tsx:110
-#: src/components/SearchResults.tsx:107
+#: src/components/ActorPostList.tsx:93
+#: src/components/ActorSharedPostList.tsx:93
+#: src/components/PersonalTimeline.tsx:110
+#: src/components/PublicTimeline.tsx:112
+#: src/components/SearchResults.tsx:109
 msgid "No posts found"
 msgstr "未找到內容"
 
@@ -1315,8 +1320,8 @@ msgstr "通行金鑰"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:56
 #: src/routes/(root)/[handle]/drafts/[id].tsx:57
-#: src/routes/(root)/[handle]/drafts/index.tsx:207
-#: src/routes/(root)/[handle]/drafts/index.tsx:208
+#: src/routes/(root)/[handle]/drafts/index.tsx:216
+#: src/routes/(root)/[handle]/drafts/index.tsx:219
 #: src/routes/(root)/[handle]/drafts/new.tsx:72
 #: src/routes/(root)/[handle]/drafts/new.tsx:73
 msgid "Permission denied"
@@ -1349,7 +1354,7 @@ msgid "Please enter your Fediverse handle."
 msgstr "請輸入你的聯邦宇宙使用者名稱。"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:61
-#: src/routes/(root)/[handle]/drafts/index.tsx:212
+#: src/routes/(root)/[handle]/drafts/index.tsx:223
 #: src/routes/(root)/[handle]/drafts/new.tsx:77
 msgid "Please sign in to access this page"
 msgstr "請登入以存取此頁面"
@@ -1431,7 +1436,7 @@ msgstr "立即發布"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:47
 msgid "Publishing…"
-msgstr "發布中..."
+msgstr "發布中…"
 
 #: src/routes/(root)/search.tsx:257
 msgid "Query cannot be empty"
@@ -1461,8 +1466,8 @@ msgstr "用{emoji}反應"
 msgid "reaction"
 msgstr "反應"
 
-#: src/components/ArticleCard.tsx:361
-#: src/components/ArticleCard.tsx:381
+#: src/components/ArticleCard.tsx:360
+#: src/components/ArticleCard.tsx:380
 msgid "Read full article"
 msgstr "閱讀完整文章"
 
@@ -1679,7 +1684,7 @@ msgstr "發生錯誤，請重試。"
 #: src/components/article-composer/ArticleComposerContext.tsx:428
 #: src/components/NoteComposer.tsx:272
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:188
-#: src/routes/(root)/[handle]/drafts/index.tsx:168
+#: src/routes/(root)/[handle]/drafts/index.tsx:177
 msgid "Success"
 msgstr "成功"
 
@@ -1695,8 +1700,8 @@ msgstr "設定已成功儲存"
 msgid "Successfully saved settings"
 msgstr "設定儲存成功"
 
-#: src/components/ArticleCard.tsx:314
-#: src/components/ArticleCard.tsx:333
+#: src/components/ArticleCard.tsx:313
+#: src/components/ArticleCard.tsx:332
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
@@ -1844,7 +1849,7 @@ msgid "Toggle sidebar"
 msgstr "切換側邊欄"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:197
+#: src/components/ArticleCard.tsx:196
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
@@ -1885,7 +1890,7 @@ msgid "Update your profile information, including your avatar, username, display
 msgstr "更新您的個人資料資訊，包括頭像、使用者名稱、暱稱、個人簡介和連結。"
 
 #. placeholder {0}: new Date(edge.node.updated).toLocaleDateString()
-#: src/routes/(root)/[handle]/drafts/index.tsx:282
+#: src/routes/(root)/[handle]/drafts/index.tsx:307
 msgid "Updated {0}"
 msgstr "更新於 {0}"
 
@@ -2030,7 +2035,7 @@ msgstr "您只能為自己的帳戶建立草稿"
 msgid "You can only edit your own drafts"
 msgstr "您只能編輯自己的草稿"
 
-#: src/routes/(root)/[handle]/drafts/index.tsx:211
+#: src/routes/(root)/[handle]/drafts/index.tsx:222
 msgid "You can only view your own drafts"
 msgstr "您只能檢視自己的草稿"
 
@@ -2053,7 +2058,7 @@ msgid "You must be signed in to create a note"
 msgstr "你必須登入才能建立貼文"
 
 #: src/components/article-composer/ArticleComposerContext.tsx:446
-#: src/routes/(root)/[handle]/drafts/index.tsx:186
+#: src/routes/(root)/[handle]/drafts/index.tsx:195
 msgid "You must be signed in to delete a draft"
 msgstr "您必須登入才能刪除草稿"
 
