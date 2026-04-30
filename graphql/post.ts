@@ -472,6 +472,7 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
           excerpt: content.summary ?? rendered.text,
           handle: `@${account.username}@${account.actor.handleHost}`,
           language: content.language,
+          sourceId: content.sourceId,
           title: content.title,
         });
         if (key !== content.ogImageKey) {

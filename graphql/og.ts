@@ -38,6 +38,7 @@ interface ArticleOgImageInput {
   excerpt: string;
   handle: string;
   language: string;
+  sourceId: string;
   title: string;
 }
 

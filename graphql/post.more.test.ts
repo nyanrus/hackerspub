@@ -96,6 +96,26 @@ const articleContentOgImageUrlQuery = parse(`
   }
 `);
 
+const articleContentOgImageCollisionQuery = parse(`
+  query ArticleContentOgImageCollision(
+    $handle: String!
+    $idOrYear: String!
+    $firstSlug: String!
+    $secondSlug: String!
+  ) {
+    first: articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $firstSlug) {
+      contents {
+        ogImageUrl
+      }
+    }
+    second: articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $secondSlug) {
+      contents {
+        ogImageUrl
+      }
+    }
+  }
+`);
+
 const createNoteMutation = parse(`
   mutation CreateNote($input: CreateNoteInput!) {
     createNote(input: $input) {
@@ -333,6 +353,88 @@ test("publishArticleDraft publishes an article and removes the draft", async () 
       },
     });
     assert.equal(remainingDraft, undefined);
+  });
+});
+
+test("ArticleContent.ogImageUrl keys do not collide across articles", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "articleogcollision",
+      name: "Article OG Collision",
+      email: "articleogcollision@example.com",
+    });
+    await tx.update(accountTable)
+      .set({ avatarKey: "article-avatar-og-test" })
+      .where(eq(accountTable.id, author.account.id));
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    const slugs = ["same-preview-a", "same-preview-b"];
+    for (const slug of slugs) {
+      const sourceId = generateUuidV7();
+      const postId = generateUuidV7();
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug,
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Same Open Graph preview",
+        content: "Identical article body for cache key collision coverage.",
+        published,
+        updated: published,
+      });
+      await tx.insert(postTable).values(
+        {
+          id: postId,
+          iri: `http://localhost/objects/${postId}`,
+          type: "Article",
+          visibility: "public",
+          actorId: author.actor.id,
+          articleSourceId: sourceId,
+          name: "Same Open Graph preview",
+          contentHtml:
+            "<p>Identical article body for cache key collision coverage.</p>",
+          language: "en",
+          tags: {},
+          emojis: {},
+          url: `http://localhost/@${author.account.username}/2026/${slug}`,
+          published,
+          updated: published,
+        } satisfies NewPost,
+      );
+    }
+
+    const result = await execute({
+      schema,
+      document: articleContentOgImageCollisionQuery,
+      variableValues: {
+        handle: author.account.username,
+        idOrYear: "2026",
+        firstSlug: slugs[0],
+        secondSlug: slugs[1],
+      },
+      contextValue: makeUserContext(tx, author.account, {
+        disk: createOgTestDisk().disk,
+      }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    const data = toPlainJson(result.data) as {
+      first: { contents: Array<{ ogImageUrl: string }> };
+      second: { contents: Array<{ ogImageUrl: string }> };
+    };
+    assert.notEqual(
+      data.first.contents[0].ogImageUrl,
+      data.second.contents[0].ogImageUrl,
+    );
   });
 });
 
