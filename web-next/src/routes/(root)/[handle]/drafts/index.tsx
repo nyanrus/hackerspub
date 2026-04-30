@@ -9,8 +9,17 @@ import {
   loadQuery,
   useRelayEnvironment,
 } from "solid-relay";
+import IconFilePlus2 from "~icons/lucide/file-plus-2";
+import IconTrash2 from "~icons/lucide/trash-2";
 import { Badge } from "~/components/ui/badge.tsx";
 import { Button } from "~/components/ui/button.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle as UICardTitle,
+} from "~/components/ui/card.tsx";
 import { Title } from "~/components/Title.tsx";
 import { WideContainer } from "~/components/WideContainer.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
@@ -202,131 +211,151 @@ export default function ArticleDraftsListPage() {
     <Show
       when={data()?.viewer?.username === params.handle!.substring(1)}
       fallback={
-        <WideContainer class="p-6">
+        <WideContainer class="px-4 py-6 sm:px-6 lg:py-8">
           <HttpStatusCode code={403} />
           <Title>{t`Permission denied`}</Title>
-          <h1 class="text-2xl font-bold mb-4">{t`Permission denied`}</h1>
-          <p class="text-muted-foreground mb-4">
-            {data()?.viewer
-              ? t`You can only view your own drafts`
-              : t`Please sign in to access this page`}
-          </p>
-          <div class="flex gap-2">
-            <Button onClick={() => window.history.back()}>
-              {t`Go back`}
-            </Button>
-            <Show when={data()?.viewer?.username}>
-              {(username) => (
-                <A href={`/@${username()}/drafts`}>
-                  <Button variant="outline">{t`Go to my drafts`}</Button>
-                </A>
-              )}
-            </Show>
-          </div>
+          <Card class="mx-auto max-w-xl">
+            <CardHeader>
+              <UICardTitle>{t`Permission denied`}</UICardTitle>
+              <CardDescription>
+                {data()?.viewer
+                  ? t`You can only view your own drafts`
+                  : t`Please sign in to access this page`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent class="flex flex-wrap gap-2">
+              <Button onClick={() => window.history.back()}>
+                {t`Go back`}
+              </Button>
+              <Show when={data()?.viewer?.username}>
+                {(username) => (
+                  <A href={`/@${username()}/drafts`}>
+                    <Button variant="outline">{t`Go to my drafts`}</Button>
+                  </A>
+                )}
+              </Show>
+            </CardContent>
+          </Card>
         </WideContainer>
       }
     >
-      <WideContainer class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <Title>{t`Article drafts`}</Title>
-          <A href={`/@${params.handle!.substring(1)}/drafts/new`}>
-            <Button>{t`New article`}</Button>
-          </A>
-        </div>
-
-        <Show
-          when={draftData()?.articleDrafts.edges &&
-            draftData()!.articleDrafts.edges.length > 0}
-          fallback={
-            <div class="text-center py-12">
-              <p class="text-muted-foreground mb-4">
-                {t`No drafts yet. Create your first article!`}
-              </p>
+      <WideContainer class="px-4 py-6 sm:px-6 lg:py-8">
+        <div class="mx-auto max-w-4xl">
+          <div class="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <Title>{t`Article drafts`}</Title>
+              <h1 class="text-2xl font-semibold tracking-tight">
+                {t`Article drafts`}
+              </h1>
             </div>
-          }
-        >
-          <div class="grid gap-4">
-            <For
-              each={draftData()?.articleDrafts.edges.filter((edge) =>
-                edge.node != null
-              )}
-            >
-              {(edge) => (
-                <div class="p-4 border rounded-lg hover:bg-accent transition-colors">
-                  <div class="flex items-start justify-between gap-4">
-                    <A
-                      href={`/@${
-                        params.handle!.substring(1)
-                      }/drafts/${edge.node.uuid}`}
-                      class="flex-1 min-w-0"
-                    >
-                      <h3 class="font-semibold text-lg">{edge.node.title}</h3>
-                      <div class="flex gap-2 mt-2 flex-wrap">
-                        <For each={edge.node.tags.slice(0, 3)}>
-                          {(tag) => <Badge variant="outline">{tag}</Badge>}
-                        </For>
-                        <Show when={edge.node.tags.length > 3}>
-                          <Badge variant="outline">
-                            {i18n._(
-                              msg`${
-                                plural(edge.node.tags.length - 3, {
-                                  one: "+1 more",
-                                  other: "+# more",
-                                })
-                              }`,
-                            )}
-                          </Badge>
-                        </Show>
-                      </div>
-                      <p class="text-sm text-muted-foreground mt-2">
-                        {t`Updated ${
-                          new Date(edge.node.updated).toLocaleDateString()
-                        }`}
-                      </p>
-                    </A>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDelete(edge.node.id, edge.node.title);
-                      }}
-                      disabled={isDeleting()}
-                    >
-                      {t`Delete`}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </For>
+            <A href={`/@${params.handle!.substring(1)}/drafts/new`}>
+              <Button class="gap-2">
+                <IconFilePlus2 class="size-4" />
+                {t`New article`}
+              </Button>
+            </A>
           </div>
 
-          <Show when={draftData.hasNext}>
-            <div class="flex justify-center mt-6">
-              <Button
-                variant="outline"
-                onClick={loadingState() === "loading"
-                  ? undefined
-                  : loadMoreDrafts}
-                disabled={draftData.pending || loadingState() === "loading"}
+          <Show
+            when={draftData()?.articleDrafts.edges &&
+              draftData()!.articleDrafts.edges.length > 0}
+            fallback={
+              <Card>
+                <CardContent class="py-12 text-center text-muted-foreground">
+                  {t`No drafts yet. Create your first article!`}
+                </CardContent>
+              </Card>
+            }
+          >
+            <div class="grid gap-3">
+              <For
+                each={draftData()?.articleDrafts.edges.filter((edge) =>
+                  edge.node != null
+                )}
               >
-                <Switch>
-                  <Match
-                    when={draftData.pending || loadingState() === "loading"}
-                  >
-                    {t`Loading…`}
-                  </Match>
-                  <Match when={loadingState() === "errored"}>
-                    {t`Failed to load more drafts; click to retry`}
-                  </Match>
-                  <Match when={loadingState() === "loaded"}>
-                    {t`Load more`}
-                  </Match>
-                </Switch>
-              </Button>
+                {(edge) => (
+                  <Card class="transition-colors hover:bg-accent/40">
+                    <CardContent class="p-4">
+                      <div class="flex items-start justify-between gap-4">
+                        <A
+                          href={`/@${
+                            params.handle!.substring(1)
+                          }/drafts/${edge.node.uuid}`}
+                          class="min-w-0 flex-1"
+                        >
+                          <h3 class="truncate text-lg font-semibold">
+                            {edge.node.title}
+                          </h3>
+                          <div class="mt-2 flex flex-wrap gap-2">
+                            <For each={edge.node.tags.slice(0, 3)}>
+                              {(tag) => <Badge variant="outline">{tag}</Badge>}
+                            </For>
+                            <Show when={edge.node.tags.length > 3}>
+                              <Badge variant="outline">
+                                {i18n._(
+                                  msg`${
+                                    plural(edge.node.tags.length - 3, {
+                                      one: "+1 more",
+                                      other: "+# more",
+                                    })
+                                  }`,
+                                )}
+                              </Badge>
+                            </Show>
+                          </div>
+                          <p class="mt-2 text-sm text-muted-foreground">
+                            {t`Updated ${
+                              new Date(edge.node.updated).toLocaleDateString()
+                            }`}
+                          </p>
+                        </A>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          class="gap-2"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDelete(edge.node.id, edge.node.title);
+                          }}
+                          disabled={isDeleting()}
+                        >
+                          <IconTrash2 class="size-4" />
+                          {t`Delete`}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </For>
             </div>
+
+            <Show when={draftData.hasNext}>
+              <div class="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={loadingState() === "loading"
+                    ? undefined
+                    : loadMoreDrafts}
+                  disabled={draftData.pending || loadingState() === "loading"}
+                >
+                  <Switch>
+                    <Match
+                      when={draftData.pending || loadingState() === "loading"}
+                    >
+                      {t`Loading…`}
+                    </Match>
+                    <Match when={loadingState() === "errored"}>
+                      {t`Failed to load more drafts; click to retry`}
+                    </Match>
+                    <Match when={loadingState() === "loaded"}>
+                      {t`Load more`}
+                    </Match>
+                  </Switch>
+                </Button>
+              </div>
+            </Show>
           </Show>
-        </Show>
+        </div>
       </WideContainer>
     </Show>
   );
