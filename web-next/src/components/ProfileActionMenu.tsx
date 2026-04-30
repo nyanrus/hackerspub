@@ -214,6 +214,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           }
           if (response.blockActor.__typename === "BlockActorPayload") {
             showToast({ title: t`User blocked` });
+            void revalidate(PROFILE_CONTENT_QUERY_KEYS);
           }
         },
         onError() {
