@@ -8,7 +8,7 @@ export function ArticleComposerActions() {
   const ctx = useArticleComposer();
 
   return (
-    <div class="flex gap-3 justify-between">
+    <div class="flex flex-wrap justify-between gap-3">
       {/* Delete button (left side) */}
       <Show when={ctx.draft()?.id}>
         <Button
@@ -22,7 +22,7 @@ export function ArticleComposerActions() {
       </Show>
 
       {/* Save/Publish buttons (right side) */}
-      <div class="flex gap-3 ml-auto">
+      <div class="ml-auto flex flex-wrap justify-end gap-3">
         <Button
           type="button"
           variant="outline"

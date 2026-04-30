@@ -43,15 +43,15 @@ export function ArticleComposerForm() {
           onInput={(e) => ctx.setTitle(e.currentTarget.value)}
           placeholder={t`Please enter a title for your article.`}
           required
-          class="text-2xl font-bold"
+          class="text-lg font-bold sm:text-2xl"
         />
       </TextField>
 
       {/* Content */}
       <div class="flex flex-col gap-1">
-        <label class="flex items-center justify-between text-sm font-medium">
+        <label class="flex flex-col gap-2 text-sm font-medium sm:flex-row sm:items-center sm:justify-between">
           <span>{t`Content`}</span>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Preview toggle */}
             <button
               type="button"
