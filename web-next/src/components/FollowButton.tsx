@@ -81,10 +81,14 @@ export function FollowButton(props: FollowButtonProps) {
     graphql`
       fragment FollowButton_actor on Actor {
         id
+        username
         handle
         rawName
+        local
         isViewer
         viewerFollows
+        viewerBlocks
+        blocksViewer
         followsViewer
       }
     `,
@@ -98,6 +102,12 @@ export function FollowButton(props: FollowButtonProps) {
   const [unfollowActor] = createMutation<FollowButton_unfollowActor_Mutation>(
     unfollowActorMutation,
   );
+
+  const isViewerActor = () => {
+    const actorData = actor();
+    return actorData?.isViewer ||
+      (actorData?.local && actorData.username === viewer.username());
+  };
 
   const handleClick = () => {
     const actorData = actor();
@@ -161,7 +171,10 @@ export function FollowButton(props: FollowButtonProps) {
   return (
     <Show when={actor()}>
       {(actor) => (
-        <Show when={!actor().isViewer && viewer.isLoaded()}>
+        <Show
+          when={!isViewerActor() && !actor().viewerBlocks &&
+            viewer.isLoaded()}
+        >
           <Show
             when={viewer.isAuthenticated()}
             fallback={
@@ -177,6 +190,7 @@ export function FollowButton(props: FollowButtonProps) {
               size="sm"
               class="cursor-pointer"
               onClick={handleClick}
+              disabled={actor().blocksViewer}
             >
               {actor().viewerFollows
                 ? t`Unfollow`

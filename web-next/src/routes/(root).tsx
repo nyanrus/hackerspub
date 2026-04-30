@@ -66,6 +66,7 @@ export default function RootLayout(props: RouteSectionProps) {
       isAuthenticated={() =>
         !signedAccount.pending && !!signedAccount()?.viewer}
       isLoaded={() => !signedAccount.pending}
+      username={() => signedAccount()?.viewer?.username}
     >
       <NoteComposeProvider>
         <SidebarProvider>

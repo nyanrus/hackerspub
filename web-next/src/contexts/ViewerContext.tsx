@@ -3,11 +3,13 @@ import { createContext, type ParentComponent, useContext } from "solid-js";
 interface ViewerContextValue {
   isAuthenticated: () => boolean;
   isLoaded: () => boolean;
+  username: () => string | undefined;
 }
 
 export interface ViewerProviderProps {
   isAuthenticated: () => boolean;
   isLoaded: () => boolean;
+  username?: () => string | undefined;
 }
 
 const ViewerContext = createContext<ViewerContextValue>();
@@ -18,6 +20,7 @@ export const ViewerProvider: ParentComponent<ViewerProviderProps> = (props) => {
       value={{
         isAuthenticated: props.isAuthenticated,
         isLoaded: props.isLoaded,
+        username: props.username ?? (() => undefined),
       }}
     >
       {props.children}
