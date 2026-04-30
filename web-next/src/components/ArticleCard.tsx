@@ -158,7 +158,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
               </InternalLink>
             </Avatar>
             <div class="flex min-w-0 flex-col">
-              <div>
+              <div class="flex min-w-0 items-baseline gap-x-1">
                 <Show when={(article().actor.name ?? "").trim() !== ""}>
                   <InternalLink
                     innerHTML={article().actor.name ?? ""}
@@ -166,12 +166,11 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                     internalHref={article().actor.local
                       ? `/@${article().actor.username}`
                       : `/${article().actor.handle}`}
-                    class="font-semibold"
+                    class="shrink-0 font-semibold"
                   />
-                  {" "}
                 </Show>
                 <span
-                  class="break-all select-all text-muted-foreground sm:break-normal"
+                  class="min-w-0 truncate select-all text-muted-foreground"
                   title={article().actor.handle}
                 >
                   {article().actor.handle}

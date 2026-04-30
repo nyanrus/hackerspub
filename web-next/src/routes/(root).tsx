@@ -101,6 +101,7 @@ export default function RootLayout(props: RouteSectionProps) {
             lang={new Intl.Locale(i18n.locale).minimize().baseName}
             class="w-full pt-14 md:pt-0"
             classList={{
+              "pb-24 md:pb-0": showFloatingCompose(),
               "bg-[url(/dev-bg-light.svg)]": import.meta.env.DEV,
               "dark:bg-[url(/dev-bg-dark.svg)]": import.meta.env.DEV,
             }}

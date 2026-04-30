@@ -75,7 +75,7 @@ export function PublicTimeline(props: PublicTimelineProps) {
   }
 
   return (
-    <div class="mt-4 mb-10 overflow-hidden border-x bg-card md:mb-12 md:rounded-lg md:border md:shadow-sm">
+    <div class="mt-4 mb-10 overflow-hidden border bg-card md:mb-12 md:rounded-lg md:shadow-sm">
       <Show when={posts()}>
         {(data) => (
           <>

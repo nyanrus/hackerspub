@@ -77,7 +77,7 @@ export function Bookmarks(props: BookmarksProps) {
   }
 
   return (
-    <div class="mb-10 overflow-hidden border-x bg-card md:mb-12 md:rounded-lg md:border md:shadow-sm">
+    <div class="mb-10 overflow-hidden border bg-card md:mb-12 md:rounded-lg md:shadow-sm">
       <Show when={posts()}>
         {(data) => (
           <>
