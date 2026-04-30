@@ -145,8 +145,14 @@ is what gives the UI its flat, paper-like quality.
 ### Semantic palette
 
 Semantic tokens come in `*` (background) and `*-foreground` (text)
-pairs.  Backgrounds are very low chroma; foregrounds carry the saturated
-hue.  In dark mode the lightness inverts but the hue is preserved.
+pairs.  For `info`, `success`, `warning`, and `error`, backgrounds are
+very low chroma and foregrounds carry the saturated hue; dark mode
+inverts the lightness but preserves the hue, so the same tinted-panel
+treatment works on either theme.  `destructive` is the exception: it
+is a saturated, high-chroma red used as a button fill (paired with
+`destructive-foreground` for the label), not a tinted alert
+background, and is documented here only because the `Button` variant
+of the same name reaches for it.
 
 | Token         | Hue           | Use                                            |
 | :------------ | :------------ | :--------------------------------------------- |
