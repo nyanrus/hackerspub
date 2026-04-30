@@ -31,6 +31,7 @@ const sharesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorSharedPostList_sharedPosts @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -76,10 +77,12 @@ export default function ProfileSharesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="shares" $actor={actor()} />
-                  <ActorSharedPostList $sharedPosts={actor()} />
-                </div>
+                <Show when={!actor().viewerBlocks}>
+                  <div class="p-4">
+                    <ProfileTabs selected="shares" $actor={actor()} />
+                    <ActorSharedPostList $sharedPosts={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

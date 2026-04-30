@@ -41,6 +41,7 @@ const ProfilePageQuery = graphql`
       username
       url
       iri
+      viewerBlocks
       ...NavigateIfHandleIsNotCanonical_actor
       ...ProfileCard_actor
       ...ProfileTabs_actor
@@ -168,40 +169,42 @@ export default function ProfilePage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="posts" $actor={actor()} />
-                  <Show when={pinnedPostsData()?.actorByHandle?.pins}>
-                    {(pins) => (
-                      <Show when={pins().edges.length > 0}>
-                        <section class="my-4">
-                          <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
-                            <IconPin class="size-4" />
-                            {t`Pinned posts`}
-                          </h2>
-                          <div class="overflow-hidden rounded-lg border bg-card shadow-sm">
-                            <For each={pins().edges}>
-                              {(edge) => (
-                                <PostCard
-                                  $post={edge.node}
-                                  connections={viewerPostConnections()}
-                                  pinConnections={viewerPinConnections()}
-                                />
-                              )}
-                            </For>
-                          </div>
-                        </section>
-                      </Show>
-                    )}
-                  </Show>
-                  <Show when={postsActor()}>
-                    {(postsActor) => (
-                      <ActorPostList
-                        $posts={postsActor()}
-                        pinConnections={viewerPinConnections()}
-                      />
-                    )}
-                  </Show>
-                </div>
+                <Show when={!actor().viewerBlocks}>
+                  <div class="p-4">
+                    <ProfileTabs selected="posts" $actor={actor()} />
+                    <Show when={pinnedPostsData()?.actorByHandle?.pins}>
+                      {(pins) => (
+                        <Show when={pins().edges.length > 0}>
+                          <section class="my-4">
+                            <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
+                              <IconPin class="size-4" />
+                              {t`Pinned posts`}
+                            </h2>
+                            <div class="overflow-hidden rounded-lg border bg-card shadow-sm">
+                              <For each={pins().edges}>
+                                {(edge) => (
+                                  <PostCard
+                                    $post={edge.node}
+                                    connections={viewerPostConnections()}
+                                    pinConnections={viewerPinConnections()}
+                                  />
+                                )}
+                              </For>
+                            </div>
+                          </section>
+                        </Show>
+                      )}
+                    </Show>
+                    <Show when={postsActor()}>
+                      {(postsActor) => (
+                        <ActorPostList
+                          $posts={postsActor()}
+                          pinConnections={viewerPinConnections()}
+                        />
+                      )}
+                    </Show>
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

@@ -154,8 +154,8 @@ msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:67
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:71
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
 msgid "{0}'s articles"
 msgstr "{0}的文章"
 
@@ -172,14 +172,14 @@ msgid "{0}'s following"
 msgstr "{0}的關注"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:68
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:72
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
 msgid "{0}'s notes"
 msgstr "{0}的貼文"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:69
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:73
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
 msgid "{0}'s shares"
 msgstr "{0}的轉貼"
 
@@ -250,7 +250,7 @@ msgstr "發生了意外錯誤。請稍後再試。"
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:225
+#: src/components/ProfileActionMenu.tsx:279
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "確定要封鎖 {0}（{1}）嗎？該使用者將無法關注你或查看你的內容。"
 
@@ -269,7 +269,7 @@ msgstr "您確定要取消密碼{0}嗎？您將無法再使用它登入您的帳
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:227
+#: src/components/ProfileActionMenu.tsx:281
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "確定要解除封鎖 {0}（{1}）嗎？該使用者將能夠關注你並查看你的內容。"
 
@@ -290,7 +290,7 @@ msgstr "文章已更新"
 msgid "article-url-slug"
 msgstr "文章網址別名"
 
-#: src/components/ProfileTabs.tsx:48
+#: src/components/ProfileTabs.tsx:50
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "文章"
@@ -321,13 +321,13 @@ msgstr "個人簡介"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "個人簡介太長。不能長於 512 字元。"
 
-#: src/components/ProfileActionMenu.tsx:207
-#: src/components/ProfileActionMenu.tsx:236
-#: src/components/ProfileActionMenu.tsx:243
+#: src/components/ProfileActionMenu.tsx:261
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:297
 msgid "Block"
 msgstr "封鎖"
 
-#: src/components/ProfileActionMenu.tsx:218
+#: src/components/ProfileActionMenu.tsx:272
 msgid "Block user?"
 msgstr "封鎖使用者？"
 
@@ -346,8 +346,8 @@ msgstr "收藏"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:232
-#: src/components/ProfileActionMenu.tsx:233
+#: src/components/ProfileActionMenu.tsx:286
+#: src/components/ProfileActionMenu.tsx:287
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -630,8 +630,8 @@ msgstr "到期時間"
 msgid "Extra message"
 msgstr "額外訊息"
 
-#: src/components/ProfileActionMenu.tsx:160
-#: src/components/ProfileActionMenu.tsx:169
+#: src/components/ProfileActionMenu.tsx:214
+#: src/components/ProfileActionMenu.tsx:223
 msgid "Failed to block this user"
 msgstr "無法封鎖此使用者"
 
@@ -771,8 +771,8 @@ msgstr "轉貼失敗"
 msgid "Failed to sign out: {0}"
 msgstr "登出失敗：{0}"
 
-#: src/components/ProfileActionMenu.tsx:133
-#: src/components/ProfileActionMenu.tsx:142
+#: src/components/ProfileActionMenu.tsx:187
+#: src/components/ProfileActionMenu.tsx:196
 msgid "Failed to unblock this user"
 msgstr "無法解除封鎖此使用者"
 
@@ -1291,7 +1291,7 @@ msgstr "貼文建立成功"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "你可以驗證這些連結確實屬於你。在連結的頁面上使用 {0} 屬性連結回你的 Hackers' Pub 個人資料頁。"
 
-#: src/components/ProfileTabs.tsx:41
+#: src/components/ProfileTabs.tsx:43
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "貼文"
@@ -1365,7 +1365,7 @@ msgstr "權限被拒絕"
 msgid "Pin to profile"
 msgstr "釘選到個人資料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:179
+#: src/routes/(root)/[handle]/(profile)/index.tsx:181
 msgid "Pinned posts"
 msgstr "已釘選內容"
 
@@ -1413,7 +1413,7 @@ msgstr "內容已釘選"
 msgid "Post unpinned"
 msgstr "已取消釘選內容"
 
-#: src/components/ProfileTabs.tsx:38
+#: src/components/ProfileTabs.tsx:40
 msgid "Posts"
 msgstr "內容"
 
@@ -1449,7 +1449,7 @@ msgstr "優先級"
 msgid "Privacy policy"
 msgstr "隱私權政策"
 
-#: src/components/ProfileActionMenu.tsx:189
+#: src/components/ProfileActionMenu.tsx:243
 msgid "Profile actions"
 msgstr "個人檔案操作"
 
@@ -1651,7 +1651,7 @@ msgstr "設定"
 msgid "Share"
 msgstr "分享"
 
-#: src/components/ProfileTabs.tsx:51
+#: src/components/ProfileTabs.tsx:53
 msgid "Shares"
 msgstr "轉貼"
 
@@ -1911,13 +1911,13 @@ msgstr "無法新增反應。請重試。"
 msgid "Unable to remove reaction. Please try again."
 msgstr "無法移除反應。請重試。"
 
-#: src/components/ProfileActionMenu.tsx:208
-#: src/components/ProfileActionMenu.tsx:236
-#: src/components/ProfileActionMenu.tsx:244
+#: src/components/ProfileActionMenu.tsx:262
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:298
 msgid "Unblock"
 msgstr "解除封鎖"
 
-#: src/components/ProfileActionMenu.tsx:219
+#: src/components/ProfileActionMenu.tsx:273
 msgid "Unblock user?"
 msgstr "解除封鎖使用者？"
 
@@ -1946,7 +1946,7 @@ msgstr "更新於 {0}"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:164
+#: src/components/ProfileActionMenu.tsx:218
 msgid "User blocked"
 msgstr "已封鎖使用者"
 
@@ -1954,7 +1954,7 @@ msgstr "已封鎖使用者"
 msgid "User not found."
 msgstr "未找到使用者資訊。"
 
-#: src/components/ProfileActionMenu.tsx:137
+#: src/components/ProfileActionMenu.tsx:191
 msgid "User unblocked"
 msgstr "已解除封鎖使用者"
 
@@ -2114,8 +2114,8 @@ msgstr "你沒有剩餘邀請名額。請稍後再試。"
 
 #: src/components/FollowButton.tsx:134
 #: src/components/FollowButton.tsx:152
-#: src/components/ProfileActionMenu.tsx:126
-#: src/components/ProfileActionMenu.tsx:155
+#: src/components/ProfileActionMenu.tsx:180
+#: src/components/ProfileActionMenu.tsx:209
 msgid "You must be signed in"
 msgstr "請先登入"
 

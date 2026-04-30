@@ -21,6 +21,7 @@ export function ProfileTabs(props: ProfileTabsProps) {
         handle
         local
         username
+        viewerBlocks
       }
     `,
     () => props.$actor,
@@ -32,26 +33,28 @@ export function ProfileTabs(props: ProfileTabsProps) {
         const baseUrl = () =>
           actor().local ? `/@${actor().username}` : `/${actor().handle}`;
         return (
-          <Tabs value={props.selected}>
-            <TabsList class="grid grid-cols-4">
-              <TabsTrigger as={A} value="posts" href={baseUrl()}>
-                {t`Posts`}
-              </TabsTrigger>
-              <TabsTrigger as={A} value="notes" href={`${baseUrl()}/notes`}>
-                {t`Notes`}
-              </TabsTrigger>
-              <TabsTrigger
-                as={A}
-                value="articles"
-                href={`${baseUrl()}/articles`}
-              >
-                {t`Articles`}
-              </TabsTrigger>
-              <TabsTrigger as={A} value="shares" href={`${baseUrl()}/shares`}>
-                {t`Shares`}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <Show when={!actor().viewerBlocks}>
+            <Tabs value={props.selected}>
+              <TabsList class="grid grid-cols-4">
+                <TabsTrigger as={A} value="posts" href={baseUrl()}>
+                  {t`Posts`}
+                </TabsTrigger>
+                <TabsTrigger as={A} value="notes" href={`${baseUrl()}/notes`}>
+                  {t`Notes`}
+                </TabsTrigger>
+                <TabsTrigger
+                  as={A}
+                  value="articles"
+                  href={`${baseUrl()}/articles`}
+                >
+                  {t`Articles`}
+                </TabsTrigger>
+                <TabsTrigger as={A} value="shares" href={`${baseUrl()}/shares`}>
+                  {t`Shares`}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </Show>
         );
       }}
     </Show>

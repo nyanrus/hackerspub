@@ -31,6 +31,7 @@ const articlesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorArticleList_articles @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -74,10 +75,12 @@ export default function ProfileArticlesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="articles" $actor={actor()} />
-                  <ActorArticleList $articles={actor()} />
-                </div>
+                <Show when={!actor().viewerBlocks}>
+                  <div class="p-4">
+                    <ProfileTabs selected="articles" $actor={actor()} />
+                    <ActorArticleList $articles={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

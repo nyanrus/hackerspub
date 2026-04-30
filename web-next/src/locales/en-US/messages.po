@@ -154,8 +154,8 @@ msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:67
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:71
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
 msgid "{0}'s articles"
 msgstr "{0}'s articles"
 
@@ -172,14 +172,14 @@ msgid "{0}'s following"
 msgstr "{0}'s following"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:68
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:72
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
 msgid "{0}'s notes"
 msgstr "{0}'s notes"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:69
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:73
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
 msgid "{0}'s shares"
 msgstr "{0}'s shares"
 
@@ -250,7 +250,7 @@ msgstr "An unexpected error occurred. Please try again later."
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:225
+#: src/components/ProfileActionMenu.tsx:279
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 
@@ -269,7 +269,7 @@ msgstr "Are you sure you want to revoke passkey {0}? You won't be able to use it
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:227
+#: src/components/ProfileActionMenu.tsx:281
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 
@@ -290,7 +290,7 @@ msgstr "Article updated"
 msgid "article-url-slug"
 msgstr "article-url-slug"
 
-#: src/components/ProfileTabs.tsx:48
+#: src/components/ProfileTabs.tsx:50
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "Articles"
@@ -321,13 +321,13 @@ msgstr "Bio"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "Bio is too long. Maximum length is 512 characters."
 
-#: src/components/ProfileActionMenu.tsx:207
-#: src/components/ProfileActionMenu.tsx:236
-#: src/components/ProfileActionMenu.tsx:243
+#: src/components/ProfileActionMenu.tsx:261
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:297
 msgid "Block"
 msgstr "Block"
 
-#: src/components/ProfileActionMenu.tsx:218
+#: src/components/ProfileActionMenu.tsx:272
 msgid "Block user?"
 msgstr "Block user?"
 
@@ -346,8 +346,8 @@ msgstr "Bookmarks"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:232
-#: src/components/ProfileActionMenu.tsx:233
+#: src/components/ProfileActionMenu.tsx:286
+#: src/components/ProfileActionMenu.tsx:287
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -634,8 +634,8 @@ msgstr "Expiry"
 msgid "Extra message"
 msgstr "Extra message"
 
-#: src/components/ProfileActionMenu.tsx:160
-#: src/components/ProfileActionMenu.tsx:169
+#: src/components/ProfileActionMenu.tsx:214
+#: src/components/ProfileActionMenu.tsx:223
 msgid "Failed to block this user"
 msgstr "Failed to block this user"
 
@@ -775,8 +775,8 @@ msgstr "Failed to share post"
 msgid "Failed to sign out: {0}"
 msgstr "Failed to sign out: {0}"
 
-#: src/components/ProfileActionMenu.tsx:133
-#: src/components/ProfileActionMenu.tsx:142
+#: src/components/ProfileActionMenu.tsx:187
+#: src/components/ProfileActionMenu.tsx:196
 msgid "Failed to unblock this user"
 msgstr "Failed to unblock this user"
 
@@ -1295,7 +1295,7 @@ msgstr "Note created successfully"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 
-#: src/components/ProfileTabs.tsx:41
+#: src/components/ProfileTabs.tsx:43
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "Notes"
@@ -1370,7 +1370,7 @@ msgstr "Permission denied"
 msgid "Pin to profile"
 msgstr "Pin to profile"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:179
+#: src/routes/(root)/[handle]/(profile)/index.tsx:181
 msgid "Pinned posts"
 msgstr "Pinned posts"
 
@@ -1418,7 +1418,7 @@ msgstr "Post pinned"
 msgid "Post unpinned"
 msgstr "Post unpinned"
 
-#: src/components/ProfileTabs.tsx:38
+#: src/components/ProfileTabs.tsx:40
 msgid "Posts"
 msgstr "Posts"
 
@@ -1454,7 +1454,7 @@ msgstr "Priority"
 msgid "Privacy policy"
 msgstr "Privacy policy"
 
-#: src/components/ProfileActionMenu.tsx:189
+#: src/components/ProfileActionMenu.tsx:243
 msgid "Profile actions"
 msgstr "Profile actions"
 
@@ -1656,7 +1656,7 @@ msgstr "Settings"
 msgid "Share"
 msgstr "Share"
 
-#: src/components/ProfileTabs.tsx:51
+#: src/components/ProfileTabs.tsx:53
 msgid "Shares"
 msgstr "Shares"
 
@@ -1916,13 +1916,13 @@ msgstr "Unable to add reaction. Please try again."
 msgid "Unable to remove reaction. Please try again."
 msgstr "Unable to remove reaction. Please try again."
 
-#: src/components/ProfileActionMenu.tsx:208
-#: src/components/ProfileActionMenu.tsx:236
-#: src/components/ProfileActionMenu.tsx:244
+#: src/components/ProfileActionMenu.tsx:262
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:298
 msgid "Unblock"
 msgstr "Unblock"
 
-#: src/components/ProfileActionMenu.tsx:219
+#: src/components/ProfileActionMenu.tsx:273
 msgid "Unblock user?"
 msgstr "Unblock user?"
 
@@ -1951,7 +1951,7 @@ msgstr "Updated {0}"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:164
+#: src/components/ProfileActionMenu.tsx:218
 msgid "User blocked"
 msgstr "User blocked"
 
@@ -1959,7 +1959,7 @@ msgstr "User blocked"
 msgid "User not found."
 msgstr "User not found."
 
-#: src/components/ProfileActionMenu.tsx:137
+#: src/components/ProfileActionMenu.tsx:191
 msgid "User unblocked"
 msgstr "User unblocked"
 
@@ -2119,8 +2119,8 @@ msgstr "You have no invitations left. Please wait until you receive more."
 
 #: src/components/FollowButton.tsx:134
 #: src/components/FollowButton.tsx:152
-#: src/components/ProfileActionMenu.tsx:126
-#: src/components/ProfileActionMenu.tsx:155
+#: src/components/ProfileActionMenu.tsx:180
+#: src/components/ProfileActionMenu.tsx:209
 msgid "You must be signed in"
 msgstr "You must be signed in"
 

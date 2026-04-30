@@ -30,6 +30,7 @@ const notesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorNoteList_notes
       ...ProfileCard_actor
@@ -75,10 +76,12 @@ export default function ProfileNotesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="notes" $actor={actor()} />
-                  <ActorNoteList $notes={actor()} />
-                </div>
+                <Show when={!actor().viewerBlocks}>
+                  <div class="p-4">
+                    <ProfileTabs selected="notes" $actor={actor()} />
+                    <ActorNoteList $notes={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>
