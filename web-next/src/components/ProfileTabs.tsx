@@ -22,6 +22,7 @@ export function ProfileTabs(props: ProfileTabsProps) {
         local
         username
         viewerBlocks
+        blocksViewer
       }
     `,
     () => props.$actor,
@@ -33,7 +34,7 @@ export function ProfileTabs(props: ProfileTabsProps) {
         const baseUrl = () =>
           actor().local ? `/@${actor().username}` : `/${actor().handle}`;
         return (
-          <Show when={!actor().viewerBlocks}>
+          <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
             <Tabs value={props.selected}>
               <TabsList class="grid grid-cols-4">
                 <TabsTrigger as={A} value="posts" href={baseUrl()}>

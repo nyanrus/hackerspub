@@ -15,6 +15,10 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  PROFILE_PAGE_PINS_QUERY_KEY,
+  PROFILE_PAGE_POSTS_QUERY_KEY,
+} from "~/lib/profileContentQueries.ts";
 import IconPin from "~icons/lucide/pin";
 import type { ProfilePagePinsQuery } from "./__generated__/ProfilePagePinsQuery.graphql.ts";
 import type { ProfilePagePostsQuery } from "./__generated__/ProfilePagePostsQuery.graphql.ts";
@@ -42,6 +46,7 @@ const ProfilePageQuery = graphql`
       url
       iri
       viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ProfileCard_actor
       ...ProfileTabs_actor
@@ -96,7 +101,7 @@ const loadPagePinsQuery = query(
       { handle, locale },
       { fetchPolicy: "network-only" },
     ),
-  "loadProfilePagePinsQuery",
+  PROFILE_PAGE_PINS_QUERY_KEY,
 );
 
 const loadPagePostsQuery = query(
@@ -107,7 +112,7 @@ const loadPagePostsQuery = query(
       { handle, locale },
       { fetchPolicy: "network-only" },
     ),
-  "loadProfilePagePostsQuery",
+  PROFILE_PAGE_POSTS_QUERY_KEY,
 );
 
 export default function ProfilePage() {
@@ -171,7 +176,7 @@ export default function ProfilePage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <Show when={!actor().viewerBlocks}>
+                <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
                   <div class="p-4">
                     <ProfileTabs selected="posts" $actor={actor()} />
                     <Show when={pinnedPostsData()?.actorByHandle?.pins}>

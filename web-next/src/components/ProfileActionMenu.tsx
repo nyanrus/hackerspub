@@ -22,20 +22,13 @@ import {
 import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import { PROFILE_CONTENT_QUERY_KEYS } from "~/lib/profileContentQueries.ts";
 import IconBan from "~icons/lucide/ban";
 import IconEllipsis from "~icons/lucide/ellipsis";
 import IconUndo2 from "~icons/lucide/undo-2";
 import type { ProfileActionMenu_actor$key } from "./__generated__/ProfileActionMenu_actor.graphql.ts";
 import type { ProfileActionMenu_blockActor_Mutation } from "./__generated__/ProfileActionMenu_blockActor_Mutation.graphql.ts";
 import type { ProfileActionMenu_unblockActor_Mutation } from "./__generated__/ProfileActionMenu_unblockActor_Mutation.graphql.ts";
-
-const profileContentQueryKeys = [
-  "loadProfilePagePinsQuery",
-  "loadProfilePagePostsQuery",
-  "loadNotesPageQuery",
-  "loadArticlesPageQuery",
-  "loadSharesPageQuery",
-];
 
 export interface ProfileActionMenuProps {
   $actor: ProfileActionMenu_actor$key;
@@ -198,7 +191,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
             });
           } else {
             showToast({ title: t`User unblocked` });
-            void revalidate(profileContentQueryKeys);
+            void revalidate(PROFILE_CONTENT_QUERY_KEYS);
           }
         },
         onError() {

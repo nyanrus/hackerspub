@@ -14,6 +14,7 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import { PROFILE_ARTICLES_QUERY_KEY } from "~/lib/profileContentQueries.ts";
 import type { articlesPageQuery } from "./__generated__/articlesPageQuery.graphql.ts";
 
 export const route = {
@@ -32,6 +33,7 @@ const articlesPageQuery = graphql`
       rawName
       username
       viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorArticleList_articles @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -48,7 +50,7 @@ const loadPageQuery = query(
       { handle, locale },
       { fetchPolicy: "network-only" },
     ),
-  "loadArticlesPageQuery",
+  PROFILE_ARTICLES_QUERY_KEY,
 );
 
 export default function ProfileArticlesPage() {
@@ -76,7 +78,7 @@ export default function ProfileArticlesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <Show when={!actor().viewerBlocks}>
+                <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
                   <div class="p-4">
                     <ProfileTabs selected="articles" $actor={actor()} />
                     <ActorArticleList $articles={actor()} />

@@ -14,6 +14,7 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import { PROFILE_SHARES_QUERY_KEY } from "~/lib/profileContentQueries.ts";
 import type { sharesPageQuery } from "./__generated__/sharesPageQuery.graphql.ts";
 
 export const route = {
@@ -32,6 +33,7 @@ const sharesPageQuery = graphql`
       rawName
       username
       viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorSharedPostList_sharedPosts @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -48,7 +50,7 @@ const loadPageQuery = query(
       { handle, locale },
       { fetchPolicy: "network-only" },
     ),
-  "loadSharesPageQuery",
+  PROFILE_SHARES_QUERY_KEY,
 );
 
 export default function ProfileSharesPage() {
@@ -78,7 +80,7 @@ export default function ProfileSharesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <Show when={!actor().viewerBlocks}>
+                <Show when={!actor().viewerBlocks && !actor().blocksViewer}>
                   <div class="p-4">
                     <ProfileTabs selected="shares" $actor={actor()} />
                     <ActorSharedPostList $sharedPosts={actor()} />
