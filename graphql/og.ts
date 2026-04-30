@@ -5,7 +5,7 @@ import type { Disk } from "flydrive";
 import { canonicalize } from "json-canonicalize";
 import satori from "satori";
 
-const OG_VERSION = "v2-3";
+const OG_VERSION = "v2-4";
 const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -273,7 +273,7 @@ async function articleOgElement(
   input: ArticleOgImageInput,
 ): Promise<OgElement> {
   const logo = await loadBrandLogoDataUri();
-  const excerpt = truncateText(input.excerpt, 230);
+  const excerpt = truncateText(input.excerpt, 132);
   return h(
     "div",
     {
@@ -365,7 +365,7 @@ async function articleOgElement(
             fontWeight: 600,
             lineHeight: 1.22,
             letterSpacing: "0",
-            marginTop: "42px",
+            marginTop: "40px",
             maxHeight: "216px",
             width: "1018px",
           },
@@ -381,8 +381,8 @@ async function articleOgElement(
             display: excerpt === "" ? "none" : "flex",
             fontSize: "30px",
             lineHeight: 1.42,
-            marginTop: "28px",
-            maxHeight: "136px",
+            marginTop: "24px",
+            maxHeight: "88px",
             whiteSpace: "pre-wrap",
             width: "1018px",
           },
