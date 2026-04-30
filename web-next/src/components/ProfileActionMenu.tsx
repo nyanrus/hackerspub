@@ -24,6 +24,7 @@ import {
 } from "~/components/ui/dropdown-menu.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
+import { isViewerActor } from "~/lib/actorUtils.ts";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import { PROFILE_CONTENT_QUERY_KEYS } from "~/lib/profileContentQueries.ts";
 import type { ProfileActionMenu_actor$key } from "./__generated__/ProfileActionMenu_actor.graphql.ts";
@@ -149,11 +150,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
 
   const displayName = () => actor()?.rawName ?? actor()?.username ?? "";
   const isPending = () => isBlocking() || isUnblocking();
-  const isViewerActor = () => {
-    const actorData = actor();
-    return actorData?.isViewer ||
-      (actorData?.local && actorData.username === viewer.username());
-  };
+  const isCurrentViewerActor = () => isViewerActor(actor(), viewer.username());
 
   const handleBlockToggle = () => {
     const actorData = actor();
@@ -222,7 +219,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
   return (
     <Show
       when={actor() && viewer.isLoaded() && viewer.isAuthenticated() &&
-        !isViewerActor()}
+        !isCurrentViewerActor()}
     >
       <DropdownMenu>
         <DropdownMenuTrigger
