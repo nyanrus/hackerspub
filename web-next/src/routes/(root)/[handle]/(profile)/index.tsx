@@ -94,6 +94,7 @@ const loadPagePinsQuery = query(
       useRelayEnvironment()(),
       ProfilePagePinsQuery,
       { handle, locale },
+      { fetchPolicy: "network-only" },
     ),
   "loadProfilePagePinsQuery",
 );
@@ -104,6 +105,7 @@ const loadPagePostsQuery = query(
       useRelayEnvironment()(),
       ProfilePagePostsQuery,
       { handle, locale },
+      { fetchPolicy: "network-only" },
     ),
   "loadProfilePagePostsQuery",
 );

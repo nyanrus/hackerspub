@@ -46,6 +46,7 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       sharesPageQuery,
       { handle, locale },
+      { fetchPolicy: "network-only" },
     ),
   "loadSharesPageQuery",
 );

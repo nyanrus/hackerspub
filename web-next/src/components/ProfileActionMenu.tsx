@@ -1,3 +1,4 @@
+import { revalidate } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, Show } from "solid-js";
 import { createFragment, createMutation } from "solid-relay";
@@ -27,6 +28,14 @@ import IconUndo2 from "~icons/lucide/undo-2";
 import type { ProfileActionMenu_actor$key } from "./__generated__/ProfileActionMenu_actor.graphql.ts";
 import type { ProfileActionMenu_blockActor_Mutation } from "./__generated__/ProfileActionMenu_blockActor_Mutation.graphql.ts";
 import type { ProfileActionMenu_unblockActor_Mutation } from "./__generated__/ProfileActionMenu_unblockActor_Mutation.graphql.ts";
+
+const profileContentQueryKeys = [
+  "loadProfilePagePinsQuery",
+  "loadProfilePagePostsQuery",
+  "loadNotesPageQuery",
+  "loadArticlesPageQuery",
+  "loadSharesPageQuery",
+];
 
 export interface ProfileActionMenuProps {
   $actor: ProfileActionMenu_actor$key;
@@ -189,6 +198,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
             });
           } else {
             showToast({ title: t`User unblocked` });
+            void revalidate(profileContentQueryKeys);
           }
         },
         onError() {

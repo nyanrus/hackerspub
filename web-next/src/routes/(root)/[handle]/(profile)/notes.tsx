@@ -45,6 +45,7 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       notesPageQuery,
       { handle },
+      { fetchPolicy: "network-only" },
     ),
   "loadNotesPageQuery",
 );
