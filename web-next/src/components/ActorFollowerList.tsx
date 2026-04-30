@@ -66,9 +66,11 @@ export function ActorFollowerList(props: ActorFollowerListProps) {
               </For>
             </ul>
             <Show when={followers.hasNext}>
-              <div
+              <button
+                type="button"
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
+                disabled={followers.pending || loadingState() === "loading"}
+                class="block w-full cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Switch>
                   <Match
@@ -83,7 +85,7 @@ export function ActorFollowerList(props: ActorFollowerListProps) {
                     {t`Load more followers`}
                   </Match>
                 </Switch>
-              </div>
+              </button>
             </Show>
             <Show when={data().followers.edges.length < 1}>
               <div class="px-4 py-8 text-center text-muted-foreground">

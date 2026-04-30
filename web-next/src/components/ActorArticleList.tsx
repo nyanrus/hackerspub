@@ -67,9 +67,11 @@ export function ActorArticleList(props: ActorArticleListProps) {
               )}
             </For>
             <Show when={articles.hasNext}>
-              <div
+              <button
+                type="button"
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
+                disabled={articles.pending || loadingState() === "loading"}
+                class="block w-full cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Switch>
                   <Match
@@ -84,7 +86,7 @@ export function ActorArticleList(props: ActorArticleListProps) {
                     {t`Load more articles`}
                   </Match>
                 </Switch>
-              </div>
+              </button>
             </Show>
             <Show when={data().articles.edges.length < 1}>
               <div class="px-4 py-8 text-center text-muted-foreground">
