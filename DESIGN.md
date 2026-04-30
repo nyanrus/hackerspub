@@ -410,7 +410,7 @@ see `components/ui/sidebar.tsx`).  Constants:
  -  Mobile breakpoint: `768px` (Tailwind's `md`).
  -  Open/closed state persists in the `sidebar:state` cookie for one
     week.
- -  Keyboard shortcut: `⌃B` / `⌘B` toggles the sidebar (constant
+ -  Keyboard shortcut: <kbd>⌃B</kbd>/<kbd>⌘B</kbd> toggles the sidebar (constant
     `SIDEBAR_KEYBOARD_SHORTCUT = "b"`).
 
 The sidebar groups navigation under sentence-cased labels (`Timeline`,
