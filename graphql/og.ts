@@ -5,7 +5,7 @@ import type { Disk } from "flydrive";
 import { canonicalize } from "json-canonicalize";
 import satori from "satori";
 
-const OG_VERSION = "v2-2";
+const OG_VERSION = "v2-3";
 const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -173,7 +173,7 @@ async function profileOgElement(
   input: ProfileOgImageInput,
 ): Promise<OgElement> {
   const logo = await loadBrandLogoDataUri();
-  const bio = truncateText(input.bio, 230);
+  const bio = truncateText(input.bio, 170);
   return h(
     "div",
     {
@@ -229,13 +229,12 @@ async function profileOgElement(
             style: {
               fontSize: "60px",
               fontWeight: 600,
-              lineHeight: 1.06,
+              lineHeight: 1.16,
               letterSpacing: "0",
-              maxHeight: "132px",
-              overflow: "hidden",
+              maxHeight: "150px",
             },
           },
-          truncateText(input.displayName, 64),
+          truncateText(input.displayName, 44),
         ),
         h(
           "div",
@@ -256,10 +255,9 @@ async function profileOgElement(
               color: "#262626",
               display: bio === "" ? "none" : "flex",
               fontSize: "34px",
-              lineHeight: 1.34,
+              lineHeight: 1.42,
               marginTop: "38px",
-              maxHeight: "184px",
-              overflow: "hidden",
+              maxHeight: "198px",
               whiteSpace: "pre-wrap",
             },
           },
@@ -275,7 +273,7 @@ async function articleOgElement(
   input: ArticleOgImageInput,
 ): Promise<OgElement> {
   const logo = await loadBrandLogoDataUri();
-  const excerpt = truncateText(input.excerpt, 260);
+  const excerpt = truncateText(input.excerpt, 230);
   return h(
     "div",
     {
@@ -365,15 +363,14 @@ async function articleOgElement(
           style: {
             fontSize: "58px",
             fontWeight: 600,
-            lineHeight: 1.13,
+            lineHeight: 1.22,
             letterSpacing: "0",
             marginTop: "42px",
-            maxHeight: "198px",
-            overflow: "hidden",
+            maxHeight: "216px",
             width: "1018px",
           },
         },
-        truncateText(input.title, 94),
+        truncateText(input.title, 78),
       ),
       h(
         "div",
@@ -383,10 +380,9 @@ async function articleOgElement(
             color: "#404040",
             display: excerpt === "" ? "none" : "flex",
             fontSize: "30px",
-            lineHeight: 1.36,
+            lineHeight: 1.42,
             marginTop: "28px",
-            maxHeight: "124px",
-            overflow: "hidden",
+            maxHeight: "136px",
             whiteSpace: "pre-wrap",
             width: "1018px",
           },
