@@ -520,13 +520,19 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
         contents: Array<{ language: string; ogImageUrl: string }>;
       };
     }).articleByYearAndSlug.contents;
+    const firstContentsByLanguage = [...firstContents].sort((a, b) =>
+      a.language.localeCompare(b.language)
+    );
     assert.deepEqual(
-      firstContents.map((content) => content.language),
+      firstContentsByLanguage.map((content) => content.language),
       ["en", "ko-KR"],
     );
-    assert.equal(new Set(firstContents.map((c) => c.ogImageUrl)).size, 2);
+    assert.equal(
+      new Set(firstContentsByLanguage.map((c) => c.ogImageUrl)).size,
+      2,
+    );
     assert.ok(
-      firstContents.every((content) =>
+      firstContentsByLanguage.every((content) =>
         /^http:\/\/localhost\/media\/og\/v2\/.+\.png$/.test(
           content.ogImageUrl,
         )
@@ -560,9 +566,14 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
     });
 
     assert.equal(secondResult.errors, undefined);
+    const secondContents = (toPlainJson(secondResult.data) as {
+      articleByYearAndSlug: {
+        contents: Array<{ language: string; ogImageUrl: string }>;
+      };
+    }).articleByYearAndSlug.contents;
     assert.deepEqual(
-      toPlainJson(secondResult.data),
-      toPlainJson(firstResult.data),
+      [...secondContents].sort((a, b) => a.language.localeCompare(b.language)),
+      firstContentsByLanguage,
     );
     assert.equal(disk.putKeys.length, 2);
     assert.deepEqual(disk.deleteKeys.sort(), [

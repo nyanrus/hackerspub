@@ -30,6 +30,8 @@ import {
   toPostVisibility,
 } from "./postvisibility.ts";
 
+const profileOgImageComplexity = 2_000;
+
 export const Account = builder.drizzleNode("accountTable", {
   name: "Account",
   id: {
@@ -78,6 +80,7 @@ export const Account = builder.drizzleNode("accountTable", {
     }),
     ogImageUrl: t.field({
       type: "URL",
+      complexity: profileOgImageComplexity,
       select: {
         columns: {
           avatarKey: true,

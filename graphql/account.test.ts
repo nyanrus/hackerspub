@@ -44,6 +44,14 @@ const accountOgImageUrlQuery = parse(`
   }
 `);
 
+const accountsOgImageUrlQuery = parse(`
+  query AccountsOgImageUrl {
+    accounts {
+      ogImageUrl
+    }
+  }
+`);
+
 const invitationTreeQuery = parse(`
   query InvitationTree {
     invitationTree {
@@ -208,6 +216,22 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
     assert.equal(secondUrl, firstUrl);
     assert.equal(disk.putKeys.length, 1);
     assert.deepEqual(disk.deleteKeys, ["og/v2/stale-profile.png"]);
+  });
+});
+
+test("Account.ogImageUrl rejects bulk account list queries", async () => {
+  await withRollback(async (tx) => {
+    const disk = createOgTestDisk();
+    const result = await execute({
+      schema,
+      document: accountsOgImageUrlQuery,
+      contextValue: makeGuestContext(tx, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.deepEqual(toPlainJson(result.data), { accounts: null });
+    assert.match(result.errors?.[0]?.message ?? "", /Query exceeds Complexity/);
+    assert.deepEqual(disk.putKeys, []);
   });
 });
 
