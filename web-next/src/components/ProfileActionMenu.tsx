@@ -59,10 +59,10 @@ const blockActorMutation = graphql`
           blocksViewer
           viewerFollows
           followsViewer
-          followers {
+          followersCount: followers {
             totalCount
           }
-          followees {
+          followeesCount: followees {
             totalCount
           }
         }
@@ -103,10 +103,10 @@ const unblockActorMutation = graphql`
           blocksViewer
           viewerFollows
           followsViewer
-          followers {
+          followersCount: followers {
             totalCount
           }
-          followees {
+          followeesCount: followees {
             totalCount
           }
         }
@@ -174,7 +174,9 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
               title: t`Failed to unblock this user`,
               variant: "destructive",
             });
-          } else {
+          } else if (
+            response.unblockActor.__typename === "UnblockActorPayload"
+          ) {
             showToast({ title: t`User unblocked` });
             void revalidate(PROFILE_CONTENT_QUERY_KEYS);
           }
@@ -202,7 +204,7 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
               title: t`Failed to block this user`,
               variant: "destructive",
             });
-          } else {
+          } else if (response.blockActor.__typename === "BlockActorPayload") {
             showToast({ title: t`User blocked` });
           }
         },
