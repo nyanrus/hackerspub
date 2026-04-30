@@ -174,6 +174,12 @@ Punctuation & typography
 
  -  Quotation marks: `"` `"` (curly double), `'` `'` (curly single)
  -  Standard English punctuation rules
+ -  Use sentence case for buttons, links, labels, headings, tabs, menu
+    items, placeholders, and other UI strings.  Do not use title case
+    unless the text is a proper noun, brand name, protocol name, acronym,
+    or another term that is conventionally capitalized.  For example,
+    write `Create note`, `Save draft`, and `Remote follow`, not
+    `Create Note`, `Save Draft`, or `Remote Follow`.
 
 ### ja-JP
 
@@ -249,6 +255,10 @@ Terminal punctuation by UI element
 | Description / help text | End with period (en: `.`, ja: `。`, ko: `.`, zh: `。`)        |
 | Question / confirmation | End with question mark (en: `?`, ja: `？`, ko: `?`, zh: `？`) |
 | Title / heading         | No trailing punctuation                                       |
+
+For English UI elements, combine the punctuation rule with sentence case:
+`Load more`, `Edit draft`, and `Permission denied` are correct; title-case
+variants such as `Load More`, `Edit Draft`, and `Permission Denied` are not.
 
 
 Escape sequences
