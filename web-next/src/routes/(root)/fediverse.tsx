@@ -68,9 +68,7 @@ export default function FediverseTimeline() {
           <Show when={data().viewer == null}>
             <AboutHackersPub />
           </Show>
-          <div class="p-4">
-            <PublicTimeline $posts={data()} />
-          </div>
+          <PublicTimeline $posts={data()} />
         </NarrowContainer>
       )}
     </Show>

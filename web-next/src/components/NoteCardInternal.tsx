@@ -43,9 +43,9 @@ export function NoteCardInternal(props: NoteCardInternalProps) {
   return (
     <Show when={note()}>
       {(n) => (
-        <div class="flex gap-4">
+        <div class="flex gap-3 sm:gap-4">
           <PostAvatar $actor={n().actor} />
-          <div class="grow">
+          <div class="min-w-0 grow">
             <NoteHeader
               $note={n()}
               connections={props.connections}
@@ -55,7 +55,7 @@ export function NoteCardInternal(props: NoteCardInternalProps) {
             <div
               innerHTML={n().content}
               lang={n().language ?? undefined}
-              class="prose dark:prose-invert break-words overflow-wrap"
+              class="prose dark:prose-invert mt-1 break-words overflow-wrap"
             />
             <NoteMedia $note={n()} />
             <LinkPreview $note={n()} />

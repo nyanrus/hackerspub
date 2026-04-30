@@ -75,7 +75,7 @@ export function PublicTimeline(props: PublicTimelineProps) {
   }
 
   return (
-    <div class="border-x">
+    <div class="mb-10 overflow-hidden border-x bg-card md:mb-12 md:rounded-lg md:border md:shadow-sm">
       <Show when={posts()}>
         {(data) => (
           <>
@@ -90,7 +90,7 @@ export function PublicTimeline(props: PublicTimelineProps) {
             <Show when={posts.hasNext}>
               <div
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
               >
                 <Switch>
                   <Match when={posts.pending || loadingState() === "loading"}>

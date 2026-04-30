@@ -3,15 +3,15 @@ import { useLingui } from "~/lib/i18n/macro.d.ts";
 export function AboutHackersPub() {
   const { t } = useLingui();
   return (
-    <div class="border-b">
-      <div class="flex flex-row gap-4 items-center my-4">
-        <div>
+    <div class="bg-card">
+      <div class="flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:gap-5 md:py-6">
+        <div class="flex shrink-0 justify-center sm:w-36">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="334.441"
             height="296.107"
             viewBox="0 0 88.488 78.345"
-            class="size-40"
+            class="size-32 sm:size-36"
           >
             <defs>
               <clipPath id="A">
@@ -226,9 +226,11 @@ export function AboutHackersPub() {
             </g>
           </svg>
         </div>
-        <div>
-          <h2 class="font-bold mb-2">{t`What is Hackers' Pub?`}</h2>
-          <p class="leading-7">
+        <div class="min-w-0">
+          <h2 class="mb-2 text-base font-semibold">
+            {t`What is Hackers' Pub?`}
+          </h2>
+          <p class="max-w-prose leading-7 text-foreground/90">
             {t`Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed.`}
           </p>
         </div>

@@ -70,7 +70,7 @@ export function QuestionCard(props: QuestionCardProps) {
           return sharedPost?.__typename === "Question" ? sharedPost : null;
         };
         return (
-          <article class="px-4 py-3 border-b-1">
+          <article class="border-b px-4 py-4 transition-colors hover:bg-muted/30">
             <div class="flex flex-col gap-0.5">
               <Show when={sharedQuestion()}>
                 <p class="ml-14 text-sm text-muted-foreground">
