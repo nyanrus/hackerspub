@@ -229,7 +229,10 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                 />
                 {" "}
               </Show>
-              <span class="min-w-0 grow break-all select-all text-muted-foreground">
+              <span
+                class="min-w-0 grow truncate select-all text-muted-foreground"
+                title={q().actor.handle}
+              >
                 {q().actor.handle}
               </span>
               <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">

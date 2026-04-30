@@ -54,14 +54,14 @@ export function NotificationList(props: NotificationListProps) {
     <Show when={notifications()}>
       {(data) => (
         <>
-          <ul class="flex flex-col border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl">
+          <ul class="mb-10 flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm md:mb-12">
             <For each={data().notifications.edges}>
               {(edge) => <NotificationCard $notification={edge.node} />}
             </For>
             <Show when={notifications.hasNext}>
               <li
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
               >
                 <Switch>
                   <Match

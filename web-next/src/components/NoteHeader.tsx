@@ -52,7 +52,10 @@ export function NoteHeader(props: NoteHeaderProps) {
             />
             {" "}
           </Show>
-          <span class="min-w-0 grow break-all select-all text-muted-foreground">
+          <span
+            class="min-w-0 grow truncate select-all text-muted-foreground"
+            title={n().actor.handle}
+          >
             {n().actor.handle}
           </span>
           <span class="flex items-center gap-1.5 text-sm text-muted-foreground/70">

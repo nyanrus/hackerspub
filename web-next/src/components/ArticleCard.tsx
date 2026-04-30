@@ -170,7 +170,10 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                   />
                   {" "}
                 </Show>
-                <span class="break-all select-all text-muted-foreground">
+                <span
+                  class="break-all select-all text-muted-foreground sm:break-normal"
+                  title={article().actor.handle}
+                >
                   {article().actor.handle}
                 </span>
               </div>
@@ -347,7 +350,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 target="_blank"
                 on:mouseover={() => props.setHover?.(true)}
                 on:mouseout={() => props.setHover?.(false)}
-                class="block p-4 border-t bg-muted text-center group-last:rounded-b-xl"
+                class="block p-4 border-t bg-muted text-center"
                 classList={{
                   "text-muted-foreground": !props.hover?.(),
                   "text-accent-foreground": props.hover?.(),
@@ -367,7 +370,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 article().language ?? undefined}
               on:mouseover={() => props.setHover?.(true)}
               on:mouseout={() => props.setHover?.(false)}
-              class="block p-4 border-t bg-muted text-center group-last:rounded-b-xl"
+              class="block p-4 border-t bg-muted text-center"
               classList={{
                 "text-muted-foreground": !props.hover?.(),
                 "text-accent-foreground": props.hover?.(),

@@ -164,8 +164,8 @@ export default function PreferencesPage() {
                       </p>
                     </div>
                   </div>
-                  <div class="flex flex-row gap-4">
-                    <div class="grow flex flex-col gap-1.5">
+                  <div class="flex flex-col gap-4 sm:flex-row">
+                    <div class="flex min-w-0 grow flex-col gap-1.5">
                       <Label>{t`Default note privacy`}</Label>
                       <PostVisibilitySelect
                         value={noteVisibility() ??
@@ -177,7 +177,7 @@ export default function PreferencesPage() {
                         {t`The default privacy setting for your notes.`}
                       </p>
                     </div>
-                    <div class="grow flex flex-col gap-1.5">
+                    <div class="flex min-w-0 grow flex-col gap-1.5">
                       <Label>{t`Default share privacy`}</Label>
                       <PostVisibilitySelect
                         value={shareVisibility() ??

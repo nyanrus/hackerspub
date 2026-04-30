@@ -33,43 +33,50 @@ export function SettingsTabs(props: SettingsTabsProps) {
     <Show when={account()}>
       {(account) => (
         <Tabs value={props.selected}>
-          <TabsList class="grid grid-cols-5">
-            <TabsTrigger
-              as={A}
-              value="profile"
-              href={`/@${account().username}/settings`}
-            >
-              {t`Profile settings`}
-            </TabsTrigger>
-            <TabsTrigger
-              as={A}
-              value="preferences"
-              href={`/@${account().username}/settings/preferences`}
-            >
-              {t`Preferences`}
-            </TabsTrigger>
-            <TabsTrigger
-              as={A}
-              value="language"
-              href={`/@${account().username}/settings/language`}
-            >
-              {t`Language settings`}
-            </TabsTrigger>
-            <TabsTrigger
-              as={A}
-              value="invite"
-              href={`/@${account().username}/settings/invite`}
-            >
-              {t`Invite`}
-            </TabsTrigger>
-            <TabsTrigger
-              as={A}
-              value="passkeys"
-              href={`/@${account().username}/settings/passkeys`}
-            >
-              {t`Passkeys`}
-            </TabsTrigger>
-          </TabsList>
+          <div class="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            <TabsList class="min-w-full justify-start">
+              <TabsTrigger
+                as={A}
+                value="profile"
+                href={`/@${account().username}/settings`}
+                class="shrink-0"
+              >
+                {t`Profile settings`}
+              </TabsTrigger>
+              <TabsTrigger
+                as={A}
+                value="preferences"
+                href={`/@${account().username}/settings/preferences`}
+                class="shrink-0"
+              >
+                {t`Preferences`}
+              </TabsTrigger>
+              <TabsTrigger
+                as={A}
+                value="language"
+                href={`/@${account().username}/settings/language`}
+                class="shrink-0"
+              >
+                {t`Language settings`}
+              </TabsTrigger>
+              <TabsTrigger
+                as={A}
+                value="invite"
+                href={`/@${account().username}/settings/invite`}
+                class="shrink-0"
+              >
+                {t`Invite`}
+              </TabsTrigger>
+              <TabsTrigger
+                as={A}
+                value="passkeys"
+                href={`/@${account().username}/settings/passkeys`}
+                class="shrink-0"
+              >
+                {t`Passkeys`}
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </Tabs>
       )}
     </Show>
