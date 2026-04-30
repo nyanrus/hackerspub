@@ -5,7 +5,7 @@ import type { Disk } from "flydrive";
 import { canonicalize } from "json-canonicalize";
 import satori from "satori";
 
-const OG_VERSION = "v2-1";
+const OG_VERSION = "v2-2";
 const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -43,7 +43,7 @@ interface ArticleOgImageInput {
 }
 
 let fontsPromise: Promise<FontOptions[]> | undefined;
-let pubnyanDataUriPromise: Promise<string> | undefined;
+let brandLogoDataUriPromise: Promise<string> | undefined;
 
 async function loadFont(filename: string): Promise<ArrayBuffer> {
   const data = await Deno.readFile(join(
@@ -111,15 +111,15 @@ function loadFonts(): Promise<FontOptions[]> {
   return fontsPromise;
 }
 
-async function loadPubnyanDataUri(): Promise<string> {
-  pubnyanDataUriPromise ??= Deno.readFile(
-    join(import.meta.dirname!, "assets", "pubnyan-normal-transparent.svg"),
+async function loadBrandLogoDataUri(): Promise<string> {
+  brandLogoDataUriPromise ??= Deno.readFile(
+    join(import.meta.dirname!, "..", "web-next", "public", "logo-dark.svg"),
   ).then((svg) => {
     let binary = "";
     for (const byte of svg) binary += String.fromCharCode(byte);
     return `data:image/svg+xml;base64,${btoa(binary)}`;
   });
-  return pubnyanDataUriPromise;
+  return brandLogoDataUriPromise;
 }
 
 function h(
@@ -142,10 +142,37 @@ function truncateText(text: string, maxLength: number): string {
   return `${compact.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
+function brandFooter(logo: string): OgElement {
+  return h(
+    "div",
+    {
+      style: {
+        alignItems: "center",
+        background: "#000000",
+        bottom: 0,
+        display: "flex",
+        flexDirection: "row",
+        height: "114px",
+        justifyContent: "flex-start",
+        left: 0,
+        padding: "0 82px",
+        position: "absolute",
+        right: 0,
+      },
+    },
+    h("img", {
+      src: logo,
+      width: 316,
+      height: 81,
+      style: { objectFit: "contain" },
+    }),
+  );
+}
+
 async function profileOgElement(
   input: ProfileOgImageInput,
 ): Promise<OgElement> {
-  const pubnyan = await loadPubnyanDataUri();
+  const logo = await loadBrandLogoDataUri();
   const bio = truncateText(input.bio, 230);
   return h(
     "div",
@@ -240,82 +267,14 @@ async function profileOgElement(
         ),
       ),
     ),
-    h(
-      "div",
-      {
-        style: {
-          alignItems: "center",
-          borderTop: "1px solid #d4d4d4",
-          bottom: 0,
-          display: "flex",
-          flexDirection: "row",
-          height: "114px",
-          justifyContent: "space-between",
-          left: 0,
-          padding: "0 82px",
-          position: "absolute",
-          right: 0,
-        },
-      },
-      h(
-        "div",
-        {
-          style: {
-            color: "#525252",
-            display: "flex",
-            flexDirection: "column",
-            fontSize: "24px",
-            lineHeight: 1.2,
-          },
-        },
-        h(
-          "div",
-          { style: { fontWeight: 600, color: "#171717" } },
-          "Hackers' Pub",
-        ),
-        h("div", null, "Knowledge sharing in the fediverse"),
-      ),
-      h(
-        "div",
-        {
-          style: {
-            alignItems: "center",
-            border: "1px solid #d4d4d4",
-            borderRadius: "8px",
-            display: "flex",
-            flexDirection: "row",
-            gap: "12px",
-            height: "74px",
-            padding: "8px 14px 8px 10px",
-          },
-        },
-        h("img", {
-          src: pubnyan,
-          width: 56,
-          height: 56,
-          style: { objectFit: "contain" },
-        }),
-        h(
-          "div",
-          {
-            style: {
-              color: "#525252",
-              fontSize: "20px",
-              fontWeight: 600,
-              lineHeight: 1,
-            },
-          },
-          "Pubnyan",
-        ),
-      ),
-    ),
+    brandFooter(logo),
   );
 }
 
 async function articleOgElement(
   input: ArticleOgImageInput,
 ): Promise<OgElement> {
-  const pubnyan = await loadPubnyanDataUri();
+  const logo = await loadBrandLogoDataUri();
   const excerpt = truncateText(input.excerpt, 260);
   return h(
     "div",
@@ -435,75 +394,7 @@ async function articleOgElement(
         excerpt,
       ),
     ),
-    h(
-      "div",
-      {
-        style: {
-          alignItems: "center",
-          borderTop: "1px solid #d4d4d4",
-          bottom: 0,
-          display: "flex",
-          flexDirection: "row",
-          height: "114px",
-          justifyContent: "space-between",
-          left: 0,
-          padding: "0 82px",
-          position: "absolute",
-          right: 0,
-        },
-      },
-      h(
-        "div",
-        {
-          style: {
-            color: "#525252",
-            display: "flex",
-            flexDirection: "column",
-            fontSize: "24px",
-            lineHeight: 1.2,
-          },
-        },
-        h(
-          "div",
-          { style: { fontWeight: 600, color: "#171717" } },
-          "Hackers' Pub",
-        ),
-        h("div", null, "Knowledge sharing in the fediverse"),
-      ),
-      h(
-        "div",
-        {
-          style: {
-            alignItems: "center",
-            border: "1px solid #d4d4d4",
-            borderRadius: "8px",
-            display: "flex",
-            flexDirection: "row",
-            gap: "12px",
-            height: "74px",
-            padding: "8px 14px 8px 10px",
-          },
-        },
-        h("img", {
-          src: pubnyan,
-          width: 56,
-          height: 56,
-          style: { objectFit: "contain" },
-        }),
-        h(
-          "div",
-          {
-            style: {
-              color: "#525252",
-              fontSize: "20px",
-              fontWeight: 600,
-              lineHeight: 1,
-            },
-          },
-          "Pubnyan",
-        ),
-      ),
-    ),
+    brandFooter(logo),
   );
 }
 
