@@ -40,7 +40,8 @@ This project is currently in a transitional phase, migrating from an existing Fr
 
 - Use `web-next/` for:
   - New feature development
-  - Modern UI components and patterns
+  - Modern UI components and patterns (see [DESIGN.md](DESIGN.md) for the
+    design system)
   - Any new internationalization work
   - GraphQL schema changes and Relay integration
 
@@ -93,6 +94,8 @@ This project is currently in a transitional phase, migrating from an existing Fr
 - Tailwind CSS for styling
 - Components in components/ directory
 - Interactive components in islands/ directory (Fresh framework pattern)
+- For visual decisions in `web-next/` (color tokens, typography, component
+  patterns, brand assets), follow [DESIGN.md](DESIGN.md)
 
 ### Error Handling
 - Use structured logging via LogTape
