@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
 import { follow } from "@hackerspub/models/following";
@@ -64,11 +64,27 @@ const blockActorMutation = parse(`
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
         }
         blockee {
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
         }
       }
       ... on InvalidInputError { inputPath }
@@ -86,11 +102,27 @@ const unblockActorMutation = parse(`
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
         }
         blockee {
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
         }
       }
       ... on InvalidInputError { inputPath }
@@ -277,7 +309,25 @@ Deno.test({
         name: "GraphQL Blockee",
         email: "graphqlblockee@example.com",
       });
+      const fedCtx = createFedCtx(tx);
       const actorId = encodeGlobalID("Actor", blockee.actor.id);
+
+      await follow(fedCtx, blocker.account, blockee.actor);
+      await follow(fedCtx, blockee.account, blocker.actor);
+
+      const storedBeforeBlock = await tx.select().from(followingTable).where(
+        or(
+          and(
+            eq(followingTable.followerId, blocker.actor.id),
+            eq(followingTable.followeeId, blockee.actor.id),
+          ),
+          and(
+            eq(followingTable.followerId, blockee.actor.id),
+            eq(followingTable.followeeId, blocker.actor.id),
+          ),
+        ),
+      );
+      assertEquals(storedBeforeBlock.length, 2);
 
       const blockResult = await execute({
         schema,
@@ -296,6 +346,10 @@ Deno.test({
               id: string;
               viewerBlocks: boolean;
               blocksViewer: boolean;
+              viewerFollows: boolean;
+              followsViewer: boolean;
+              followees: { totalCount: number };
+              followers: { totalCount: number };
             };
           };
         }).blockActor.__typename,
@@ -308,6 +362,10 @@ Deno.test({
               id: string;
               viewerBlocks: boolean;
               blocksViewer: boolean;
+              viewerFollows: boolean;
+              followsViewer: boolean;
+              followees: { totalCount: number };
+              followers: { totalCount: number };
             };
           };
         }).blockActor.blockee,
@@ -315,6 +373,10 @@ Deno.test({
           id: actorId,
           viewerBlocks: true,
           blocksViewer: false,
+          viewerFollows: false,
+          followsViewer: false,
+          followees: { totalCount: 0 },
+          followers: { totalCount: 0 },
         },
       );
 
@@ -342,6 +404,10 @@ Deno.test({
               id: string;
               viewerBlocks: boolean;
               blocksViewer: boolean;
+              viewerFollows: boolean;
+              followsViewer: boolean;
+              followees: { totalCount: number };
+              followers: { totalCount: number };
             };
           };
         }).unblockActor.__typename,
@@ -354,6 +420,10 @@ Deno.test({
               id: string;
               viewerBlocks: boolean;
               blocksViewer: boolean;
+              viewerFollows: boolean;
+              followsViewer: boolean;
+              followees: { totalCount: number };
+              followers: { totalCount: number };
             };
           };
         }).unblockActor.blockee,
@@ -361,6 +431,10 @@ Deno.test({
           id: actorId,
           viewerBlocks: false,
           blocksViewer: false,
+          viewerFollows: false,
+          followsViewer: false,
+          followees: { totalCount: 0 },
+          followers: { totalCount: 0 },
         },
       );
 

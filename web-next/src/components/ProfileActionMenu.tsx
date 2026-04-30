@@ -41,6 +41,33 @@ const blockActorMutation = graphql`
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followers {
+            totalCount
+          }
+          followees {
+            totalCount
+          }
+          followersCount: followers {
+            totalCount
+          }
+          followeesCount: followees {
+            totalCount
+          }
+        }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followers {
+            totalCount
+          }
+          followees {
+            totalCount
+          }
         }
       }
       ... on InvalidInputError {
@@ -64,6 +91,33 @@ const unblockActorMutation = graphql`
           id
           viewerBlocks
           blocksViewer
+          viewerFollows
+          followsViewer
+          followers {
+            totalCount
+          }
+          followees {
+            totalCount
+          }
+          followersCount: followers {
+            totalCount
+          }
+          followeesCount: followees {
+            totalCount
+          }
+        }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followers {
+            totalCount
+          }
+          followees {
+            totalCount
+          }
         }
       }
       ... on InvalidInputError {
