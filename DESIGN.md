@@ -158,7 +158,7 @@ of the same name reaches for it.
 | :------------ | :------------ | :--------------------------------------------- |
 | `info`        | ~237° (blue)  | Neutral information, link verification         |
 | `success`     | ~162° (green) | Confirmed state, verified links                |
-| `warning`     | ~95° (amber)  | Reversible warnings                            |
+| `warning`     | ~48° (amber)  | Reversible warnings                            |
 | `error`       | ~26° (red)    | Hard errors, validation failures               |
 | `destructive` | ~27° (red)    | Destructive button variants (delete, sign out) |
 
