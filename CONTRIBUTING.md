@@ -42,6 +42,10 @@ Hackers' Pub uses the following technologies:
 If you are not familiar with these technologies, we recommend reading the
 documentation of these technologies to understand how they work.
 
+For the visual side of the product — color tokens, typography, component
+patterns, the *Pubnyan* mascot, and brand asset usage — read
+[*DESIGN.md*](./DESIGN.md) before working on UI in *web-next/*.
+
 [^1]: As of February 2025, Fresh 2.0 is not released.  We are using
       the development version of Fresh 2.0, which is not well-documented.
       We recommend reading the source code of Fresh 2.0 to understand how it
@@ -265,6 +269,10 @@ To run web-next, the new web frontend for Hackers' Pub, follow these steps:
     the GraphQL API server for web-next.
 
  4. Access http://localhost:3000/ to see the new look of Hackers' Pub.
+
+When you build new UI in *web-next/*, follow the conventions documented in
+[*DESIGN.md*](./DESIGN.md) — it covers the color tokens, typography, component
+patterns (solid-ui in the New York style), and brand asset usage.
 
 [watchman]: https://facebook.github.io/watchman/docs/install
 [vite-plugin-relay-lite]: https://github.com/XiNiHa/vite-plugin-relay-lite
