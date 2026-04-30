@@ -8,7 +8,7 @@ import {
   useRelayEnvironment,
 } from "solid-relay";
 import { DocumentView } from "~/components/DocumentView.tsx";
-import { NarrowContainer } from "~/components/NarrowContainer.tsx";
+import { WideContainer } from "~/components/WideContainer.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { privacyPolicyPageQuery } from "./__generated__/privacyPolicyPageQuery.graphql.ts";
 
@@ -44,11 +44,11 @@ export default function PrivacyPage() {
     () => loadPageQuery(i18n.locale),
   );
   return (
-    <NarrowContainer>
+    <WideContainer>
       <Title>{t`Privacy policy`} &mdash; {t`Hackers' Pub`}</Title>
       <Show when={data()}>
         {(data) => <DocumentView $document={data().privacyPolicy} />}
       </Show>
-    </NarrowContainer>
+    </WideContainer>
   );
 }

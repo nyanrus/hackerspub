@@ -77,7 +77,7 @@ export function SearchResults(props: SearchResultsProps) {
   }));
 
   return (
-    <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl my-4">
+    <div class="mb-10 mt-4 overflow-hidden rounded-lg border bg-card shadow-sm md:mb-12">
       <Show when={posts()}>
         {(data) => (
           <>
@@ -87,7 +87,7 @@ export function SearchResults(props: SearchResultsProps) {
             <Show when={posts.hasNext}>
               <div
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
               >
                 <Switch>
                   <Match when={posts.pending || loadingState() === "loading"}>

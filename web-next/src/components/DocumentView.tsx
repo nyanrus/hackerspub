@@ -27,19 +27,19 @@ export function DocumentView(props: DocumentViewProps) {
   return (
     <Show when={document()}>
       {(document) => (
-        <div class="flex flex-row-reverse">
+        <div class="flex flex-row-reverse items-start">
           <Title>{document().title}</Title>
-          <aside class="border-l p-4 hidden lg:block h-dvh sticky top-0">
-            <h1 class="text-xs font-medium opacity-75">
+          <aside class="sticky top-0 hidden h-dvh w-64 shrink-0 overflow-auto border-l bg-background/80 p-5 backdrop-blur lg:block">
+            <h1 class="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t`Table of contents`}
             </h1>
             <TocList
               items={document().toc as Toc[]}
-              class="text-sm"
+              class="text-sm leading-6 text-muted-foreground"
             />
           </aside>
           <div
-            class="p-4 prose dark:prose-invert ml-auto mr-auto"
+            class="prose prose-slate mx-auto w-full max-w-3xl px-4 py-6 dark:prose-invert sm:px-6 lg:px-8"
             innerHTML={document().html}
           />
         </div>

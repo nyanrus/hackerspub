@@ -123,11 +123,11 @@ export default function SearchPage() {
   const searchType = () => getSearchType(searchQuery());
 
   return (
-    <NarrowContainer class="p-4">
-      <div class="mb-6 relative">
+    <NarrowContainer class="px-4 py-4 sm:py-6">
+      <div class="relative mb-6">
         <form
           method="get"
-          class="flex gap-2"
+          class="flex flex-col gap-2 sm:flex-row"
           onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
@@ -140,15 +140,15 @@ export default function SearchPage() {
             name="q"
             value={searchQuery()}
             placeholder={t`Search posts…`}
-            class="peer flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="peer min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="shrink-0 rounded-md bg-primary px-4 py-2 text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {t`Search`}
           </button>
-          <div class="hidden peer-focus:block absolute top-full left-0 right-0 mt-2 z-10">
+          <div class="absolute left-0 right-0 top-full z-10 mt-2 hidden peer-focus:block">
             <SearchGuide />
           </div>
         </form>
