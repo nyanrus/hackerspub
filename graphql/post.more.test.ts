@@ -366,6 +366,7 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
         language: "en",
         title: "Open Graph article",
         content: "English body with emoji 😀 and Korean 안녕하세요.",
+        ogImageKey: "og/v2/stale-article-en.png",
         published,
         updated: published,
       },
@@ -374,6 +375,7 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
         language: "ko-KR",
         title: "오픈 그래프 글",
         content: "한국어 본문과 English mixed script, emoji 😀.",
+        ogImageKey: "og/v2/stale-article-ko.png",
         published,
         updated: published,
       },
@@ -429,7 +431,10 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
       ),
     );
     assert.equal(disk.putKeys.length, 2);
-    assert.equal(disk.deleteKeys.length, 0);
+    assert.deepEqual(disk.deleteKeys.sort(), [
+      "og/v2/stale-article-en.png",
+      "og/v2/stale-article-ko.png",
+    ]);
 
     const stored = await tx.query.articleContentTable.findMany({
       where: { sourceId },
@@ -458,7 +463,10 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
       toPlainJson(firstResult.data),
     );
     assert.equal(disk.putKeys.length, 2);
-    assert.equal(disk.deleteKeys.length, 0);
+    assert.deepEqual(disk.deleteKeys.sort(), [
+      "og/v2/stale-article-en.png",
+      "og/v2/stale-article-ko.png",
+    ]);
   });
 });
 

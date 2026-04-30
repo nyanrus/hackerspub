@@ -6,6 +6,7 @@ import { execute, parse } from "graphql";
 import { updateAccountData } from "@hackerspub/models/account";
 import type { UserContext } from "./builder.ts";
 import { schema } from "./mod.ts";
+import { putProfileOgImage } from "./og.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
@@ -101,6 +102,21 @@ function createOgTestDisk(): {
   };
 }
 
+test("putProfileOgImage leaves existing cached images for the caller", async () => {
+  const disk = createOgTestDisk();
+
+  const key = await putProfileOgImage(disk.disk, "og/v2/stale-profile.png", {
+    avatarUrl: smallPngDataUrl,
+    bio: "Cached profile image should survive until metadata is updated.",
+    displayName: "Profile Cache Review",
+    handle: "@profilecache@localhost",
+  });
+
+  assert.match(key, /^og\/v2\/.+\.png$/);
+  assert.notEqual(key, "og/v2/stale-profile.png");
+  assert.deepEqual(disk.deleteKeys, []);
+});
+
 test("viewer returns the signed-in account and null for guests", async () => {
   await withRollback(async (tx) => {
     const account = await insertAccountWithActor(tx, {
@@ -151,6 +167,7 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
       id: account.account.id,
       avatarKey: "avatar-og-test",
       bio: "Mixed script bio: Hello, 안녕하세요, こんにちは, 你好, 😀",
+      ogImageKey: "og/v2/stale-profile.png",
     });
     assert.ok(updated != null);
 
@@ -169,7 +186,7 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
     }).accountByUsername.ogImageUrl;
     assert.match(firstUrl, /^http:\/\/localhost\/media\/og\/v2\/.+\.png$/);
     assert.equal(disk.putKeys.length, 1);
-    assert.equal(disk.deleteKeys.length, 0);
+    assert.deepEqual(disk.deleteKeys, ["og/v2/stale-profile.png"]);
 
     const stored = await tx.query.accountTable.findFirst({
       where: { id: account.account.id },
@@ -190,7 +207,7 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
     }).accountByUsername.ogImageUrl;
     assert.equal(secondUrl, firstUrl);
     assert.equal(disk.putKeys.length, 1);
-    assert.equal(disk.deleteKeys.length, 0);
+    assert.deepEqual(disk.deleteKeys, ["og/v2/stale-profile.png"]);
   });
 });
 

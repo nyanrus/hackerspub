@@ -538,7 +538,6 @@ async function putOgImage(
   if (existingKey === key) return key;
   const png = await renderPng(element);
   await disk.put(key, png);
-  if (existingKey != null) await disk.delete(existingKey);
   return key;
 }
 
