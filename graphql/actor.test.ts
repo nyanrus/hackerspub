@@ -8,6 +8,7 @@ import { schema } from "./mod.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
+  makeGuestContext,
   makeUserContext,
   withRollback,
 } from "../test/postgres.ts";
@@ -59,8 +60,16 @@ const blockActorMutation = parse(`
     blockActor(input: { actorId: $actorId }) {
       __typename
       ... on BlockActorPayload {
-        blocker { id }
-        blockee { id }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+        }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+        }
       }
       ... on InvalidInputError { inputPath }
       ... on NotAuthenticatedError { notAuthenticated }
@@ -73,11 +82,29 @@ const unblockActorMutation = parse(`
     unblockActor(input: { actorId: $actorId }) {
       __typename
       ... on UnblockActorPayload {
-        blocker { id }
-        blockee { id }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+        }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+        }
       }
       ... on InvalidInputError { inputPath }
       ... on NotAuthenticatedError { notAuthenticated }
+    }
+  }
+`);
+
+const actorBlockStateQuery = parse(`
+  query ActorBlockState($uuid: UUID!) {
+    actorByUuid(uuid: $uuid) {
+      id
+      viewerBlocks
+      blocksViewer
     }
   }
 `);
@@ -262,9 +289,33 @@ Deno.test({
 
       assertEquals(blockResult.errors, undefined);
       assertEquals(
-        (blockResult.data as { blockActor: { __typename: string } }).blockActor
-          .__typename,
+        (blockResult.data as {
+          blockActor: {
+            __typename: string;
+            blockee?: {
+              id: string;
+              viewerBlocks: boolean;
+              blocksViewer: boolean;
+            };
+          };
+        }).blockActor.__typename,
         "BlockActorPayload",
+      );
+      assertEquals(
+        (blockResult.data as {
+          blockActor: {
+            blockee?: {
+              id: string;
+              viewerBlocks: boolean;
+              blocksViewer: boolean;
+            };
+          };
+        }).blockActor.blockee,
+        {
+          id: actorId,
+          viewerBlocks: true,
+          blocksViewer: false,
+        },
       );
 
       const storedAfterBlock = await tx.select().from(blockingTable).where(and(
@@ -284,9 +335,33 @@ Deno.test({
 
       assertEquals(unblockResult.errors, undefined);
       assertEquals(
-        (unblockResult.data as { unblockActor: { __typename: string } })
-          .unblockActor.__typename,
+        (unblockResult.data as {
+          unblockActor: {
+            __typename: string;
+            blockee?: {
+              id: string;
+              viewerBlocks: boolean;
+              blocksViewer: boolean;
+            };
+          };
+        }).unblockActor.__typename,
         "UnblockActorPayload",
+      );
+      assertEquals(
+        (unblockResult.data as {
+          unblockActor: {
+            blockee?: {
+              id: string;
+              viewerBlocks: boolean;
+              blocksViewer: boolean;
+            };
+          };
+        }).unblockActor.blockee,
+        {
+          id: actorId,
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
       );
 
       const storedAfterUnblock = await tx.select().from(blockingTable).where(
@@ -296,6 +371,93 @@ Deno.test({
         ),
       );
       assertEquals(storedAfterUnblock, []);
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor block fields expose outgoing and incoming viewer block state",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const blocker = await insertAccountWithActor(tx, {
+        username: "graphqlstateblocker",
+        name: "GraphQL State Blocker",
+        email: "graphqlstateblocker@example.com",
+      });
+      const blockee = await insertAccountWithActor(tx, {
+        username: "graphqlstateblockee",
+        name: "GraphQL State Blockee",
+        email: "graphqlstateblockee@example.com",
+      });
+      const actorId = encodeGlobalID("Actor", blockee.actor.id);
+
+      const beforeBlock = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(beforeBlock.errors, undefined);
+      assertEquals(beforeBlock.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
+
+      const blockResult = await execute({
+        schema,
+        document: blockActorMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(blockResult.errors, undefined);
+      assertEquals(
+        (blockResult.data as { blockActor: { __typename: string } }).blockActor
+          .__typename,
+        "BlockActorPayload",
+      );
+
+      const outgoingState = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(outgoingState.errors, undefined);
+      assertEquals(outgoingState.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: true,
+          blocksViewer: false,
+        },
+      });
+
+      const incomingState = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blocker.actor.id },
+        contextValue: makeUserContext(tx, blockee.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(incomingState.errors, undefined);
+      assertEquals(incomingState.data, {
+        actorByUuid: {
+          id: encodeGlobalID("Actor", blocker.actor.id),
+          viewerBlocks: false,
+          blocksViewer: true,
+        },
+      });
     });
   },
 });
