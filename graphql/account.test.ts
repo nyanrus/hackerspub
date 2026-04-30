@@ -4,6 +4,7 @@ import { encodeGlobalID } from "@pothos/plugin-relay";
 import * as vocab from "@fedify/vocab";
 import { execute, parse } from "graphql";
 import { updateAccountData } from "@hackerspub/models/account";
+import type { UserContext } from "./builder.ts";
 import { schema } from "./mod.ts";
 import {
   createFedCtx,
@@ -30,6 +31,14 @@ const accountByUsernameQuery = parse(`
       username
       name
       handle
+    }
+  }
+`);
+
+const accountOgImageUrlQuery = parse(`
+  query AccountOgImageUrl($username: String!) {
+    accountByUsername(username: $username) {
+      ogImageUrl
     }
   }
 `);
@@ -61,6 +70,36 @@ const updateAccountMutation = parse(`
     }
   }
 `);
+
+const smallPngDataUrl = "data:image/png;base64," +
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
+
+function createOgTestDisk(): {
+  disk: UserContext["disk"];
+  putKeys: string[];
+  deleteKeys: string[];
+} {
+  const putKeys: string[] = [];
+  const deleteKeys: string[] = [];
+  return {
+    putKeys,
+    deleteKeys,
+    disk: {
+      getUrl(key: string) {
+        if (key === "avatar-og-test") return Promise.resolve(smallPngDataUrl);
+        return Promise.resolve(`http://localhost/media/${key}`);
+      },
+      put(key: string) {
+        putKeys.push(key);
+        return Promise.resolve(undefined);
+      },
+      delete(key: string) {
+        deleteKeys.push(key);
+        return Promise.resolve(undefined);
+      },
+    } as unknown as UserContext["disk"],
+  };
+}
 
 test("viewer returns the signed-in account and null for guests", async () => {
   await withRollback(async (tx) => {
@@ -98,6 +137,60 @@ test("viewer returns the signed-in account and null for guests", async () => {
 
     assert.equal(guestResult.errors, undefined);
     assert.deepEqual(toPlainJson(guestResult.data), { viewer: null });
+  });
+});
+
+test("Account.ogImageUrl renders and reuses a cached profile image", async () => {
+  await withRollback(async (tx) => {
+    const account = await insertAccountWithActor(tx, {
+      username: "profileoggraphql",
+      name: "Profile OG GraphQL",
+      email: "profileoggraphql@example.com",
+    });
+    const updated = await updateAccountData(tx, {
+      id: account.account.id,
+      avatarKey: "avatar-og-test",
+      bio: "Mixed script bio: Hello, 안녕하세요, こんにちは, 你好, 😀",
+    });
+    assert.ok(updated != null);
+
+    const disk = createOgTestDisk();
+    const firstResult = await execute({
+      schema,
+      document: accountOgImageUrlQuery,
+      variableValues: { username: account.account.username },
+      contextValue: makeGuestContext(tx, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(firstResult.errors, undefined);
+    const firstUrl = (toPlainJson(firstResult.data) as {
+      accountByUsername: { ogImageUrl: string };
+    }).accountByUsername.ogImageUrl;
+    assert.match(firstUrl, /^http:\/\/localhost\/media\/og\/v2\/.+\.png$/);
+    assert.equal(disk.putKeys.length, 1);
+    assert.equal(disk.deleteKeys.length, 0);
+
+    const stored = await tx.query.accountTable.findFirst({
+      where: { id: account.account.id },
+    });
+    assert.ok(stored?.ogImageKey?.startsWith("og/v2/"));
+
+    const secondResult = await execute({
+      schema,
+      document: accountOgImageUrlQuery,
+      variableValues: { username: account.account.username },
+      contextValue: makeGuestContext(tx, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(secondResult.errors, undefined);
+    const secondUrl = (toPlainJson(secondResult.data) as {
+      accountByUsername: { ogImageUrl: string };
+    }).accountByUsername.ogImageUrl;
+    assert.equal(secondUrl, firstUrl);
+    assert.equal(disk.putKeys.length, 1);
+    assert.equal(disk.deleteKeys.length, 0);
   });
 });
 
