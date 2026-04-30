@@ -48,7 +48,7 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       articlesPageQuery,
       { handle, locale },
-      { fetchPolicy: "network-only" },
+      { fetchPolicy: "store-and-network" },
     ),
   PROFILE_ARTICLES_QUERY_KEY,
 );

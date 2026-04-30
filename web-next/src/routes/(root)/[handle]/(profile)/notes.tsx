@@ -47,7 +47,7 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       notesPageQuery,
       { handle },
-      { fetchPolicy: "network-only" },
+      { fetchPolicy: "store-and-network" },
     ),
   PROFILE_NOTES_QUERY_KEY,
 );
