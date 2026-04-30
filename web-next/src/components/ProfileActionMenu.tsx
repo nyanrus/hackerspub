@@ -168,6 +168,20 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
     }
     return false;
   };
+  const handleBlockToggleResult = (
+    typename: string,
+    successTypename: "BlockActorPayload" | "UnblockActorPayload",
+    invalidInputTitle: string,
+    successTitle: string,
+  ) => {
+    if (handleMutationError(typename, invalidInputTitle)) {
+      return;
+    }
+    if (typename === successTypename) {
+      showToast({ title: successTitle });
+      void revalidate(PROFILE_CONTENT_QUERY_KEYS);
+    }
+  };
 
   const handleBlockToggle = () => {
     const actorData = actor();
@@ -179,20 +193,12 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          if (
-            handleMutationError(
-              response.unblockActor.__typename,
-              t`Failed to unblock this user`,
-            )
-          ) {
-            return;
-          }
-          if (
-            response.unblockActor.__typename === "UnblockActorPayload"
-          ) {
-            showToast({ title: t`User unblocked` });
-            void revalidate(PROFILE_CONTENT_QUERY_KEYS);
-          }
+          handleBlockToggleResult(
+            response.unblockActor.__typename,
+            "UnblockActorPayload",
+            t`Failed to unblock this user`,
+            t`User unblocked`,
+          );
         },
         onError() {
           showErrorToast(t`Failed to unblock this user`);
@@ -204,18 +210,12 @@ export function ProfileActionMenu(props: ProfileActionMenuProps) {
           input: { actorId: actorData.id },
         },
         onCompleted(response) {
-          if (
-            handleMutationError(
-              response.blockActor.__typename,
-              t`Failed to block this user`,
-            )
-          ) {
-            return;
-          }
-          if (response.blockActor.__typename === "BlockActorPayload") {
-            showToast({ title: t`User blocked` });
-            void revalidate(PROFILE_CONTENT_QUERY_KEYS);
-          }
+          handleBlockToggleResult(
+            response.blockActor.__typename,
+            "BlockActorPayload",
+            t`Failed to block this user`,
+            t`User blocked`,
+          );
         },
         onError() {
           showErrorToast(t`Failed to block this user`);
