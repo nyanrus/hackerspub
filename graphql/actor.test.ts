@@ -311,6 +311,15 @@ Deno.test({
       });
       const fedCtx = createFedCtx(tx);
       const actorId = encodeGlobalID("Actor", blockee.actor.id);
+      const expectedBlockeePayload = (viewerBlocks: boolean) => ({
+        id: actorId,
+        viewerBlocks,
+        blocksViewer: false,
+        viewerFollows: false,
+        followsViewer: false,
+        followees: { totalCount: 0 },
+        followers: { totalCount: 0 },
+      });
 
       await follow(fedCtx, blocker.account, blockee.actor);
       await follow(fedCtx, blockee.account, blocker.actor);
@@ -355,15 +364,7 @@ Deno.test({
       assertEquals(blockActorPayload.__typename, "BlockActorPayload");
       assertEquals(
         blockActorPayload.blockee,
-        {
-          id: actorId,
-          viewerBlocks: true,
-          blocksViewer: false,
-          viewerFollows: false,
-          followsViewer: false,
-          followees: { totalCount: 0 },
-          followers: { totalCount: 0 },
-        },
+        expectedBlockeePayload(true),
       );
 
       const storedAfterBlock = await tx.select().from(blockingTable).where(and(
@@ -399,15 +400,7 @@ Deno.test({
       assertEquals(unblockActorPayload.__typename, "UnblockActorPayload");
       assertEquals(
         unblockActorPayload.blockee,
-        {
-          id: actorId,
-          viewerBlocks: false,
-          blocksViewer: false,
-          viewerFollows: false,
-          followsViewer: false,
-          followees: { totalCount: 0 },
-          followers: { totalCount: 0 },
-        },
+        expectedBlockeePayload(false),
       );
 
       const storedAfterUnblock = await tx.select().from(blockingTable).where(
