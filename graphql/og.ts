@@ -5,7 +5,7 @@ import type { Disk } from "flydrive";
 import { canonicalize } from "json-canonicalize";
 import satori from "satori";
 
-const OG_VERSION = "v2-profile-1";
+const OG_VERSION = "v2-1";
 const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -30,6 +30,15 @@ interface ProfileOgImageInput {
   bio: string;
   displayName: string;
   handle: string;
+}
+
+interface ArticleOgImageInput {
+  authorName: string;
+  avatarUrl: string;
+  excerpt: string;
+  handle: string;
+  language: string;
+  title: string;
 }
 
 let fontsPromise: Promise<FontOptions[]> | undefined;
@@ -302,6 +311,201 @@ async function profileOgElement(
   );
 }
 
+async function articleOgElement(
+  input: ArticleOgImageInput,
+): Promise<OgElement> {
+  const pubnyan = await loadPubnyanDataUri();
+  const excerpt = truncateText(input.excerpt, 260);
+  return h(
+    "div",
+    {
+      style: {
+        width: "1200px",
+        height: "630px",
+        background: "#ffffff",
+        color: "#111111",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily:
+          "Noto Sans, Noto Sans JP, Noto Sans KR, Noto Sans SC, Noto Sans TC, Noto Emoji",
+        position: "relative",
+      },
+    },
+    h(
+      "div",
+      {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          padding: "68px 82px 56px",
+          width: "1200px",
+          height: "516px",
+        },
+      },
+      h(
+        "div",
+        {
+          style: {
+            alignItems: "center",
+            display: "flex",
+            flexDirection: "row",
+            gap: "22px",
+            height: "92px",
+          },
+        },
+        h("img", {
+          src: input.avatarUrl,
+          width: 82,
+          height: 82,
+          style: {
+            borderRadius: "41px",
+            border: "1px solid #d4d4d4",
+            objectFit: "cover",
+            flexShrink: 0,
+          },
+        }),
+        h(
+          "div",
+          {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              minWidth: 0,
+            },
+          },
+          h(
+            "div",
+            {
+              style: {
+                fontSize: "32px",
+                fontWeight: 600,
+                lineHeight: 1.15,
+              },
+            },
+            truncateText(input.authorName, 52),
+          ),
+          h(
+            "div",
+            {
+              style: {
+                color: "#737373",
+                fontSize: "23px",
+                lineHeight: 1.2,
+                marginTop: "7px",
+              },
+            },
+            input.handle,
+          ),
+        ),
+      ),
+      h(
+        "div",
+        {
+          lang: input.language,
+          style: {
+            fontSize: "58px",
+            fontWeight: 600,
+            lineHeight: 1.13,
+            letterSpacing: "0",
+            marginTop: "42px",
+            maxHeight: "198px",
+            overflow: "hidden",
+            width: "1018px",
+          },
+        },
+        truncateText(input.title, 94),
+      ),
+      h(
+        "div",
+        {
+          lang: input.language,
+          style: {
+            color: "#404040",
+            display: excerpt === "" ? "none" : "flex",
+            fontSize: "30px",
+            lineHeight: 1.36,
+            marginTop: "28px",
+            maxHeight: "124px",
+            overflow: "hidden",
+            whiteSpace: "pre-wrap",
+            width: "1018px",
+          },
+        },
+        excerpt,
+      ),
+    ),
+    h(
+      "div",
+      {
+        style: {
+          alignItems: "center",
+          borderTop: "1px solid #d4d4d4",
+          bottom: 0,
+          display: "flex",
+          flexDirection: "row",
+          height: "114px",
+          justifyContent: "space-between",
+          left: 0,
+          padding: "0 82px",
+          position: "absolute",
+          right: 0,
+        },
+      },
+      h(
+        "div",
+        {
+          style: {
+            color: "#525252",
+            display: "flex",
+            flexDirection: "column",
+            fontSize: "24px",
+            lineHeight: 1.2,
+          },
+        },
+        h(
+          "div",
+          { style: { fontWeight: 600, color: "#171717" } },
+          "Hackers' Pub",
+        ),
+        h("div", null, "Knowledge sharing in the fediverse"),
+      ),
+      h(
+        "div",
+        {
+          style: {
+            alignItems: "center",
+            border: "1px solid #d4d4d4",
+            borderRadius: "8px",
+            display: "flex",
+            flexDirection: "row",
+            gap: "12px",
+            height: "74px",
+            padding: "8px 14px 8px 10px",
+          },
+        },
+        h("img", {
+          src: pubnyan,
+          width: 56,
+          height: 56,
+          style: { objectFit: "contain" },
+        }),
+        h(
+          "div",
+          {
+            style: {
+              color: "#525252",
+              fontSize: "20px",
+              fontWeight: 600,
+              lineHeight: 1,
+            },
+          },
+          "Pubnyan",
+        ),
+      ),
+    ),
+  );
+}
+
 async function renderPng(element: OgElement): Promise<Uint8Array> {
   const svg = await satori(element as Parameters<typeof satori>[0], {
     ...OG_SIZE,
@@ -351,8 +555,27 @@ export async function putProfileOgImage(
   );
 }
 
+export async function putArticleOgImage(
+  disk: Disk,
+  existingKey: string | null | undefined,
+  input: ArticleOgImageInput,
+): Promise<string> {
+  return await putOgImage(
+    disk,
+    existingKey,
+    { type: "article", ...input },
+    await articleOgElement(input),
+  );
+}
+
 export async function renderProfileOgImageForPreview(
   input: ProfileOgImageInput,
 ): Promise<Uint8Array> {
   return await renderPng(await profileOgElement(input));
+}
+
+export async function renderArticleOgImageForPreview(
+  input: ArticleOgImageInput,
+): Promise<Uint8Array> {
+  return await renderPng(await articleOgElement(input));
 }

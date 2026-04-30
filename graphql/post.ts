@@ -1,3 +1,4 @@
+import { getAvatarUrl } from "@hackerspub/models/account";
 import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
 import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
 import { negotiateLocale } from "@hackerspub/models/i18n";
@@ -30,6 +31,7 @@ import {
 } from "@hackerspub/models/post";
 import { react, undoReaction } from "@hackerspub/models/reaction";
 import {
+  articleContentTable,
   articleDraftTable,
   articleMediumTable,
 } from "@hackerspub/models/schema";
@@ -50,6 +52,7 @@ import { Actor } from "./actor.ts";
 import { builder, Node } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
+import { putArticleOgImage } from "./og.ts";
 import { PostVisibility, toPostVisibility } from "./postvisibility.ts";
 import { Reactable, Reaction } from "./reactable.ts";
 import { NotAuthenticatedError } from "./session.ts";
@@ -430,6 +433,60 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
     beingTranslated: t.exposeBoolean("beingTranslated"),
     updated: t.expose("updated", { type: "DateTime" }),
     published: t.expose("published", { type: "DateTime" }),
+    ogImageUrl: t.field({
+      type: "URL",
+      select: {
+        columns: {
+          content: true,
+          language: true,
+          ogImageKey: true,
+          sourceId: true,
+          summary: true,
+          title: true,
+        },
+        with: {
+          source: {
+            with: {
+              account: {
+                with: {
+                  actor: {
+                    columns: {
+                      handleHost: true,
+                    },
+                  },
+                  emails: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      async resolve(content, _, ctx) {
+        const account = content.source.account;
+        const rendered = await renderMarkup(ctx.fedCtx, content.content, {
+          kv: ctx.kv,
+        });
+        const key = await putArticleOgImage(ctx.disk, content.ogImageKey, {
+          authorName: account.name,
+          avatarUrl: await getAvatarUrl(ctx.disk, account),
+          excerpt: content.summary ?? rendered.text,
+          handle: `@${account.username}@${account.actor.handleHost}`,
+          language: content.language,
+          title: content.title,
+        });
+        if (key !== content.ogImageKey) {
+          await ctx.db.update(articleContentTable)
+            .set({ ogImageKey: key })
+            .where(
+              and(
+                eq(articleContentTable.sourceId, content.sourceId),
+                eq(articleContentTable.language, content.language),
+              ),
+            );
+        }
+        return new URL(await ctx.disk.getUrl(key));
+      },
+    }),
     url: t.field({
       type: "URL",
       select: {

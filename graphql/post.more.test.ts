@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { encodeGlobalID } from "@pothos/plugin-relay";
+import { eq } from "drizzle-orm";
 import { execute, parse } from "graphql";
 import type { UserContext } from "./builder.ts";
 import {
+  accountTable,
   articleContentTable,
   articleDraftTable,
   articleSourceTable,
@@ -83,6 +85,17 @@ const articleByYearAndSlugQuery = parse(`
   }
 `);
 
+const articleContentOgImageUrlQuery = parse(`
+  query ArticleContentOgImageUrl($handle: String!, $idOrYear: String!, $slug: String!) {
+    articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $slug) {
+      contents {
+        language
+        ogImageUrl
+      }
+    }
+  }
+`);
+
 const createNoteMutation = parse(`
   mutation CreateNote($input: CreateNoteInput!) {
     createNote(input: $input) {
@@ -118,6 +131,38 @@ const postByUrlQuery = parse(`
     }
   }
 `);
+
+const smallPngDataUrl = "data:image/png;base64," +
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
+
+function createOgTestDisk(): {
+  disk: UserContext["disk"];
+  putKeys: string[];
+  deleteKeys: string[];
+} {
+  const putKeys: string[] = [];
+  const deleteKeys: string[] = [];
+  return {
+    putKeys,
+    deleteKeys,
+    disk: {
+      getUrl(key: string) {
+        if (key === "article-avatar-og-test") {
+          return Promise.resolve(smallPngDataUrl);
+        }
+        return Promise.resolve(`http://localhost/media/${key}`);
+      },
+      put(key: string) {
+        putKeys.push(key);
+        return Promise.resolve(undefined);
+      },
+      delete(key: string) {
+        deleteKeys.push(key);
+        return Promise.resolve(undefined);
+      },
+    } as unknown as UserContext["disk"],
+  };
+}
 
 function makeTransactionalUserContext(
   tx: Parameters<typeof withRollback>[0] extends (tx: infer T) => Promise<void>
@@ -288,6 +333,132 @@ test("publishArticleDraft publishes an article and removes the draft", async () 
       },
     });
     assert.equal(remainingDraft, undefined);
+  });
+});
+
+test("ArticleContent.ogImageUrl renders per-language article images", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "articleoggraphql",
+      name: "Article OG GraphQL",
+      email: "articleoggraphql@example.com",
+    });
+    await tx.update(accountTable)
+      .set({ avatarKey: "article-avatar-og-test" })
+      .where(eq(accountTable.id, author.account.id));
+    const sourceId = generateUuidV7();
+    const postId = generateUuidV7();
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(articleSourceTable).values({
+      id: sourceId,
+      accountId: author.account.id,
+      publishedYear: 2026,
+      slug: "og-article",
+      tags: [],
+      allowLlmTranslation: false,
+      published,
+      updated: published,
+    });
+    await tx.insert(articleContentTable).values([
+      {
+        sourceId,
+        language: "en",
+        title: "Open Graph article",
+        content: "English body with emoji 😀 and Korean 안녕하세요.",
+        published,
+        updated: published,
+      },
+      {
+        sourceId,
+        language: "ko-KR",
+        title: "오픈 그래프 글",
+        content: "한국어 본문과 English mixed script, emoji 😀.",
+        published,
+        updated: published,
+      },
+    ]);
+    await tx.insert(postTable).values(
+      {
+        id: postId,
+        iri: `http://localhost/objects/${postId}`,
+        type: "Article",
+        visibility: "public",
+        actorId: author.actor.id,
+        articleSourceId: sourceId,
+        name: "Open Graph article",
+        contentHtml: "<p>English body with emoji 😀 and Korean 안녕하세요.</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: `http://localhost/@${author.account.username}/2026/og-article`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const disk = createOgTestDisk();
+    const firstResult = await execute({
+      schema,
+      document: articleContentOgImageUrlQuery,
+      variableValues: {
+        handle: author.account.username,
+        idOrYear: "2026",
+        slug: "og-article",
+      },
+      contextValue: makeUserContext(tx, author.account, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(firstResult.errors, undefined);
+    const firstContents = (toPlainJson(firstResult.data) as {
+      articleByYearAndSlug: {
+        contents: Array<{ language: string; ogImageUrl: string }>;
+      };
+    }).articleByYearAndSlug.contents;
+    assert.deepEqual(
+      firstContents.map((content) => content.language),
+      ["en", "ko-KR"],
+    );
+    assert.equal(new Set(firstContents.map((c) => c.ogImageUrl)).size, 2);
+    assert.ok(
+      firstContents.every((content) =>
+        /^http:\/\/localhost\/media\/og\/v2\/.+\.png$/.test(
+          content.ogImageUrl,
+        )
+      ),
+    );
+    assert.equal(disk.putKeys.length, 2);
+    assert.equal(disk.deleteKeys.length, 0);
+
+    const stored = await tx.query.articleContentTable.findMany({
+      where: { sourceId },
+      orderBy: { language: "asc" },
+    });
+    assert.equal(stored.length, 2);
+    assert.ok(
+      stored.every((content) => content.ogImageKey?.startsWith("og/v2/")),
+    );
+
+    const secondResult = await execute({
+      schema,
+      document: articleContentOgImageUrlQuery,
+      variableValues: {
+        handle: author.account.username,
+        idOrYear: "2026",
+        slug: "og-article",
+      },
+      contextValue: makeUserContext(tx, author.account, { disk: disk.disk }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(secondResult.errors, undefined);
+    assert.deepEqual(
+      toPlainJson(secondResult.data),
+      toPlainJson(firstResult.data),
+    );
+    assert.equal(disk.putKeys.length, 2);
+    assert.equal(disk.deleteKeys.length, 0);
   });
 });
 

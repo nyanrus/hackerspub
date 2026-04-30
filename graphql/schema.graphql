@@ -324,6 +324,7 @@ type ArticleContent implements Node {
   content: HTML!
   id: ID!
   language: Locale!
+  ogImageUrl: URL!
   originalLanguage: Locale
   published: DateTime!
 
