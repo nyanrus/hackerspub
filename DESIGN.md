@@ -118,23 +118,25 @@ chroma.  Tokens are exposed to Tailwind via `@theme inline`—every
 
 Pairs are listed `light / dark`.
 
-| Token                | Light value        | Dark value         | Use                                         |
-| :------------------- | :----------------- | :----------------- | :------------------------------------------ |
-| `background`         | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Page background                             |
-| `foreground`         | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Default text                                |
-| `card`               | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Card surface (same as background by design) |
-| `card-foreground`    | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Text inside cards                           |
-| `popover`            | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Popovers, dropdowns, dialogs                |
-| `popover-foreground` | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Text inside popovers                        |
-| `primary`            | `oklch(0.205 0 0)` | `oklch(0.985 0 0)` | Default action surface (inverted from bg)   |
-| `primary-foreground` | `oklch(0.985 0 0)` | `oklch(0.205 0 0)` | Text on primary                             |
-| `secondary`          | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Secondary actions, subtle filled surfaces   |
-| `muted`              | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Muted backgrounds (e.g., article footers)   |
-| `muted-foreground`   | `oklch(0.556 0 0)` | `oklch(0.708 0 0)` | De-emphasized text (handles, timestamps)    |
-| `accent`             | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Hover backgrounds                           |
-| `border`             | `oklch(0.922 0 0)` | `oklch(0.269 0 0)` | Hairlines between rows and cards            |
-| `input`              | `oklch(0.922 0 0)` | `oklch(0.269 0 0)` | Form field borders                          |
-| `ring`               | `oklch(0.708 0 0)` | `oklch(0.439 0 0)` | Focus ring                                  |
+| Token                  | Light value        | Dark value         | Use                                         |
+| :--------------------- | :----------------- | :----------------- | :------------------------------------------ |
+| `background`           | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Page background                             |
+| `foreground`           | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Default text                                |
+| `card`                 | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Card surface (same as background by design) |
+| `card-foreground`      | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Text inside cards                           |
+| `popover`              | `oklch(1 0 0)`     | `oklch(0.145 0 0)` | Popovers, dropdowns, dialogs                |
+| `popover-foreground`   | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | Text inside popovers                        |
+| `primary`              | `oklch(0.205 0 0)` | `oklch(0.985 0 0)` | Default action surface (inverted from bg)   |
+| `primary-foreground`   | `oklch(0.985 0 0)` | `oklch(0.205 0 0)` | Text on primary                             |
+| `secondary`            | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Secondary actions, subtle filled surfaces   |
+| `secondary-foreground` | `oklch(0.205 0 0)` | `oklch(0.985 0 0)` | Text on secondary                           |
+| `muted`                | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Muted backgrounds (e.g., article footers)   |
+| `muted-foreground`     | `oklch(0.556 0 0)` | `oklch(0.708 0 0)` | De-emphasized text (handles, timestamps)    |
+| `accent`               | `oklch(0.97 0 0)`  | `oklch(0.269 0 0)` | Hover backgrounds                           |
+| `accent-foreground`    | `oklch(0.205 0 0)` | `oklch(0.985 0 0)` | Text on accent                              |
+| `border`               | `oklch(0.922 0 0)` | `oklch(0.269 0 0)` | Hairlines between rows and cards            |
+| `input`                | `oklch(0.922 0 0)` | `oklch(0.269 0 0)` | Form field borders                          |
+| `ring`                 | `oklch(0.708 0 0)` | `oklch(0.439 0 0)` | Focus ring                                  |
 
 Note that `card`, `popover`, and `background` deliberately share the
 same value.  Hierarchy is created by *borders*, not by stacked surfaces—this
@@ -162,10 +164,12 @@ expose it through `@theme inline`.
 ### Sidebar palette
 
 The sidebar has its own mirrored set of tokens (`--sidebar`,
-`--sidebar-foreground`, …).  In light mode the sidebar is one notch
-lighter than the page; in dark mode it is one notch lighter than the
-page background.  This gives the sidebar a subtle separation without
-introducing a true second surface.
+`--sidebar-foreground`, …).  In light mode the sidebar
+(`oklch(0.985 0 0)`) is one notch *darker* than the page
+(`oklch(1 0 0)`); in dark mode the sidebar (`oklch(0.205 0 0)`) is one
+notch lighter than the page (`oklch(0.145 0 0)`).  Either way it sits
+one step away from the page in the direction that gives it a subtle
+separation without introducing a true second surface.
 
 ### Prose color callouts
 
@@ -373,9 +377,9 @@ disabled opacity; do not override these.
 The repository has two distinct “card” idioms; do not mix them.
 
  -  **`Card`** (the shadcn primitive, `components/ui/card.tsx`) — a
-    bordered box with `rounded-lg`, `shadow-sm`, and `p-6` headers/
-    footers.  Used for settings panes, dialogs, and structured content
-    blocks.
+    bordered box with `rounded-lg`, `shadow-sm`, and `p-6` for the
+    header and footer.  Used for settings panes, dialogs, and structured
+    content blocks.
  -  **Post cards** (`PostCard`, `NoteCard`, `ArticleCard`,
     `QuestionCard`) — *not* boxed.  They are rows in a list, separated
     only by a bottom border (`border-b last:border-none`) and pick up a
@@ -482,9 +486,9 @@ design implications worth keeping in mind:
     label beside its icon, and icon-only buttons must carry an
     `aria-label`.
  -  The site language is selectable via `?lang={locale}` or
-    `Accept-Language`, and `<html lang>` is set accordingly.  Avoid
-    hard-coding font features that depend on language; let Pretendard
-    handle it.
+    `Accept-Language`, and the `lang` attribute is set on the `<main>`
+    element accordingly (see `routes/(root).tsx`).  Avoid hard-coding
+    font features that depend on language; let Pretendard handle it.
  -  Text expansion is real.  Reserve room for German-style runs and for
     Japanese particles that lengthen a string by one or two characters.
     Test new layouts in at least English, Korean, and Japanese.
@@ -507,7 +511,12 @@ Patterns that need attention:
     `ProfileCard`).  Do *not* apply it to brand assets—swap the
     light/dark logo via `<picture>` instead.
  -  Test new components by toggling the OS theme; do not rely on a
-    `.dark` class.
+    `.dark` class.  Note that `app.css` still carries a small
+    `.dark, [data-kb-theme="dark"]` block of legacy HSL `--sidebar-*`
+    tokens left over from the shadcn defaults; treat it as
+    compatibility shim and route new work through the OKLCH tokens
+    (which already switch on `prefers-color-scheme`) instead of adding
+    to it.
 
 
 Resources
