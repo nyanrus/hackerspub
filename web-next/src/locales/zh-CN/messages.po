@@ -19,12 +19,12 @@ msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 条评论}}"
 
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:222
+#: src/components/ProfileCard.tsx:247
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人关注}}"
 
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:207
+#: src/components/ProfileCard.tsx:232
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {关注 # 人}}"
 
@@ -154,8 +154,8 @@ msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:67
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:71
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
 msgid "{0}'s articles"
 msgstr "{0}的文章"
 
@@ -172,14 +172,14 @@ msgid "{0}'s following"
 msgstr "{0}的关注"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:68
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:72
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
 msgid "{0}'s notes"
 msgstr "{0}的帖子"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:69
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:73
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
 msgid "{0}'s shares"
 msgstr "{0}的转帖"
 
@@ -248,6 +248,12 @@ msgstr "保存设置时发生错误。请重试，如果问题仍然存在，请
 msgid "An unexpected error occurred. Please try again later."
 msgstr "发生了意外错误。请稍后再试。"
 
+#. placeholder {0}: displayName()
+#. placeholder {1}: actor()?.handle
+#: src/components/ProfileActionMenu.tsx:279
+msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
+msgstr "确定要屏蔽 {0}（{1}）吗？该用户将无法关注你或查看你的内容。"
+
 #: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "您确定要删除\"{draftTitle}\"吗？此操作无法撤销。"
@@ -260,6 +266,12 @@ msgstr "您确定要删除此草稿吗？此操作无法撤销。"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:502
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "您确定要撤销通行密钥“{0}”吗？您将无法再使用它登录您的账户。"
+
+#. placeholder {0}: displayName()
+#. placeholder {1}: actor()?.handle
+#: src/components/ProfileActionMenu.tsx:281
+msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
+msgstr "确定要取消屏蔽 {0}（{1}）吗？该用户将能够关注你并查看你的内容。"
 
 #: src/routes/(root)/[handle]/drafts/index.tsx:246
 #: src/routes/(root)/[handle]/drafts/index.tsx:248
@@ -278,7 +290,7 @@ msgstr "文章已更新"
 msgid "article-url-slug"
 msgstr "文章网址别名"
 
-#: src/components/ProfileTabs.tsx:48
+#: src/components/ProfileTabs.tsx:50
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "文章"
@@ -309,6 +321,16 @@ msgstr "个人简介"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "个人简介太长。不能长于 512 字符。"
 
+#: src/components/ProfileActionMenu.tsx:261
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:297
+msgid "Block"
+msgstr "屏蔽"
+
+#: src/components/ProfileActionMenu.tsx:272
+msgid "Block user?"
+msgstr "屏蔽用户？"
+
 #: src/components/ui/markdown-editor.tsx:275
 msgid "Bold"
 msgstr "粗体"
@@ -324,6 +346,8 @@ msgstr "收藏"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
+#: src/components/ProfileActionMenu.tsx:286
+#: src/components/ProfileActionMenu.tsx:287
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -606,6 +630,11 @@ msgstr "到期时间"
 msgid "Extra message"
 msgstr "额外消息"
 
+#: src/components/ProfileActionMenu.tsx:214
+#: src/components/ProfileActionMenu.tsx:223
+msgid "Failed to block this user"
+msgstr "未能屏蔽此用户"
+
 #: src/components/BookmarkButton.tsx:115
 #: src/components/BookmarkButton.tsx:122
 msgid "Failed to bookmark"
@@ -630,7 +659,7 @@ msgstr "删除邀请链接失败"
 msgid "Failed to delete post"
 msgstr "删除内容失败"
 
-#: src/components/FollowButton.tsx:153
+#: src/components/FollowButton.tsx:163
 msgid "Failed to follow"
 msgstr "关注失败"
 
@@ -742,7 +771,12 @@ msgstr "转帖失败"
 msgid "Failed to sign out: {0}"
 msgstr "登出失败：{0}"
 
-#: src/components/FollowButton.tsx:131
+#: src/components/ProfileActionMenu.tsx:187
+#: src/components/ProfileActionMenu.tsx:196
+msgid "Failed to unblock this user"
+msgstr "未能取消屏蔽此用户"
+
+#: src/components/FollowButton.tsx:141
 msgid "Failed to unfollow"
 msgstr "取消关注失败"
 
@@ -779,11 +813,11 @@ msgstr "联邦宇宙用户名"
 msgid "Feed"
 msgstr "订阅流"
 
-#: src/components/FollowButton.tsx:185
+#: src/components/FollowButton.tsx:199
 msgid "Follow"
 msgstr "关注"
 
-#: src/components/FollowButton.tsx:184
+#: src/components/FollowButton.tsx:198
 msgid "Follow back"
 msgstr "回关"
 
@@ -801,7 +835,7 @@ msgstr "从你的账户关注"
 msgid "Followers only"
 msgstr "只粉丝可见"
 
-#: src/components/ProfileCard.tsx:232
+#: src/components/ProfileCard.tsx:257
 msgid "Following you"
 msgstr "关注了你"
 
@@ -831,14 +865,14 @@ msgstr "前往我的草稿"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:90
+#: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:83
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub 首页"
 
@@ -1257,7 +1291,7 @@ msgstr "帖子创建成功"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "你可以验证这些链接确实属于你。在链接的页面上使用 {0} 属性链接回你的 Hackers' Pub 个人资料页。"
 
-#: src/components/ProfileTabs.tsx:41
+#: src/components/ProfileTabs.tsx:43
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "帖子"
@@ -1331,7 +1365,7 @@ msgstr "权限被拒绝"
 msgid "Pin to profile"
 msgstr "置顶到个人资料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:179
+#: src/routes/(root)/[handle]/(profile)/index.tsx:181
 msgid "Pinned posts"
 msgstr "已置顶内容"
 
@@ -1379,7 +1413,7 @@ msgstr "内容已置顶"
 msgid "Post unpinned"
 msgstr "已取消置顶内容"
 
-#: src/components/ProfileTabs.tsx:38
+#: src/components/ProfileTabs.tsx:40
 msgid "Posts"
 msgstr "内容"
 
@@ -1414,6 +1448,10 @@ msgstr "优先级"
 #: src/routes/(root)/privacy.tsx:48
 msgid "Privacy policy"
 msgstr "隐私政策"
+
+#: src/components/ProfileActionMenu.tsx:243
+msgid "Profile actions"
+msgstr "个人资料操作"
 
 #: src/components/SettingsTabs.tsx:44
 #: src/routes/(root)/[handle]/settings/index.tsx:115
@@ -1613,7 +1651,7 @@ msgstr "设置"
 msgid "Share"
 msgstr "分享"
 
-#: src/components/ProfileTabs.tsx:51
+#: src/components/ProfileTabs.tsx:53
 msgid "Shares"
 msgstr "转帖"
 
@@ -1844,7 +1882,7 @@ msgstr "标题不能为空"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "要关注{0}，请输入你的联邦宇宙用户名。"
 
-#: src/routes/(root).tsx:80
+#: src/routes/(root).tsx:81
 msgid "Toggle sidebar"
 msgstr "切换侧边栏"
 
@@ -1873,7 +1911,17 @@ msgstr "无法添加反应。请重试。"
 msgid "Unable to remove reaction. Please try again."
 msgstr "无法移除反应。请重试。"
 
-#: src/components/FollowButton.tsx:182
+#: src/components/ProfileActionMenu.tsx:262
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:298
+msgid "Unblock"
+msgstr "取消屏蔽"
+
+#: src/components/ProfileActionMenu.tsx:273
+msgid "Unblock user?"
+msgstr "取消屏蔽用户？"
+
+#: src/components/FollowButton.tsx:196
 msgid "Unfollow"
 msgstr "取消关注"
 
@@ -1898,9 +1946,17 @@ msgstr "更新于 {0}"
 msgid "URL"
 msgstr "URL"
 
+#: src/components/ProfileActionMenu.tsx:218
+msgid "User blocked"
+msgstr "已屏蔽用户"
+
 #: src/components/RemoteFollowButton.tsx:123
 msgid "User not found."
 msgstr "未找到用户信息。"
+
+#: src/components/ProfileActionMenu.tsx:191
+msgid "User unblocked"
+msgstr "已取消屏蔽用户"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:379
 #: src/routes/(root)/sign/up/[token].tsx:357
@@ -1929,7 +1985,7 @@ msgstr "您邀请的用户"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:177
+#: src/components/ProfileCard.tsx:202
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "已于{1}验证此链接归{0}所有"
 
@@ -2014,6 +2070,14 @@ msgstr "在此撰写文章。您可以使用 Markdown。在您撰写时，文章
 msgid "You are about to follow {0}."
 msgstr "你即将从你的账户关注{0}。"
 
+#: src/components/ProfileCard.tsx:125
+msgid "You are blocked by this user. You can't follow them or see their posts."
+msgstr "你已被此用户屏蔽。你无法关注该用户或查看该用户的内容。"
+
+#: src/components/ProfileCard.tsx:118
+msgid "You are blocking this user. They can't follow you or see your posts."
+msgstr "你正在屏蔽此用户。该用户无法关注你或查看你的内容。"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:395
 msgid "You can change it only once, and the old username will become available to others."
 msgstr "你只能更改一次用户名，而旧的用户名会公开为别人使用。"
@@ -2048,8 +2112,10 @@ msgstr "您尚未注册任何通行密钥。"
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "你没有剩余邀请名额。请稍后再试。"
 
-#: src/components/FollowButton.tsx:124
-#: src/components/FollowButton.tsx:142
+#: src/components/FollowButton.tsx:134
+#: src/components/FollowButton.tsx:152
+#: src/components/ProfileActionMenu.tsx:180
+#: src/components/ProfileActionMenu.tsx:209
 msgid "You must be signed in"
 msgstr "请先登录"
 

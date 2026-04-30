@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
 import { follow } from "@hackerspub/models/following";
@@ -8,6 +8,7 @@ import { schema } from "./mod.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
+  makeGuestContext,
   makeUserContext,
   withRollback,
 } from "../test/postgres.ts";
@@ -59,8 +60,32 @@ const blockActorMutation = parse(`
     blockActor(input: { actorId: $actorId }) {
       __typename
       ... on BlockActorPayload {
-        blocker { id }
-        blockee { id }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
+        }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
+        }
       }
       ... on InvalidInputError { inputPath }
       ... on NotAuthenticatedError { notAuthenticated }
@@ -73,11 +98,45 @@ const unblockActorMutation = parse(`
     unblockActor(input: { actorId: $actorId }) {
       __typename
       ... on UnblockActorPayload {
-        blocker { id }
-        blockee { id }
+        blocker {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
+        }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+          followees {
+            totalCount
+          }
+          followers {
+            totalCount
+          }
+        }
       }
       ... on InvalidInputError { inputPath }
       ... on NotAuthenticatedError { notAuthenticated }
+    }
+  }
+`);
+
+const actorBlockStateQuery = parse(`
+  query ActorBlockState($uuid: UUID!) {
+    actorByUuid(uuid: $uuid) {
+      id
+      viewerBlocks
+      blocksViewer
     }
   }
 `);
@@ -250,7 +309,34 @@ Deno.test({
         name: "GraphQL Blockee",
         email: "graphqlblockee@example.com",
       });
+      const fedCtx = createFedCtx(tx);
       const actorId = encodeGlobalID("Actor", blockee.actor.id);
+      const expectedBlockeePayload = (viewerBlocks: boolean) => ({
+        id: actorId,
+        viewerBlocks,
+        blocksViewer: false,
+        viewerFollows: false,
+        followsViewer: false,
+        followees: { totalCount: 0 },
+        followers: { totalCount: 0 },
+      });
+
+      await follow(fedCtx, blocker.account, blockee.actor);
+      await follow(fedCtx, blockee.account, blocker.actor);
+
+      const storedBeforeBlock = await tx.select().from(followingTable).where(
+        or(
+          and(
+            eq(followingTable.followerId, blocker.actor.id),
+            eq(followingTable.followeeId, blockee.actor.id),
+          ),
+          and(
+            eq(followingTable.followerId, blockee.actor.id),
+            eq(followingTable.followeeId, blocker.actor.id),
+          ),
+        ),
+      );
+      assertEquals(storedBeforeBlock.length, 2);
 
       const blockResult = await execute({
         schema,
@@ -261,10 +347,24 @@ Deno.test({
       });
 
       assertEquals(blockResult.errors, undefined);
+      const blockActorPayload = (blockResult.data as {
+        blockActor: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+            followees: { totalCount: number };
+            followers: { totalCount: number };
+          };
+        };
+      }).blockActor;
+      assertEquals(blockActorPayload.__typename, "BlockActorPayload");
       assertEquals(
-        (blockResult.data as { blockActor: { __typename: string } }).blockActor
-          .__typename,
-        "BlockActorPayload",
+        blockActorPayload.blockee,
+        expectedBlockeePayload(true),
       );
 
       const storedAfterBlock = await tx.select().from(blockingTable).where(and(
@@ -283,10 +383,24 @@ Deno.test({
       });
 
       assertEquals(unblockResult.errors, undefined);
+      const unblockActorPayload = (unblockResult.data as {
+        unblockActor: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+            followees: { totalCount: number };
+            followers: { totalCount: number };
+          };
+        };
+      }).unblockActor;
+      assertEquals(unblockActorPayload.__typename, "UnblockActorPayload");
       assertEquals(
-        (unblockResult.data as { unblockActor: { __typename: string } })
-          .unblockActor.__typename,
-        "UnblockActorPayload",
+        unblockActorPayload.blockee,
+        expectedBlockeePayload(false),
       );
 
       const storedAfterUnblock = await tx.select().from(blockingTable).where(
@@ -296,6 +410,110 @@ Deno.test({
         ),
       );
       assertEquals(storedAfterUnblock, []);
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor block fields expose outgoing and incoming viewer block state",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const blocker = await insertAccountWithActor(tx, {
+        username: "graphqlstateblocker",
+        name: "GraphQL State Blocker",
+        email: "graphqlstateblocker@example.com",
+      });
+      const blockee = await insertAccountWithActor(tx, {
+        username: "graphqlstateblockee",
+        name: "GraphQL State Blockee",
+        email: "graphqlstateblockee@example.com",
+      });
+      const actorId = encodeGlobalID("Actor", blockee.actor.id);
+
+      const beforeBlock = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(beforeBlock.errors, undefined);
+      assertEquals(beforeBlock.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
+
+      const blockResult = await execute({
+        schema,
+        document: blockActorMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(blockResult.errors, undefined);
+      assertEquals(
+        (blockResult.data as { blockActor: { __typename: string } }).blockActor
+          .__typename,
+        "BlockActorPayload",
+      );
+
+      const guestAfterBlock = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(guestAfterBlock.errors, undefined);
+      assertEquals(guestAfterBlock.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
+
+      const outgoingState = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blockee.actor.id },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(outgoingState.errors, undefined);
+      assertEquals(outgoingState.data, {
+        actorByUuid: {
+          id: actorId,
+          viewerBlocks: true,
+          blocksViewer: false,
+        },
+      });
+
+      const incomingState = await execute({
+        schema,
+        document: actorBlockStateQuery,
+        variableValues: { uuid: blocker.actor.id },
+        contextValue: makeUserContext(tx, blockee.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(incomingState.errors, undefined);
+      assertEquals(incomingState.data, {
+        actorByUuid: {
+          id: encodeGlobalID("Actor", blocker.actor.id),
+          viewerBlocks: false,
+          blocksViewer: true,
+        },
+      });
     });
   },
 });

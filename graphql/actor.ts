@@ -401,6 +401,21 @@ builder.drizzleObjectFields(Actor, (t) => ({
       }) != null;
     },
   }),
+  blocksViewer: t.field({
+    type: "Boolean",
+    async resolve(actor, _, ctx) {
+      if (ctx.account == null || ctx.account.actor == null) {
+        return false;
+      }
+      return await ctx.db.query.blockingTable.findFirst({
+        columns: { iri: true },
+        where: {
+          blockerId: actor.id,
+          blockeeId: ctx.account.actor.id,
+        },
+      }) != null;
+    },
+  }),
   followsViewer: t.field({
     type: "Boolean",
     async resolve(actor, _, ctx) {

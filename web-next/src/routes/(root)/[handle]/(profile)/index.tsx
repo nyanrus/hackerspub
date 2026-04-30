@@ -15,6 +15,11 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  PROFILE_PAGE_PINS_QUERY_KEY,
+  PROFILE_PAGE_POSTS_QUERY_KEY,
+  profileContentRevalidating,
+} from "~/lib/profileContentQueries.ts";
 import IconPin from "~icons/lucide/pin";
 import type { ProfilePagePinsQuery } from "./__generated__/ProfilePagePinsQuery.graphql.ts";
 import type { ProfilePagePostsQuery } from "./__generated__/ProfilePagePostsQuery.graphql.ts";
@@ -41,6 +46,8 @@ const ProfilePageQuery = graphql`
       username
       url
       iri
+      viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ProfileCard_actor
       ...ProfileTabs_actor
@@ -93,8 +100,9 @@ const loadPagePinsQuery = query(
       useRelayEnvironment()(),
       ProfilePagePinsQuery,
       { handle, locale },
+      { fetchPolicy: "store-and-network" },
     ),
-  "loadProfilePagePinsQuery",
+  PROFILE_PAGE_PINS_QUERY_KEY,
 );
 
 const loadPagePostsQuery = query(
@@ -103,8 +111,9 @@ const loadPagePostsQuery = query(
       useRelayEnvironment()(),
       ProfilePagePostsQuery,
       { handle, locale },
+      { fetchPolicy: "store-and-network" },
     ),
-  "loadProfilePagePostsQuery",
+  PROFILE_PAGE_POSTS_QUERY_KEY,
 );
 
 export default function ProfilePage() {
@@ -168,40 +177,45 @@ export default function ProfilePage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="posts" $actor={actor()} />
-                  <Show when={pinnedPostsData()?.actorByHandle?.pins}>
-                    {(pins) => (
-                      <Show when={pins().edges.length > 0}>
-                        <section class="my-4">
-                          <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
-                            <IconPin class="size-4" />
-                            {t`Pinned posts`}
-                          </h2>
-                          <div class="overflow-hidden rounded-lg border bg-card shadow-sm">
-                            <For each={pins().edges}>
-                              {(edge) => (
-                                <PostCard
-                                  $post={edge.node}
-                                  connections={viewerPostConnections()}
-                                  pinConnections={viewerPinConnections()}
-                                />
-                              )}
-                            </For>
-                          </div>
-                        </section>
-                      </Show>
-                    )}
-                  </Show>
-                  <Show when={postsActor()}>
-                    {(postsActor) => (
-                      <ActorPostList
-                        $posts={postsActor()}
-                        pinConnections={viewerPinConnections()}
-                      />
-                    )}
-                  </Show>
-                </div>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
+                  <div class="p-4">
+                    <ProfileTabs selected="posts" $actor={actor()} />
+                    <Show when={pinnedPostsData()?.actorByHandle?.pins}>
+                      {(pins) => (
+                        <Show when={pins().edges.length > 0}>
+                          <section class="my-4">
+                            <h2 class="mb-2 flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
+                              <IconPin class="size-4" />
+                              {t`Pinned posts`}
+                            </h2>
+                            <div class="overflow-hidden rounded-lg border bg-card shadow-sm">
+                              <For each={pins().edges}>
+                                {(edge) => (
+                                  <PostCard
+                                    $post={edge.node}
+                                    connections={viewerPostConnections()}
+                                    pinConnections={viewerPinConnections()}
+                                  />
+                                )}
+                              </For>
+                            </div>
+                          </section>
+                        </Show>
+                      )}
+                    </Show>
+                    <Show when={postsActor()}>
+                      {(postsActor) => (
+                        <ActorPostList
+                          $posts={postsActor()}
+                          pinConnections={viewerPinConnections()}
+                        />
+                      )}
+                    </Show>
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

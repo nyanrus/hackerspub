@@ -14,6 +14,10 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  PROFILE_ARTICLES_QUERY_KEY,
+  profileContentRevalidating,
+} from "~/lib/profileContentQueries.ts";
 import type { articlesPageQuery } from "./__generated__/articlesPageQuery.graphql.ts";
 
 export const route = {
@@ -31,6 +35,8 @@ const articlesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorArticleList_articles @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -45,8 +51,9 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       articlesPageQuery,
       { handle, locale },
+      { fetchPolicy: "store-and-network" },
     ),
-  "loadArticlesPageQuery",
+  PROFILE_ARTICLES_QUERY_KEY,
 );
 
 export default function ProfileArticlesPage() {
@@ -74,10 +81,15 @@ export default function ProfileArticlesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="articles" $actor={actor()} />
-                  <ActorArticleList $articles={actor()} />
-                </div>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
+                  <div class="p-4">
+                    <ProfileTabs selected="articles" $actor={actor()} />
+                    <ActorArticleList $articles={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

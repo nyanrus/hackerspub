@@ -14,6 +14,10 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  PROFILE_NOTES_QUERY_KEY,
+  profileContentRevalidating,
+} from "~/lib/profileContentQueries.ts";
 import type { notesPageQuery } from "./__generated__/notesPageQuery.graphql.ts";
 
 export const route = {
@@ -30,6 +34,8 @@ const notesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorNoteList_notes
       ...ProfileCard_actor
@@ -44,8 +50,9 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       notesPageQuery,
       { handle },
+      { fetchPolicy: "store-and-network" },
     ),
-  "loadNotesPageQuery",
+  PROFILE_NOTES_QUERY_KEY,
 );
 
 export default function ProfileNotesPage() {
@@ -75,10 +82,15 @@ export default function ProfileNotesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="notes" $actor={actor()} />
-                  <ActorNoteList $notes={actor()} />
-                </div>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
+                  <div class="p-4">
+                    <ProfileTabs selected="notes" $actor={actor()} />
+                    <ActorNoteList $notes={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>

@@ -15,6 +15,7 @@ import {
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import type { ProfileCard_actor$key } from "./__generated__/ProfileCard_actor.graphql.ts";
 import { FollowButton } from "./FollowButton.tsx";
+import { ProfileActionMenu } from "./ProfileActionMenu.tsx";
 import { Timestamp } from "./Timestamp.tsx";
 import { Trans } from "./Trans.tsx";
 
@@ -43,6 +44,8 @@ export function ProfileCard(props: ProfileCardProps) {
         followersCount: followers {
           totalCount
         }
+        viewerBlocks
+        blocksViewer
         followsViewer
         fields {
           name
@@ -58,6 +61,7 @@ export function ProfileCard(props: ProfileCardProps) {
           }
         }
         ...FollowButton_actor
+        ...ProfileActionMenu_actor
       }
     `,
     () => props.$actor,
@@ -69,7 +73,13 @@ export function ProfileCard(props: ProfileCardProps) {
         <>
           <div class="p-4">
             <div class="flex items-center gap-4">
-              <Avatar class="size-16">
+              <Avatar
+                classList={{
+                  "size-16": true,
+                  "grayscale": actor().viewerBlocks,
+                  "opacity-40": actor().viewerBlocks,
+                }}
+              >
                 <a
                   href={actor().local
                     ? `/@${actor().username}`
@@ -98,9 +108,26 @@ export function ProfileCard(props: ProfileCardProps) {
                   </span>
                 </div>
               </div>
-              <FollowButton $actor={actor()} />
+              <div class="flex shrink-0 items-center gap-1">
+                <FollowButton $actor={actor()} />
+                <ProfileActionMenu $actor={actor()} />
+              </div>
             </div>
           </div>
+          <Show when={actor().viewerBlocks}>
+            <div class="px-4 pb-4">
+              <div class="rounded-md border border-warning-foreground bg-warning px-3 py-2 text-sm text-warning-foreground">
+                {t`You are blocking this user. They can't follow you or see your posts.`}
+              </div>
+            </div>
+          </Show>
+          <Show when={actor().blocksViewer}>
+            <div class="px-4 pb-4">
+              <div class="rounded-md border border-warning-foreground bg-warning px-3 py-2 text-sm text-warning-foreground">
+                {t`You are blocked by this user. You can't follow them or see their posts.`}
+              </div>
+            </div>
+          </Show>
           <Show when={(actor().bio?.trim() ?? "") !== ""}>
             <div class="p-4 pt-0">
               <div

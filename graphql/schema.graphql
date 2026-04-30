@@ -126,6 +126,7 @@ type Actor implements Node {
   avatarInitials: String!
   avatarUrl: URL!
   bio: HTML
+  blocksViewer: Boolean!
   created: DateTime!
   fields: [ActorField!]!
   followees(after: String, before: String, first: Int, last: Int): ActorFolloweesConnection!

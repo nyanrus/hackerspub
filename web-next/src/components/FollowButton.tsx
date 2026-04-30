@@ -4,6 +4,7 @@ import { createFragment, createMutation } from "solid-relay";
 import { Button } from "~/components/ui/button.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
+import { isViewerActor } from "~/lib/actorUtils.ts";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { FollowButton_actor$key } from "./__generated__/FollowButton_actor.graphql.ts";
 import type { FollowButton_followActor_Mutation } from "./__generated__/FollowButton_followActor_Mutation.graphql.ts";
@@ -81,10 +82,14 @@ export function FollowButton(props: FollowButtonProps) {
     graphql`
       fragment FollowButton_actor on Actor {
         id
+        username
         handle
         rawName
+        local
         isViewer
         viewerFollows
+        viewerBlocks
+        blocksViewer
         followsViewer
       }
     `,
@@ -98,6 +103,8 @@ export function FollowButton(props: FollowButtonProps) {
   const [unfollowActor] = createMutation<FollowButton_unfollowActor_Mutation>(
     unfollowActorMutation,
   );
+
+  const isCurrentViewerActor = () => isViewerActor(actor(), viewer.username());
 
   const handleClick = () => {
     const actorData = actor();
@@ -161,7 +168,10 @@ export function FollowButton(props: FollowButtonProps) {
   return (
     <Show when={actor()}>
       {(actor) => (
-        <Show when={!actor().isViewer && viewer.isLoaded()}>
+        <Show
+          when={!isCurrentViewerActor() && !actor().viewerBlocks &&
+            !actor().blocksViewer && viewer.isLoaded()}
+        >
           <Show
             when={viewer.isAuthenticated()}
             fallback={

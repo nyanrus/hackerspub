@@ -19,12 +19,12 @@ msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 則評論}}"
 
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:222
+#: src/components/ProfileCard.tsx:247
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人關注}}"
 
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:207
+#: src/components/ProfileCard.tsx:232
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {關注 # 人}}"
 
@@ -154,8 +154,8 @@ msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:67
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:71
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
 msgid "{0}'s articles"
 msgstr "{0}的文章"
 
@@ -172,14 +172,14 @@ msgid "{0}'s following"
 msgstr "{0}的關注"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:68
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:72
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
 msgid "{0}'s notes"
 msgstr "{0}的貼文"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:69
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:73
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
 msgid "{0}'s shares"
 msgstr "{0}的轉貼"
 
@@ -248,6 +248,12 @@ msgstr "儲存設定時發生錯誤。請重試，如果問題仍然存在，請
 msgid "An unexpected error occurred. Please try again later."
 msgstr "發生了意外錯誤。請稍後再試。"
 
+#. placeholder {0}: displayName()
+#. placeholder {1}: actor()?.handle
+#: src/components/ProfileActionMenu.tsx:279
+msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
+msgstr "確定要封鎖 {0}（{1}）嗎？該使用者將無法關注你或查看你的內容。"
+
 #: src/routes/(root)/[handle]/drafts/index.tsx:159
 msgid "Are you sure you want to delete \"{draftTitle}\"? This action cannot be undone."
 msgstr "您確定要刪除「{draftTitle}」嗎？此操作無法復原。"
@@ -260,6 +266,12 @@ msgstr "您確定要刪除此草稿嗎？此操作無法復原。"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:502
 msgid "Are you sure you want to revoke passkey {0}? You won't be able to use it to sign in to your account anymore."
 msgstr "您確定要取消密碼{0}嗎？您將無法再使用它登入您的帳戶。"
+
+#. placeholder {0}: displayName()
+#. placeholder {1}: actor()?.handle
+#: src/components/ProfileActionMenu.tsx:281
+msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
+msgstr "確定要解除封鎖 {0}（{1}）嗎？該使用者將能夠關注你並查看你的內容。"
 
 #: src/routes/(root)/[handle]/drafts/index.tsx:246
 #: src/routes/(root)/[handle]/drafts/index.tsx:248
@@ -278,7 +290,7 @@ msgstr "文章已更新"
 msgid "article-url-slug"
 msgstr "文章網址別名"
 
-#: src/components/ProfileTabs.tsx:48
+#: src/components/ProfileTabs.tsx:50
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "文章"
@@ -309,6 +321,16 @@ msgstr "個人簡介"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "個人簡介太長。不能長於 512 字元。"
 
+#: src/components/ProfileActionMenu.tsx:261
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:297
+msgid "Block"
+msgstr "封鎖"
+
+#: src/components/ProfileActionMenu.tsx:272
+msgid "Block user?"
+msgstr "封鎖使用者？"
+
 #: src/components/ui/markdown-editor.tsx:275
 msgid "Bold"
 msgstr "粗體"
@@ -324,6 +346,8 @@ msgstr "收藏"
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
+#: src/components/ProfileActionMenu.tsx:286
+#: src/components/ProfileActionMenu.tsx:287
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -606,6 +630,11 @@ msgstr "到期時間"
 msgid "Extra message"
 msgstr "額外訊息"
 
+#: src/components/ProfileActionMenu.tsx:214
+#: src/components/ProfileActionMenu.tsx:223
+msgid "Failed to block this user"
+msgstr "無法封鎖此使用者"
+
 #: src/components/BookmarkButton.tsx:115
 #: src/components/BookmarkButton.tsx:122
 msgid "Failed to bookmark"
@@ -630,7 +659,7 @@ msgstr "刪除邀請連結失敗"
 msgid "Failed to delete post"
 msgstr "刪除內容失敗"
 
-#: src/components/FollowButton.tsx:153
+#: src/components/FollowButton.tsx:163
 msgid "Failed to follow"
 msgstr "關注失敗"
 
@@ -742,7 +771,12 @@ msgstr "轉貼失敗"
 msgid "Failed to sign out: {0}"
 msgstr "登出失敗：{0}"
 
-#: src/components/FollowButton.tsx:131
+#: src/components/ProfileActionMenu.tsx:187
+#: src/components/ProfileActionMenu.tsx:196
+msgid "Failed to unblock this user"
+msgstr "無法解除封鎖此使用者"
+
+#: src/components/FollowButton.tsx:141
 msgid "Failed to unfollow"
 msgstr "取消關注失敗"
 
@@ -779,11 +813,11 @@ msgstr "聯邦宇宙使用者名稱"
 msgid "Feed"
 msgstr "訂閱流"
 
-#: src/components/FollowButton.tsx:185
+#: src/components/FollowButton.tsx:199
 msgid "Follow"
 msgstr "關注"
 
-#: src/components/FollowButton.tsx:184
+#: src/components/FollowButton.tsx:198
 msgid "Follow back"
 msgstr "回關"
 
@@ -801,7 +835,7 @@ msgstr "從你的帳戶關注"
 msgid "Followers only"
 msgstr "只粉絲可見"
 
-#: src/components/ProfileCard.tsx:232
+#: src/components/ProfileCard.tsx:257
 msgid "Following you"
 msgstr "關注了你"
 
@@ -831,14 +865,14 @@ msgstr "前往我的草稿"
 
 #: src/components/AppSidebar.tsx:226
 #: src/components/AppSidebar.tsx:435
-#: src/routes/(root).tsx:90
+#: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
-#: src/routes/(root).tsx:82
+#: src/routes/(root).tsx:83
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub 首頁"
 
@@ -1257,7 +1291,7 @@ msgstr "貼文建立成功"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "你可以驗證這些連結確實屬於你。在連結的頁面上使用 {0} 屬性連結回你的 Hackers' Pub 個人資料頁。"
 
-#: src/components/ProfileTabs.tsx:41
+#: src/components/ProfileTabs.tsx:43
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "貼文"
@@ -1331,7 +1365,7 @@ msgstr "權限被拒絕"
 msgid "Pin to profile"
 msgstr "釘選到個人資料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:179
+#: src/routes/(root)/[handle]/(profile)/index.tsx:181
 msgid "Pinned posts"
 msgstr "已釘選內容"
 
@@ -1379,7 +1413,7 @@ msgstr "內容已釘選"
 msgid "Post unpinned"
 msgstr "已取消釘選內容"
 
-#: src/components/ProfileTabs.tsx:38
+#: src/components/ProfileTabs.tsx:40
 msgid "Posts"
 msgstr "內容"
 
@@ -1414,6 +1448,10 @@ msgstr "優先級"
 #: src/routes/(root)/privacy.tsx:48
 msgid "Privacy policy"
 msgstr "隱私權政策"
+
+#: src/components/ProfileActionMenu.tsx:243
+msgid "Profile actions"
+msgstr "個人檔案操作"
 
 #: src/components/SettingsTabs.tsx:44
 #: src/routes/(root)/[handle]/settings/index.tsx:115
@@ -1613,7 +1651,7 @@ msgstr "設定"
 msgid "Share"
 msgstr "分享"
 
-#: src/components/ProfileTabs.tsx:51
+#: src/components/ProfileTabs.tsx:53
 msgid "Shares"
 msgstr "轉貼"
 
@@ -1844,7 +1882,7 @@ msgstr "標題不能為空"
 msgid "To follow {0}, enter your Fediverse handle."
 msgstr "要關注{0}，請輸入你的聯邦宇宙使用者名稱。"
 
-#: src/routes/(root).tsx:80
+#: src/routes/(root).tsx:81
 msgid "Toggle sidebar"
 msgstr "切換側邊欄"
 
@@ -1873,7 +1911,17 @@ msgstr "無法新增反應。請重試。"
 msgid "Unable to remove reaction. Please try again."
 msgstr "無法移除反應。請重試。"
 
-#: src/components/FollowButton.tsx:182
+#: src/components/ProfileActionMenu.tsx:262
+#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:298
+msgid "Unblock"
+msgstr "解除封鎖"
+
+#: src/components/ProfileActionMenu.tsx:273
+msgid "Unblock user?"
+msgstr "解除封鎖使用者？"
+
+#: src/components/FollowButton.tsx:196
 msgid "Unfollow"
 msgstr "取消關注"
 
@@ -1898,9 +1946,17 @@ msgstr "更新於 {0}"
 msgid "URL"
 msgstr "URL"
 
+#: src/components/ProfileActionMenu.tsx:218
+msgid "User blocked"
+msgstr "已封鎖使用者"
+
 #: src/components/RemoteFollowButton.tsx:123
 msgid "User not found."
 msgstr "未找到使用者資訊。"
+
+#: src/components/ProfileActionMenu.tsx:191
+msgid "User unblocked"
+msgstr "已解除封鎖使用者"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:379
 #: src/routes/(root)/sign/up/[token].tsx:357
@@ -1929,7 +1985,7 @@ msgstr "您邀請的使用者"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:177
+#: src/components/ProfileCard.tsx:202
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "已於{1}驗證此連結歸{0}所有"
 
@@ -2014,6 +2070,14 @@ msgstr "在此撰寫文章。您可以使用 Markdown。在您撰寫時，文章
 msgid "You are about to follow {0}."
 msgstr "你即將關注{0}。"
 
+#: src/components/ProfileCard.tsx:125
+msgid "You are blocked by this user. You can't follow them or see their posts."
+msgstr "你已被此使用者封鎖。你無法關注該使用者或查看該使用者的內容。"
+
+#: src/components/ProfileCard.tsx:118
+msgid "You are blocking this user. They can't follow you or see your posts."
+msgstr "你正在封鎖此使用者。該使用者無法關注你或查看你的內容。"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:395
 msgid "You can change it only once, and the old username will become available to others."
 msgstr "你只能更改一次使用者名稱，而舊的使用者名稱會公開為別人使用。"
@@ -2048,8 +2112,10 @@ msgstr "您尚未註冊任何通行金鑰。"
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "你沒有剩餘邀請名額。請稍後再試。"
 
-#: src/components/FollowButton.tsx:124
-#: src/components/FollowButton.tsx:142
+#: src/components/FollowButton.tsx:134
+#: src/components/FollowButton.tsx:152
+#: src/components/ProfileActionMenu.tsx:180
+#: src/components/ProfileActionMenu.tsx:209
 msgid "You must be signed in"
 msgstr "請先登入"
 

@@ -14,6 +14,10 @@ import { ProfileCard } from "~/components/ProfileCard.tsx";
 import { ProfileTabs } from "~/components/ProfileTabs.tsx";
 import { Title } from "~/components/Title.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  PROFILE_SHARES_QUERY_KEY,
+  profileContentRevalidating,
+} from "~/lib/profileContentQueries.ts";
 import type { sharesPageQuery } from "./__generated__/sharesPageQuery.graphql.ts";
 
 export const route = {
@@ -31,6 +35,8 @@ const sharesPageQuery = graphql`
     actorByHandle(handle: $handle, allowLocalHandle: true) {
       rawName
       username
+      viewerBlocks
+      blocksViewer
       ...NavigateIfHandleIsNotCanonical_actor
       ...ActorSharedPostList_sharedPosts @arguments(locale: $locale)
       ...ProfileCard_actor
@@ -45,8 +51,9 @@ const loadPageQuery = query(
       useRelayEnvironment()(),
       sharesPageQuery,
       { handle, locale },
+      { fetchPolicy: "store-and-network" },
     ),
-  "loadSharesPageQuery",
+  PROFILE_SHARES_QUERY_KEY,
 );
 
 export default function ProfileSharesPage() {
@@ -76,10 +83,15 @@ export default function ProfileSharesPage() {
                 <div>
                   <ProfileCard $actor={actor()} />
                 </div>
-                <div class="p-4">
-                  <ProfileTabs selected="shares" $actor={actor()} />
-                  <ActorSharedPostList $sharedPosts={actor()} />
-                </div>
+                <Show
+                  when={!actor().viewerBlocks && !actor().blocksViewer &&
+                    !profileContentRevalidating()}
+                >
+                  <div class="p-4">
+                    <ProfileTabs selected="shares" $actor={actor()} />
+                    <ActorSharedPostList $sharedPosts={actor()} />
+                  </div>
+                </Show>
               </NarrowContainer>
             )}
           </Show>
