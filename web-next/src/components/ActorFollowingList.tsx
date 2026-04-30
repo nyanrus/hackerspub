@@ -52,7 +52,7 @@ export function ActorFollowingList(props: ActorFollowingListProps) {
   }
 
   return (
-    <div class="border rounded-xl *:first:rounded-t-xl *:last:rounded-b-xl my-4">
+    <div class="my-4 overflow-hidden rounded-lg border bg-card shadow-sm">
       <Show when={following()}>
         {(data) => (
           <>
@@ -68,7 +68,7 @@ export function ActorFollowingList(props: ActorFollowingListProps) {
             <Show when={following.hasNext}>
               <div
                 on:click={loadingState() === "loading" ? undefined : onLoadMore}
-                class="block px-4 py-8 text-center text-muted-foreground cursor-pointer hover:text-primary hover:bg-secondary"
+                class="block cursor-pointer px-4 py-8 text-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
               >
                 <Switch>
                   <Match
