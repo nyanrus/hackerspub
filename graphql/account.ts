@@ -106,6 +106,7 @@ export const Account = builder.drizzleNode("accountTable", {
         });
         const handle = `@${account.username}@${account.actor.handleHost}`;
         const key = await putProfileOgImage(ctx.disk, account.ogImageKey, {
+          avatarKey: account.avatarKey ?? avatarUrl,
           avatarUrl,
           bio: bio.text,
           displayName: account.name,

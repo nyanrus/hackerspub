@@ -114,6 +114,7 @@ test("putProfileOgImage leaves existing cached images for the caller", async () 
   const disk = createOgTestDisk();
 
   const key = await putProfileOgImage(disk.disk, "og/v2/stale-profile.png", {
+    avatarKey: "avatar-og-test",
     avatarUrl: smallPngDataUrl,
     bio: "Cached profile image should survive until metadata is updated.",
     displayName: "Profile Cache Review",

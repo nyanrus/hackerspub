@@ -473,9 +473,11 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
         const rendered = await renderMarkup(ctx.fedCtx, content.content, {
           kv: ctx.kv,
         });
+        const avatarUrl = await getAvatarUrl(ctx.disk, account);
         const key = await putArticleOgImage(ctx.disk, content.ogImageKey, {
           authorName: account.name,
-          avatarUrl: await getAvatarUrl(ctx.disk, account),
+          avatarKey: account.avatarKey ?? avatarUrl,
+          avatarUrl,
           excerpt: content.summary ?? rendered.text,
           handle: `@${account.username}@${account.actor.handleHost}`,
           language: content.language,

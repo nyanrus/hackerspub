@@ -29,6 +29,7 @@ type OgElement = {
 };
 
 interface ProfileOgImageInput {
+  avatarKey: string;
   avatarUrl: string;
   bio: string;
   displayName: string;
@@ -37,6 +38,7 @@ interface ProfileOgImageInput {
 
 interface ArticleOgImageInput {
   authorName: string;
+  avatarKey: string;
   avatarUrl: string;
   excerpt: string;
   handle: string;
@@ -461,10 +463,11 @@ export async function putProfileOgImage(
   existingKey: string | null | undefined,
   input: ProfileOgImageInput,
 ): Promise<string> {
+  const { avatarUrl: _avatarUrl, ...cacheInput } = input;
   return await putOgImage(
     disk,
     existingKey,
-    { type: "profile", ...input },
+    { type: "profile", ...cacheInput },
     await profileOgElement(input),
   );
 }
@@ -474,10 +477,11 @@ export async function putArticleOgImage(
   existingKey: string | null | undefined,
   input: ArticleOgImageInput,
 ): Promise<string> {
+  const { avatarUrl: _avatarUrl, ...cacheInput } = input;
   return await putOgImage(
     disk,
     existingKey,
-    { type: "article", ...input },
+    { type: "article", ...cacheInput },
     await articleOgElement(input),
   );
 }
