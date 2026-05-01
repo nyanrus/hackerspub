@@ -1,4 +1,4 @@
-import { Navigate, query } from "@solidjs/router";
+import { Navigate, query, revalidate } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, Show } from "solid-js";
 import {
@@ -103,6 +103,11 @@ export default function AdminInvitationsPage() {
               result.accountsAffected!.toLocaleString(i18n.locale)
             } accounts.`,
           });
+          // Relay does not normalise the mutation's nested `status`
+          // back into the root `Query.invitationRegenerationStatus`
+          // field, so refetch the page query to pick up the new
+          // last-regenerated timestamp and recomputed cutoff.
+          void revalidate("loadAdminInvitationsPageQuery");
         } else {
           showToast({
             title: t`Not authorized to regenerate invitations.`,
