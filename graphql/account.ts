@@ -4,7 +4,8 @@ import {
   type ResolveCursorConnectionArgs,
 } from "@pothos/plugin-relay";
 import { assertNever } from "@std/assert/unstable-never";
-import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
+import DataLoader from "dataloader";
+import { and, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
 import {
   getAvatarUrl,
   transformAvatar,
@@ -18,8 +19,9 @@ import {
   actorTable,
   notificationTable,
 } from "@hackerspub/models/schema";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { Actor } from "./actor.ts";
-import { builder } from "./builder.ts";
+import { builder, type UserContext } from "./builder.ts";
 import { InvitationLink } from "./invitation-link.ts";
 import { Notification } from "./notification.ts";
 import { putProfileOgImage } from "./og.ts";
@@ -260,6 +262,32 @@ const accountConnectionHelpers = drizzleConnectionHelpers(
   },
 );
 
+// Per-request batching loader for invitee counts.  Without this,
+// listing accounts on the admin table (or any other place that
+// requests `Account.invitees(first: 0).totalCount` per row) fans
+// out to one COUNT(*) query per account.
+function getInviteeCount(ctx: UserContext, accountId: string): Promise<number> {
+  ctx.inviteeCountLoader ??= new DataLoader<Uuid, number>(async (ids) => {
+    const idList = ids as Uuid[];
+    const rows = await ctx.db
+      .select({
+        inviterId: accountTable.inviterId,
+        count: sql<number>`COUNT(*)::int`,
+      })
+      .from(accountTable)
+      .where(inArray(accountTable.inviterId, idList))
+      .groupBy(accountTable.inviterId);
+    const map = new Map<string, number>();
+    for (const row of rows) {
+      if (row.inviterId == null) continue;
+      map.set(row.inviterId, Number(row.count));
+    }
+    return idList.map((id) => map.get(id) ?? 0);
+  });
+  if (!validateUuid(accountId)) return Promise.resolve(0);
+  return ctx.inviteeCountLoader.load(accountId);
+}
+
 builder.drizzleObjectField(Account, "invitees", (t) =>
   t.connection(
     {
@@ -276,10 +304,7 @@ builder.drizzleObjectField(Account, "invitees", (t) =>
       async resolve(account, args, ctx) {
         return {
           ...accountConnectionHelpers.resolve(account.invitees, args, ctx),
-          totalCount: await ctx.db.$count(
-            accountTable,
-            eq(accountTable.inviterId, account.id),
-          ),
+          totalCount: await getInviteeCount(ctx, account.id),
         };
       },
     },

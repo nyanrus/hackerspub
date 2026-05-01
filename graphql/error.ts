@@ -12,3 +12,18 @@ builder.objectType(InvalidInputError, {
     inputPath: t.expose("inputPath", { type: "String" }),
   }),
 });
+
+export class NotAuthorizedError extends Error {
+  public constructor() {
+    super("Not authorized");
+  }
+}
+
+builder.objectType(NotAuthorizedError, {
+  name: "NotAuthorizedError",
+  fields: (t) => ({
+    notAuthorized: t.string({
+      resolve: () => "",
+    }),
+  }),
+});

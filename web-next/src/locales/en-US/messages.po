@@ -14,17 +14,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:605
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:633
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, one {# comment} other {# comments}}"
 
+#. placeholder {0}: status()?.eligibleAccountsCount ?? 0
+#. placeholder {1}: status()?.topThirdCount ?? 0
+#: src/routes/(root)/admin/invitations.tsx:188
+msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
+msgstr "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
+
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:247
+#: src/components/ProfileCard.tsx:249
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, one {# follower} other {# followers}}"
 
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:232
+#: src/components/ProfileCard.tsx:234
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, one {# following} other {# following}}"
 
@@ -54,6 +60,11 @@ msgstr "{0, plural, one {+1 more} other {+# more}}"
 #: src/routes/(root)/[handle]/settings/invite.tsx:298
 msgid "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
 msgstr "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
+
+#. placeholder {0}: result.accountsAffected!
+#: src/routes/(root)/admin/invitations.tsx:103
+msgid "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
+msgstr "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
 
 #. placeholder {0}: account().inviteesCount.totalCount
 #: src/routes/(root)/[handle]/settings/invite.tsx:425
@@ -96,6 +107,10 @@ msgstr "{0} and {1} others replied to your post"
 #: src/components/notification/ShareNotificationCard.tsx:34
 msgid "{0} and {1} others shared your post"
 msgstr "{0} and {1} others shared your post"
+
+#: src/routes/(root)/admin/invitations.tsx:173
+#~ msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
+#~ msgstr "{0} eligible account(s); {1} would receive an invitation if regenerated now."
 
 #. placeholder {0}: "ACTOR"
 #: src/components/notification/FollowNotificationCard.tsx:28
@@ -148,14 +163,14 @@ msgstr "{0} shared your post"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:157
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:158
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:74
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:78
 msgid "{0}'s articles"
 msgstr "{0}'s articles"
 
@@ -172,14 +187,14 @@ msgid "{0}'s following"
 msgstr "{0}'s following"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:75
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:79
 msgid "{0}'s notes"
 msgstr "{0}'s notes"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:76
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:80
 msgid "{0}'s shares"
 msgstr "{0}'s shares"
 
@@ -191,9 +206,15 @@ msgstr "A name for the link that will be displayed on your profile, e.g., GitHub
 msgid "A sign-in link has been sent to your email. Please check your inbox (or spam folder)."
 msgstr "A sign-in link has been sent to your email. Please check your inbox (or spam folder)."
 
-#: src/components/AppSidebar.tsx:274
+#: src/components/admin/AdminAccountsTable.tsx:104
+#: src/components/AppSidebar.tsx:275
 msgid "Account"
 msgstr "Account"
+
+#: src/components/AppSidebar.tsx:475
+#: src/routes/(root)/admin/index.tsx:56
+msgid "Accounts"
+msgstr "Accounts"
 
 #: src/components/LanguageList.tsx:63
 #: src/components/LanguageList.tsx:198
@@ -208,6 +229,10 @@ msgstr "Add"
 #: src/components/EmojiReactionPopover.tsx:312
 msgid "Add {0}"
 msgstr "Add {0}"
+
+#: src/components/AppSidebar.tsx:457
+msgid "Admin"
+msgstr "Admin"
 
 #: src/routes/(root)/bookmarks/index.tsx:83
 msgid "All"
@@ -250,7 +275,7 @@ msgstr "An unexpected error occurred. Please try again later."
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:279
+#: src/components/ProfileActionMenu.tsx:287
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 
@@ -269,7 +294,7 @@ msgstr "Are you sure you want to revoke passkey {0}? You won't be able to use it
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:281
+#: src/components/ProfileActionMenu.tsx:289
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 
@@ -290,12 +315,12 @@ msgstr "Article updated"
 msgid "article-url-slug"
 msgstr "article-url-slug"
 
-#: src/components/ProfileTabs.tsx:50
+#: src/components/ProfileTabs.tsx:51
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "Articles"
 
-#: src/components/AppSidebar.tsx:186
+#: src/components/AppSidebar.tsx:187
 msgid "Articles only"
 msgstr "Articles only"
 
@@ -321,13 +346,13 @@ msgstr "Bio"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "Bio is too long. Maximum length is 512 characters."
 
-#: src/components/ProfileActionMenu.tsx:261
-#: src/components/ProfileActionMenu.tsx:290
-#: src/components/ProfileActionMenu.tsx:297
+#: src/components/ProfileActionMenu.tsx:269
+#: src/components/ProfileActionMenu.tsx:298
+#: src/components/ProfileActionMenu.tsx:305
 msgid "Block"
 msgstr "Block"
 
-#: src/components/ProfileActionMenu.tsx:272
+#: src/components/ProfileActionMenu.tsx:280
 msgid "Block user?"
 msgstr "Block user?"
 
@@ -339,15 +364,15 @@ msgstr "Bold"
 msgid "Bookmark"
 msgstr "Bookmark"
 
-#: src/components/AppSidebar.tsx:205
+#: src/components/AppSidebar.tsx:206
 msgid "Bookmarks"
 msgstr "Bookmarks"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:286
-#: src/components/ProfileActionMenu.tsx:287
+#: src/components/ProfileActionMenu.tsx:294
+#: src/components/ProfileActionMenu.tsx:295
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -385,7 +410,7 @@ msgstr "Closed"
 msgid "Code"
 msgstr "Code"
 
-#: src/components/AppSidebar.tsx:613
+#: src/components/AppSidebar.tsx:670
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/sign/up/[token].tsx:457
 msgid "Code of conduct"
@@ -395,7 +420,7 @@ msgstr "Code of conduct"
 #~ msgid "Comments ({0})"
 #~ msgstr "Comments ({0})"
 
-#: src/components/AppSidebar.tsx:460
+#: src/components/AppSidebar.tsx:517
 #: src/components/FloatingComposeButton.tsx:61
 msgid "Compose"
 msgstr "Compose"
@@ -434,7 +459,7 @@ msgstr "Could not find a post at this URL"
 msgid "Could not vote on this poll"
 msgstr "Could not vote on this poll"
 
-#: src/components/AppSidebar.tsx:505
+#: src/components/AppSidebar.tsx:562
 #: src/components/FloatingComposeButton.tsx:123
 msgid "Create article"
 msgstr "Create article"
@@ -443,7 +468,7 @@ msgstr "Create article"
 msgid "Create invitation link"
 msgstr "Create invitation link"
 
-#: src/components/AppSidebar.tsx:482
+#: src/components/AppSidebar.tsx:539
 #: src/components/FloatingComposeButton.tsx:99
 #: src/components/NoteComposeModal.tsx:26
 #: src/components/NoteComposer.tsx:451
@@ -453,6 +478,10 @@ msgstr "Create note"
 #: src/routes/(root)/[handle]/settings/invite.tsx:613
 msgid "Create shareable invitation links. Each link can be used multiple times until the invitation count runs out or the link expires."
 msgstr "Create shareable invitation links. Each link can be used multiple times until the invitation count runs out or the link expires."
+
+#: src/components/admin/AdminAccountsTable.tsx:122
+msgid "Created"
+msgstr "Created"
 
 #. placeholder {0}: "RELATIVE_DATE"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:418
@@ -475,6 +504,10 @@ msgstr "Crop"
 #: src/routes/(root)/[handle]/settings/index.tsx:344
 msgid "Crop your new avatar"
 msgstr "Crop your new avatar"
+
+#: src/routes/(root)/admin/invitations.tsx:180
+msgid "Cutoff:"
+msgstr "Cutoff:"
 
 #: src/routes/(root)/[handle]/settings/preferences.tsx:169
 msgid "Default note privacy"
@@ -546,7 +579,7 @@ msgstr "Drag to select the area you want to keep, then click “Crop” to updat
 msgid "e.g., @user@mastodon.social"
 msgstr "e.g., @user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:385
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:413
 msgid "Edit"
 msgstr "Edit"
 
@@ -634,8 +667,8 @@ msgstr "Expiry"
 msgid "Extra message"
 msgstr "Extra message"
 
-#: src/components/ProfileActionMenu.tsx:214
-#: src/components/ProfileActionMenu.tsx:223
+#: src/components/ProfileActionMenu.tsx:225
+#: src/components/ProfileActionMenu.tsx:231
 msgid "Failed to block this user"
 msgstr "Failed to block this user"
 
@@ -663,9 +696,13 @@ msgstr "Failed to delete invitation link"
 msgid "Failed to delete post"
 msgstr "Failed to delete post"
 
-#: src/components/FollowButton.tsx:163
+#: src/components/FollowButton.tsx:160
 msgid "Failed to follow"
 msgstr "Failed to follow"
+
+#: src/components/admin/AdminAccountsTable.tsx:233
+msgid "Failed to load more accounts; click to retry"
+msgstr "Failed to load more accounts; click to retry"
 
 #: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
@@ -731,6 +768,10 @@ msgstr "Failed to pin post"
 msgid "Failed to react"
 msgstr "Failed to react"
 
+#: src/routes/(root)/admin/invitations.tsx:131
+msgid "Failed to regenerate invitations."
+msgstr "Failed to regenerate invitations."
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:277
 msgid "Failed to register passkey"
 msgstr "Failed to register passkey"
@@ -771,16 +812,16 @@ msgid "Failed to share post"
 msgstr "Failed to share post"
 
 #. placeholder {0}: error.message
-#: src/components/AppSidebar.tsx:113
+#: src/components/AppSidebar.tsx:114
 msgid "Failed to sign out: {0}"
 msgstr "Failed to sign out: {0}"
 
-#: src/components/ProfileActionMenu.tsx:187
-#: src/components/ProfileActionMenu.tsx:196
+#: src/components/ProfileActionMenu.tsx:207
+#: src/components/ProfileActionMenu.tsx:213
 msgid "Failed to unblock this user"
 msgstr "Failed to unblock this user"
 
-#: src/components/FollowButton.tsx:141
+#: src/components/FollowButton.tsx:138
 msgid "Failed to unfollow"
 msgstr "Failed to unfollow"
 
@@ -805,7 +846,7 @@ msgstr "Failed to upload image"
 msgid "Failed to vote"
 msgstr "Failed to vote"
 
-#: src/components/AppSidebar.tsx:248
+#: src/components/AppSidebar.tsx:249
 msgid "Fediverse"
 msgstr "Fediverse"
 
@@ -813,15 +854,15 @@ msgstr "Fediverse"
 msgid "Fediverse handle"
 msgstr "Fediverse handle"
 
-#: src/components/AppSidebar.tsx:148
+#: src/components/AppSidebar.tsx:149
 msgid "Feed"
 msgstr "Feed"
 
-#: src/components/FollowButton.tsx:199
+#: src/components/FollowButton.tsx:195
 msgid "Follow"
 msgstr "Follow"
 
-#: src/components/FollowButton.tsx:198
+#: src/components/FollowButton.tsx:194
 msgid "Follow back"
 msgstr "Follow back"
 
@@ -830,16 +871,20 @@ msgstr "Follow back"
 msgid "Follow from your account"
 msgstr "Follow from your account"
 
-#: src/routes/(root)/[handle]/(profile)/followers.tsx:82
-#~ msgid "Followers"
-#~ msgstr "Followers"
+#: src/components/admin/AdminAccountsTable.tsx:109
+msgid "Followers"
+msgstr "Followers"
 
 #: src/components/PostVisibilitySelect.tsx:63
 #: src/components/VisibilityTag.tsx:76
 msgid "Followers only"
 msgstr "Followers only"
 
-#: src/components/ProfileCard.tsx:257
+#: src/components/admin/AdminAccountsTable.tsx:106
+msgid "Following"
+msgstr "Following"
+
+#: src/components/ProfileCard.tsx:259
 msgid "Following you"
 msgstr "Following you"
 
@@ -847,7 +892,7 @@ msgstr "Following you"
 msgid "Formatting"
 msgstr "Formatting"
 
-#: src/components/AppSidebar.tsx:648
+#: src/components/AppSidebar.tsx:705
 msgid "GitHub repository"
 msgstr "GitHub repository"
 
@@ -867,8 +912,12 @@ msgstr "Go to Drafts"
 msgid "Go to my drafts"
 msgstr "Go to my drafts"
 
-#: src/components/AppSidebar.tsx:226
-#: src/components/AppSidebar.tsx:435
+#: src/routes/(root)/admin/invitations.tsx:159
+msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
+msgstr "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
+
+#: src/components/AppSidebar.tsx:227
+#: src/components/AppSidebar.tsx:437
 #: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
@@ -883,6 +932,14 @@ msgstr "Hackers' Pub home"
 #: src/components/AboutHackersPub.tsx:234
 msgid "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
 msgstr "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
+
+#: src/routes/(root)/admin/index.tsx:48
+msgid "Hackers' Pub: Admin · Accounts"
+msgstr "Hackers' Pub: Admin · Accounts"
+
+#: src/routes/(root)/admin/invitations.tsx:141
+msgid "Hackers' Pub: Admin · Invitations"
+msgstr "Hackers' Pub: Admin · Invitations"
 
 #: src/routes/(root)/notifications.tsx:41
 msgid "Hackers' Pub: Notifications"
@@ -917,7 +974,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "If enabled, the AI will generate a summary of the article for you. Otherwise, the first few lines of the article will be used as the summary."
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:627
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:655
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 
@@ -980,7 +1037,13 @@ msgstr "Invitation links"
 msgid "Invitation sent"
 msgstr "Invitation sent"
 
-#: src/components/AppSidebar.tsx:365
+#: src/components/admin/AdminAccountsTable.tsx:115
+#: src/components/AppSidebar.tsx:494
+#: src/routes/(root)/admin/invitations.tsx:153
+msgid "Invitations"
+msgstr "Invitations"
+
+#: src/components/AppSidebar.tsx:366
 #: src/components/SettingsTabs.tsx:68
 #: src/routes/(root)/[handle]/settings/invite.tsx:282
 msgid "Invite"
@@ -989,6 +1052,14 @@ msgstr "Invite"
 #: src/routes/(root)/[handle]/settings/invite.tsx:291
 msgid "Invite a friend"
 msgstr "Invite a friend"
+
+#: src/components/admin/AdminAccountsTable.tsx:119
+msgid "Invited"
+msgstr "Invited"
+
+#: src/components/admin/AdminAccountsTable.tsx:117
+msgid "Invited by"
+msgstr "Invited by"
 
 #: src/components/ui/markdown-editor.tsx:277
 msgid "Italic"
@@ -1019,6 +1090,14 @@ msgstr "Language code"
 #: src/routes/(root)/[handle]/settings/language.tsx:74
 msgid "Language settings"
 msgstr "Language settings"
+
+#: src/components/admin/AdminAccountsTable.tsx:121
+msgid "Last activity"
+msgstr "Last activity"
+
+#: src/routes/(root)/admin/invitations.tsx:165
+msgid "Last regenerated:"
+msgstr "Last regenerated:"
 
 #. placeholder {0}: "RELATIVE_DATE"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:435
@@ -1052,6 +1131,10 @@ msgstr "List"
 #: src/routes/(root)/[handle]/drafts/index.tsx:351
 msgid "Load more"
 msgstr "Load more"
+
+#: src/components/admin/AdminAccountsTable.tsx:236
+msgid "Load more accounts"
+msgstr "Load more accounts"
 
 #: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
@@ -1096,6 +1179,10 @@ msgstr "Load more posts"
 #: src/components/article-composer/ArticleComposer.tsx:31
 msgid "Loading draft…"
 msgstr "Loading draft…"
+
+#: src/components/admin/AdminAccountsTable.tsx:230
+msgid "Loading more accounts…"
+msgstr "Loading more accounts…"
 
 #: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
@@ -1205,6 +1292,10 @@ msgstr "Name is too long. Maximum length is 50 characters."
 msgid "Native name"
 msgstr "Native name"
 
+#: src/routes/(root)/admin/invitations.tsx:171
+msgid "Never"
+msgstr "Never"
+
 #: src/routes/(root)/[handle]/settings/invite.tsx:670
 #: src/routes/(root)/[handle]/settings/invite.tsx:736
 msgid "Never expires"
@@ -1273,6 +1364,10 @@ msgstr "No such account in Hackers' Pub—please try again."
 msgid "No user URI provided."
 msgstr "No user URI provided."
 
+#: src/routes/(root)/admin/invitations.tsx:122
+msgid "Not authorized to regenerate invitations."
+msgstr "Not authorized to regenerate invitations."
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:220
 #: src/routes/(root)/[handle]/invite/[id].tsx:223
 msgid "Not found"
@@ -1295,7 +1390,7 @@ msgstr "Note created successfully"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 
-#: src/components/ProfileTabs.tsx:43
+#: src/components/ProfileTabs.tsx:44
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "Notes"
@@ -1304,7 +1399,7 @@ msgstr "Notes"
 #~ msgid "Nothing to preview"
 #~ msgstr "Nothing to preview"
 
-#: src/components/AppSidebar.tsx:327
+#: src/components/AppSidebar.tsx:328
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -1328,7 +1423,7 @@ msgstr "Or"
 msgid "Or enter the code from the email"
 msgstr "Or enter the code from the email"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:503
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:531
 msgid "Other languages"
 msgstr "Other languages"
 
@@ -1370,7 +1465,7 @@ msgstr "Permission denied"
 msgid "Pin to profile"
 msgstr "Pin to profile"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:181
+#: src/routes/(root)/[handle]/(profile)/index.tsx:203
 msgid "Pinned posts"
 msgstr "Pinned posts"
 
@@ -1418,7 +1513,8 @@ msgstr "Post pinned"
 msgid "Post unpinned"
 msgstr "Post unpinned"
 
-#: src/components/ProfileTabs.tsx:40
+#: src/components/admin/AdminAccountsTable.tsx:112
+#: src/components/ProfileTabs.tsx:41
 msgid "Posts"
 msgstr "Posts"
 
@@ -1449,12 +1545,12 @@ msgstr "Preferred languages"
 msgid "Priority"
 msgstr "Priority"
 
-#: src/components/AppSidebar.tsx:616
+#: src/components/AppSidebar.tsx:673
 #: src/routes/(root)/privacy.tsx:48
 msgid "Privacy policy"
 msgstr "Privacy policy"
 
-#: src/components/ProfileActionMenu.tsx:243
+#: src/components/ProfileActionMenu.tsx:249
 msgid "Profile actions"
 msgstr "Profile actions"
 
@@ -1518,9 +1614,25 @@ msgstr "Read full article"
 msgid "Read the full Code of conduct"
 msgstr "Read the full Code of conduct"
 
-#: src/components/AppSidebar.tsx:540
+#: src/components/AppSidebar.tsx:597
 msgid "Recent drafts"
 msgstr "Recent drafts"
+
+#: src/routes/(root)/admin/invitations.tsx:207
+msgid "Regenerate"
+msgstr "Regenerate"
+
+#: src/routes/(root)/admin/invitations.tsx:157
+msgid "Regenerate invitations"
+msgstr "Regenerate invitations"
+
+#: src/routes/(root)/admin/invitations.tsx:102
+#~ msgid "Regenerated invitations for {0} accounts."
+#~ msgstr "Regenerated invitations for {0} accounts."
+
+#: src/routes/(root)/admin/invitations.tsx:207
+msgid "Regenerating…"
+msgstr "Regenerating…"
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:378
 msgid "Register"
@@ -1605,7 +1717,7 @@ msgstr "Save draft to see preview"
 msgid "Saving…"
 msgstr "Saving…"
 
-#: src/components/AppSidebar.tsx:267
+#: src/components/AppSidebar.tsx:268
 #: src/routes/(root)/search.tsx:149
 msgid "Search"
 msgstr "Search"
@@ -1648,7 +1760,7 @@ msgstr "Sending…"
 msgid "Set your personal preferences."
 msgstr "Set your personal preferences."
 
-#: src/components/AppSidebar.tsx:396
+#: src/components/AppSidebar.tsx:397
 msgid "Settings"
 msgstr "Settings"
 
@@ -1656,7 +1768,7 @@ msgstr "Settings"
 msgid "Share"
 msgstr "Share"
 
-#: src/components/ProfileTabs.tsx:53
+#: src/components/ProfileTabs.tsx:54
 msgid "Shares"
 msgstr "Shares"
 
@@ -1664,7 +1776,7 @@ msgstr "Shares"
 msgid "Show preview"
 msgstr "Show preview"
 
-#: src/components/AppSidebar.tsx:300
+#: src/components/AppSidebar.tsx:301
 #: src/routes/(root)/sign/index.tsx:396
 msgid "Sign in"
 msgstr "Sign in"
@@ -1681,7 +1793,7 @@ msgstr "Sign in to vote"
 msgid "Sign in with passkey"
 msgstr "Sign in with passkey"
 
-#: src/components/AppSidebar.tsx:601
+#: src/components/AppSidebar.tsx:658
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -1749,9 +1861,9 @@ msgid "Summarized by LLM"
 msgstr "Summarized by LLM"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:411
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:419
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:668
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:439
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:447
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:696
 msgid "Table of contents"
 msgstr "Table of contents"
 
@@ -1761,7 +1873,7 @@ msgstr "Table of contents"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:677
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:705
 msgid "Tags"
 msgstr "Tags"
 
@@ -1824,7 +1936,7 @@ msgstr "The sign-up link is invalid. Please make sure you're using the correct l
 
 #. placeholder {0}: "GITHUB_REPOSITORY"
 #. placeholder {1}: "AGPL-3.0"
-#: src/components/AppSidebar.tsx:639
+#: src/components/AppSidebar.tsx:696
 msgid "The source code of this website is available on {0} under the {1} license."
 msgstr "The source code of this website is available on {0} under the {1} license."
 
@@ -1869,7 +1981,7 @@ msgstr "This service does not support remote follow."
 msgid "This will be part of the article URL"
 msgstr "This will be part of the article URL"
 
-#: src/components/AppSidebar.tsx:128
+#: src/components/AppSidebar.tsx:129
 msgid "Timeline"
 msgstr "Timeline"
 
@@ -1891,13 +2003,18 @@ msgstr "To follow {0}, enter your Fediverse handle."
 msgid "Toggle sidebar"
 msgstr "Toggle sidebar"
 
+#. placeholder {0}: formatNumber(conn().totalCount)
+#: src/components/admin/AdminAccountsTable.tsx:98
+msgid "Total: {0}"
+msgstr "Total: {0}"
+
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:196
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
 msgid "Translated from {0}"
 msgstr "Translated from {0}"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:295
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:323
 msgid "Translating…"
 msgstr "Translating…"
 
@@ -1916,17 +2033,17 @@ msgstr "Unable to add reaction. Please try again."
 msgid "Unable to remove reaction. Please try again."
 msgstr "Unable to remove reaction. Please try again."
 
-#: src/components/ProfileActionMenu.tsx:262
-#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:270
 #: src/components/ProfileActionMenu.tsx:298
+#: src/components/ProfileActionMenu.tsx:306
 msgid "Unblock"
 msgstr "Unblock"
 
-#: src/components/ProfileActionMenu.tsx:273
+#: src/components/ProfileActionMenu.tsx:281
 msgid "Unblock user?"
 msgstr "Unblock user?"
 
-#: src/components/FollowButton.tsx:196
+#: src/components/FollowButton.tsx:192
 msgid "Unfollow"
 msgstr "Unfollow"
 
@@ -1951,7 +2068,7 @@ msgstr "Updated {0}"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:218
+#: src/components/ProfileActionMenu.tsx:226
 msgid "User blocked"
 msgstr "User blocked"
 
@@ -1959,7 +2076,7 @@ msgstr "User blocked"
 msgid "User not found."
 msgstr "User not found."
 
-#: src/components/ProfileActionMenu.tsx:191
+#: src/components/ProfileActionMenu.tsx:208
 msgid "User unblocked"
 msgstr "User unblocked"
 
@@ -1990,7 +2107,7 @@ msgstr "Users you have invited"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:202
+#: src/components/ProfileCard.tsx:204
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "Verified that this link is owned by {0} {1}"
 
@@ -1998,7 +2115,7 @@ msgstr "Verified that this link is owned by {0} {1}"
 msgid "Verifying your invitation…"
 msgstr "Verifying your invitation…"
 
-#: src/components/AppSidebar.tsx:564
+#: src/components/AppSidebar.tsx:621
 msgid "View all drafts →"
 msgstr "View all drafts →"
 
@@ -2054,11 +2171,11 @@ msgstr "What is Hackers' Pub?"
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 
-#: src/components/AppSidebar.tsx:167
+#: src/components/AppSidebar.tsx:168
 msgid "Without shares"
 msgstr "Without shares"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:618
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:646
 msgid "Write a reply…"
 msgstr "Write a reply…"
 
@@ -2075,11 +2192,11 @@ msgstr "Write your article here. You can use Markdown. Your article will be auto
 msgid "You are about to follow {0}."
 msgstr "You are about to follow {0}."
 
-#: src/components/ProfileCard.tsx:125
+#: src/components/ProfileCard.tsx:127
 msgid "You are blocked by this user. You can't follow them or see their posts."
 msgstr "You are blocked by this user. You can't follow them or see their posts."
 
-#: src/components/ProfileCard.tsx:118
+#: src/components/ProfileCard.tsx:120
 msgid "You are blocking this user. They can't follow you or see your posts."
 msgstr "You are blocking this user. They can't follow you or see your posts."
 
@@ -2117,10 +2234,9 @@ msgstr "You don't have any passkeys registered yet."
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "You have no invitations left. Please wait until you receive more."
 
-#: src/components/FollowButton.tsx:134
-#: src/components/FollowButton.tsx:152
-#: src/components/ProfileActionMenu.tsx:180
-#: src/components/ProfileActionMenu.tsx:209
+#: src/components/FollowButton.tsx:131
+#: src/components/FollowButton.tsx:149
+#: src/components/ProfileActionMenu.tsx:165
 msgid "You must be signed in"
 msgstr "You must be signed in"
 

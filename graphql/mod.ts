@@ -1,6 +1,7 @@
 import { type GraphQLSchema, printSchema } from "graphql";
 import path from "node:path";
 import "./account.ts";
+import "./admin.ts";
 import "./apns.ts";
 import "./fcm.ts";
 import "./actor.ts";

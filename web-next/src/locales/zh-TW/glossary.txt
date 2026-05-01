@@ -30,3 +30,4 @@ invitationLink → 邀請連結
 medium → 媒體
 preferences → 偏好設定
 notification → 通知
+moderator → 版主

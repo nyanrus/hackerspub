@@ -76,6 +76,7 @@ export function AppSidebar(props: AppSidebarProps) {
         username
         avatarUrl
         invitationsLeft
+        moderator
         articleDrafts(after: $cursor, first: $count)
           @connection(key: "SignedAccount_articleDrafts") {
           __id
@@ -402,6 +403,7 @@ export function AppSidebar(props: AppSidebarProps) {
             </Show>
           </SidebarGroupContent>
         </SidebarGroup>
+        <AdminSection signedAccount={signedAccount()} />
         <ComposeSection
           signedAccount={signedAccount()}
           visible={props.signedAccountLoaded && !!signedAccount() &&
@@ -440,6 +442,61 @@ function AppSidebarLogo() {
         </picture>
       </a>
     </h1>
+  );
+}
+
+interface AdminSectionProps {
+  signedAccount?: AppSidebar_signedAccount$data | null;
+}
+
+function AdminSection(props: AdminSectionProps) {
+  const { t } = useLingui();
+  return (
+    <Show when={props.signedAccount?.moderator}>
+      <SidebarGroup>
+        <SidebarGroupLabel>{t`Admin`}</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenuItem class="list-none">
+            <SidebarMenuButton as={A} href="/admin">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                />
+              </svg>
+              {t`Accounts`}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem class="list-none">
+            <SidebarMenuButton as={A} href="/admin/invitations">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"
+                />
+              </svg>
+              {t`Invitations`}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </Show>
   );
 }
 

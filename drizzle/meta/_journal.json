@@ -666,6 +666,13 @@
       "when": 1777282274189,
       "tag": "0094_post_fk_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1777627900806,
+      "tag": "0095_admin_state",
+      "breakpoints": true
     }
   ]
 }

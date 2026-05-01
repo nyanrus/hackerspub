@@ -30,3 +30,4 @@ invitationLink → invitation link
 medium → medium
 preferences → preferences
 notification → notification
+moderator → moderator

@@ -14,17 +14,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:605
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:633
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 則評論}}"
 
+#. placeholder {0}: status()?.eligibleAccountsCount ?? 0
+#. placeholder {1}: status()?.topThirdCount ?? 0
+#: src/routes/(root)/admin/invitations.tsx:188
+msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
+msgstr "{0, plural, other {符合條件的帳號 # 個}}；若現在重新發放，將向其中 {1, plural, other {# 個帳號}}發放邀請。"
+
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:247
+#: src/components/ProfileCard.tsx:249
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人關注}}"
 
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:232
+#: src/components/ProfileCard.tsx:234
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {關注 # 人}}"
 
@@ -54,6 +60,11 @@ msgstr "{0, plural, other {還有#個}}"
 #: src/routes/(root)/[handle]/settings/invite.tsx:298
 msgid "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
 msgstr "{0, plural, other {邀請你的朋友加入 Hackers' Pub。你可以邀請最多 # 個人。}}"
+
+#. placeholder {0}: result.accountsAffected!
+#: src/routes/(root)/admin/invitations.tsx:103
+msgid "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
+msgstr "{0, plural, other {已為 # 個帳號重新發放邀請。}}"
 
 #. placeholder {0}: account().inviteesCount.totalCount
 #: src/routes/(root)/[handle]/settings/invite.tsx:425
@@ -96,6 +107,10 @@ msgstr "{0} 和其他 {1} 人回覆了你的內容"
 #: src/components/notification/ShareNotificationCard.tsx:34
 msgid "{0} and {1} others shared your post"
 msgstr "{0} 和其他 {1} 人轉貼了你的內容"
+
+#: src/routes/(root)/admin/invitations.tsx:173
+#~ msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
+#~ msgstr "符合條件的帳號 {0} 個；若現在重新發放，將向其中 {1} 個帳號發放邀請。"
 
 #. placeholder {0}: "ACTOR"
 #: src/components/notification/FollowNotificationCard.tsx:28
@@ -148,14 +163,14 @@ msgstr "{0} 轉貼了你的內容"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:157
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:158
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:68
-#: src/routes/(root)/[handle]/(profile)/articles.tsx:72
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:74
+#: src/routes/(root)/[handle]/(profile)/articles.tsx:78
 msgid "{0}'s articles"
 msgstr "{0}的文章"
 
@@ -172,14 +187,14 @@ msgid "{0}'s following"
 msgstr "{0}的關注"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:69
-#: src/routes/(root)/[handle]/(profile)/notes.tsx:73
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:75
+#: src/routes/(root)/[handle]/(profile)/notes.tsx:79
 msgid "{0}'s notes"
 msgstr "{0}的貼文"
 
 #. placeholder {0}: actor().rawName ?? actor().username
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:70
-#: src/routes/(root)/[handle]/(profile)/shares.tsx:74
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:76
+#: src/routes/(root)/[handle]/(profile)/shares.tsx:80
 msgid "{0}'s shares"
 msgstr "{0}的轉貼"
 
@@ -191,9 +206,15 @@ msgstr "為顯示在你個人資料頁面的連結命名，例如 GitHub。"
 msgid "A sign-in link has been sent to your email. Please check your inbox (or spam folder)."
 msgstr "登入連結已傳送至您的郵箱。請檢查收件匣。（或垃圾郵件資料夾）"
 
-#: src/components/AppSidebar.tsx:274
+#: src/components/admin/AdminAccountsTable.tsx:104
+#: src/components/AppSidebar.tsx:275
 msgid "Account"
 msgstr "帳戶"
+
+#: src/components/AppSidebar.tsx:475
+#: src/routes/(root)/admin/index.tsx:56
+msgid "Accounts"
+msgstr "帳號"
 
 #: src/components/LanguageList.tsx:63
 #: src/components/LanguageList.tsx:198
@@ -208,6 +229,10 @@ msgstr "新增"
 #: src/components/EmojiReactionPopover.tsx:312
 msgid "Add {0}"
 msgstr "新增{0}"
+
+#: src/components/AppSidebar.tsx:457
+msgid "Admin"
+msgstr "管理"
 
 #: src/routes/(root)/bookmarks/index.tsx:83
 msgid "All"
@@ -250,7 +275,7 @@ msgstr "發生了意外錯誤。請稍後再試。"
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:279
+#: src/components/ProfileActionMenu.tsx:287
 msgid "Are you sure you want to block {0} ({1})? They won't be able to follow you or see your posts."
 msgstr "確定要封鎖 {0}（{1}）嗎？該使用者將無法關注你或查看你的內容。"
 
@@ -269,7 +294,7 @@ msgstr "您確定要取消密碼{0}嗎？您將無法再使用它登入您的帳
 
 #. placeholder {0}: displayName()
 #. placeholder {1}: actor()?.handle
-#: src/components/ProfileActionMenu.tsx:281
+#: src/components/ProfileActionMenu.tsx:289
 msgid "Are you sure you want to unblock {0} ({1})? They will be able to follow you and see your posts."
 msgstr "確定要解除封鎖 {0}（{1}）嗎？該使用者將能夠關注你並查看你的內容。"
 
@@ -290,12 +315,12 @@ msgstr "文章已更新"
 msgid "article-url-slug"
 msgstr "文章網址別名"
 
-#: src/components/ProfileTabs.tsx:50
+#: src/components/ProfileTabs.tsx:51
 #: src/routes/(root)/bookmarks/index.tsx:84
 msgid "Articles"
 msgstr "文章"
 
-#: src/components/AppSidebar.tsx:186
+#: src/components/AppSidebar.tsx:187
 msgid "Articles only"
 msgstr "僅文章"
 
@@ -321,13 +346,13 @@ msgstr "個人簡介"
 msgid "Bio is too long. Maximum length is 512 characters."
 msgstr "個人簡介太長。不能長於 512 字元。"
 
-#: src/components/ProfileActionMenu.tsx:261
-#: src/components/ProfileActionMenu.tsx:290
-#: src/components/ProfileActionMenu.tsx:297
+#: src/components/ProfileActionMenu.tsx:269
+#: src/components/ProfileActionMenu.tsx:298
+#: src/components/ProfileActionMenu.tsx:305
 msgid "Block"
 msgstr "封鎖"
 
-#: src/components/ProfileActionMenu.tsx:272
+#: src/components/ProfileActionMenu.tsx:280
 msgid "Block user?"
 msgstr "封鎖使用者？"
 
@@ -339,15 +364,15 @@ msgstr "粗體"
 msgid "Bookmark"
 msgstr "收藏"
 
-#: src/components/AppSidebar.tsx:205
+#: src/components/AppSidebar.tsx:206
 msgid "Bookmarks"
 msgstr "收藏"
 
 #: src/components/article-composer/ArticleComposerActions.tsx:44
 #: src/components/NoteComposer.tsx:442
 #: src/components/PostActionMenu.tsx:355
-#: src/components/ProfileActionMenu.tsx:286
-#: src/components/ProfileActionMenu.tsx:287
+#: src/components/ProfileActionMenu.tsx:294
+#: src/components/ProfileActionMenu.tsx:295
 #: src/components/RemoteFollowButton.tsx:217
 #: src/components/RemoteFollowButton.tsx:279
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:338
@@ -385,7 +410,7 @@ msgstr "已結束"
 msgid "Code"
 msgstr "程式碼"
 
-#: src/components/AppSidebar.tsx:613
+#: src/components/AppSidebar.tsx:670
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/sign/up/[token].tsx:457
 msgid "Code of conduct"
@@ -395,7 +420,7 @@ msgstr "行為準則"
 #~ msgid "Comments ({0})"
 #~ msgstr "評論（{0}）"
 
-#: src/components/AppSidebar.tsx:460
+#: src/components/AppSidebar.tsx:517
 #: src/components/FloatingComposeButton.tsx:61
 msgid "Compose"
 msgstr "寫作"
@@ -434,7 +459,7 @@ msgstr "無法在此URL找到內容"
 msgid "Could not vote on this poll"
 msgstr "無法提交此投票"
 
-#: src/components/AppSidebar.tsx:505
+#: src/components/AppSidebar.tsx:562
 #: src/components/FloatingComposeButton.tsx:123
 msgid "Create article"
 msgstr "建立文章"
@@ -443,7 +468,7 @@ msgstr "建立文章"
 msgid "Create invitation link"
 msgstr "建立邀請連結"
 
-#: src/components/AppSidebar.tsx:482
+#: src/components/AppSidebar.tsx:539
 #: src/components/FloatingComposeButton.tsx:99
 #: src/components/NoteComposeModal.tsx:26
 #: src/components/NoteComposer.tsx:451
@@ -453,6 +478,10 @@ msgstr "建立貼文"
 #: src/routes/(root)/[handle]/settings/invite.tsx:613
 msgid "Create shareable invitation links. Each link can be used multiple times until the invitation count runs out or the link expires."
 msgstr "建立可共享的邀請連結。每個連結可多次使用，直到邀請次數用完或連結過期。"
+
+#: src/components/admin/AdminAccountsTable.tsx:122
+msgid "Created"
+msgstr "建立時間"
 
 #. placeholder {0}: "RELATIVE_DATE"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:418
@@ -475,6 +504,10 @@ msgstr "裁剪"
 #: src/routes/(root)/[handle]/settings/index.tsx:344
 msgid "Crop your new avatar"
 msgstr "裁剪你的新頭像"
+
+#: src/routes/(root)/admin/invitations.tsx:180
+msgid "Cutoff:"
+msgstr "截止時間："
 
 #: src/routes/(root)/[handle]/settings/preferences.tsx:169
 msgid "Default note privacy"
@@ -546,7 +579,7 @@ msgstr "拖動選擇要保留的區域，然後點擊「裁剪」來更新你的
 msgid "e.g., @user@mastodon.social"
 msgstr "例如：@user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:385
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:413
 msgid "Edit"
 msgstr "編輯"
 
@@ -630,8 +663,8 @@ msgstr "到期時間"
 msgid "Extra message"
 msgstr "額外訊息"
 
-#: src/components/ProfileActionMenu.tsx:214
-#: src/components/ProfileActionMenu.tsx:223
+#: src/components/ProfileActionMenu.tsx:225
+#: src/components/ProfileActionMenu.tsx:231
 msgid "Failed to block this user"
 msgstr "無法封鎖此使用者"
 
@@ -659,9 +692,13 @@ msgstr "刪除邀請連結失敗"
 msgid "Failed to delete post"
 msgstr "刪除內容失敗"
 
-#: src/components/FollowButton.tsx:163
+#: src/components/FollowButton.tsx:160
 msgid "Failed to follow"
 msgstr "關注失敗"
+
+#: src/components/admin/AdminAccountsTable.tsx:233
+msgid "Failed to load more accounts; click to retry"
+msgstr "無法載入更多帳號；點擊以重試"
 
 #: src/components/ActorArticleList.tsx:83
 msgid "Failed to load more articles; click to retry"
@@ -727,6 +764,10 @@ msgstr "無法釘選內容"
 msgid "Failed to react"
 msgstr "反應失敗"
 
+#: src/routes/(root)/admin/invitations.tsx:131
+msgid "Failed to regenerate invitations."
+msgstr "重新發放邀請失敗。"
+
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:277
 msgid "Failed to register passkey"
 msgstr "註冊通行金鑰失敗"
@@ -767,16 +808,16 @@ msgid "Failed to share post"
 msgstr "轉貼失敗"
 
 #. placeholder {0}: error.message
-#: src/components/AppSidebar.tsx:113
+#: src/components/AppSidebar.tsx:114
 msgid "Failed to sign out: {0}"
 msgstr "登出失敗：{0}"
 
-#: src/components/ProfileActionMenu.tsx:187
-#: src/components/ProfileActionMenu.tsx:196
+#: src/components/ProfileActionMenu.tsx:207
+#: src/components/ProfileActionMenu.tsx:213
 msgid "Failed to unblock this user"
 msgstr "無法解除封鎖此使用者"
 
-#: src/components/FollowButton.tsx:141
+#: src/components/FollowButton.tsx:138
 msgid "Failed to unfollow"
 msgstr "取消關注失敗"
 
@@ -801,7 +842,7 @@ msgstr "圖片上傳失敗"
 msgid "Failed to vote"
 msgstr "投票失敗"
 
-#: src/components/AppSidebar.tsx:248
+#: src/components/AppSidebar.tsx:249
 msgid "Fediverse"
 msgstr "聯邦宇宙"
 
@@ -809,15 +850,15 @@ msgstr "聯邦宇宙"
 msgid "Fediverse handle"
 msgstr "聯邦宇宙使用者名稱"
 
-#: src/components/AppSidebar.tsx:148
+#: src/components/AppSidebar.tsx:149
 msgid "Feed"
 msgstr "訂閱流"
 
-#: src/components/FollowButton.tsx:199
+#: src/components/FollowButton.tsx:195
 msgid "Follow"
 msgstr "關注"
 
-#: src/components/FollowButton.tsx:198
+#: src/components/FollowButton.tsx:194
 msgid "Follow back"
 msgstr "回關"
 
@@ -826,16 +867,20 @@ msgstr "回關"
 msgid "Follow from your account"
 msgstr "從你的帳戶關注"
 
-#: src/routes/(root)/[handle]/(profile)/followers.tsx:82
-#~ msgid "Followers"
-#~ msgstr "粉絲"
+#: src/components/admin/AdminAccountsTable.tsx:109
+msgid "Followers"
+msgstr "粉絲"
 
 #: src/components/PostVisibilitySelect.tsx:63
 #: src/components/VisibilityTag.tsx:76
 msgid "Followers only"
 msgstr "只粉絲可見"
 
-#: src/components/ProfileCard.tsx:257
+#: src/components/admin/AdminAccountsTable.tsx:106
+msgid "Following"
+msgstr "關注"
+
+#: src/components/ProfileCard.tsx:259
 msgid "Following you"
 msgstr "關注了你"
 
@@ -843,7 +888,7 @@ msgstr "關注了你"
 msgid "Formatting"
 msgstr "格式"
 
-#: src/components/AppSidebar.tsx:648
+#: src/components/AppSidebar.tsx:705
 msgid "GitHub repository"
 msgstr "GitHub 儲存庫"
 
@@ -863,8 +908,12 @@ msgstr "前往草稿"
 msgid "Go to my drafts"
 msgstr "前往我的草稿"
 
-#: src/components/AppSidebar.tsx:226
-#: src/components/AppSidebar.tsx:435
+#: src/routes/(root)/admin/invitations.tsx:159
+msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
+msgstr "向自上次重新發放截止時間以來最活躍的帳號（按內容數排名前三分之一）額外發放一份邀請。"
+
+#: src/components/AppSidebar.tsx:227
+#: src/components/AppSidebar.tsx:437
 #: src/routes/(root).tsx:91
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
@@ -879,6 +928,14 @@ msgstr "Hackers' Pub 首頁"
 #: src/components/AboutHackersPub.tsx:234
 msgid "Hackers' Pub is a place for software engineers to share their knowledge and experience with each other. It's also an ActivityPub-enabled social network, so you can follow your favorite hackers in the fediverse and get their latest posts in your feed."
 msgstr "Hackers' Pub 是個為軟體工程師共同分享知識和經驗的地方。它也是啟用了 ActivityPub 的社交網路，這樣你可以在聯邦宇宙裡關注你喜愛的駭客，並獲取最新的貼文。"
+
+#: src/routes/(root)/admin/index.tsx:48
+msgid "Hackers' Pub: Admin · Accounts"
+msgstr "Hackers' Pub：管理 · 帳號"
+
+#: src/routes/(root)/admin/invitations.tsx:141
+msgid "Hackers' Pub: Admin · Invitations"
+msgstr "Hackers' Pub：管理 · 邀請"
 
 #: src/routes/(root)/notifications.tsx:41
 msgid "Hackers' Pub: Notifications"
@@ -913,7 +970,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "啟用後，AI 將為您生成文章摘要。否則，將使用文章的前幾行作為摘要。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:627
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:655
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡評論此文章。在你的站台搜尋 {0} 後回覆。"
 
@@ -976,7 +1033,13 @@ msgstr "邀請連結"
 msgid "Invitation sent"
 msgstr "邀請已發送"
 
-#: src/components/AppSidebar.tsx:365
+#: src/components/admin/AdminAccountsTable.tsx:115
+#: src/components/AppSidebar.tsx:494
+#: src/routes/(root)/admin/invitations.tsx:153
+msgid "Invitations"
+msgstr "邀請"
+
+#: src/components/AppSidebar.tsx:366
 #: src/components/SettingsTabs.tsx:68
 #: src/routes/(root)/[handle]/settings/invite.tsx:282
 msgid "Invite"
@@ -985,6 +1048,14 @@ msgstr "邀請"
 #: src/routes/(root)/[handle]/settings/invite.tsx:291
 msgid "Invite a friend"
 msgstr "邀請朋友"
+
+#: src/components/admin/AdminAccountsTable.tsx:119
+msgid "Invited"
+msgstr "已邀請"
+
+#: src/components/admin/AdminAccountsTable.tsx:117
+msgid "Invited by"
+msgstr "邀請人"
 
 #: src/components/ui/markdown-editor.tsx:277
 msgid "Italic"
@@ -1015,6 +1086,14 @@ msgstr "語言代碼"
 #: src/routes/(root)/[handle]/settings/language.tsx:74
 msgid "Language settings"
 msgstr "語言設定"
+
+#: src/components/admin/AdminAccountsTable.tsx:121
+msgid "Last activity"
+msgstr "最近活動"
+
+#: src/routes/(root)/admin/invitations.tsx:165
+msgid "Last regenerated:"
+msgstr "上次重新發放："
 
 #. placeholder {0}: "RELATIVE_DATE"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:435
@@ -1048,6 +1127,10 @@ msgstr "列表"
 #: src/routes/(root)/[handle]/drafts/index.tsx:351
 msgid "Load more"
 msgstr "載入更多"
+
+#: src/components/admin/AdminAccountsTable.tsx:236
+msgid "Load more accounts"
+msgstr "載入更多帳號"
 
 #: src/components/ActorArticleList.tsx:86
 msgid "Load more articles"
@@ -1092,6 +1175,10 @@ msgstr "載入更多內容"
 #: src/components/article-composer/ArticleComposer.tsx:31
 msgid "Loading draft…"
 msgstr "載入草稿中…"
+
+#: src/components/admin/AdminAccountsTable.tsx:230
+msgid "Loading more accounts…"
+msgstr "正在載入更多帳號…"
 
 #: src/components/ActorArticleList.tsx:80
 msgid "Loading more articles…"
@@ -1201,6 +1288,10 @@ msgstr "使用者名稱太長。不能長於 50 字元。"
 msgid "Native name"
 msgstr "本地名稱"
 
+#: src/routes/(root)/admin/invitations.tsx:171
+msgid "Never"
+msgstr "從未"
+
 #: src/routes/(root)/[handle]/settings/invite.tsx:670
 #: src/routes/(root)/[handle]/settings/invite.tsx:736
 msgid "Never expires"
@@ -1269,6 +1360,10 @@ msgstr "Hackers' Pub 中無此帳戶，請重試。"
 msgid "No user URI provided."
 msgstr "未提供使用者 URI。"
 
+#: src/routes/(root)/admin/invitations.tsx:122
+msgid "Not authorized to regenerate invitations."
+msgstr "無權重新發放邀請。"
+
 #: src/routes/(root)/[handle]/invite/[id].tsx:220
 #: src/routes/(root)/[handle]/invite/[id].tsx:223
 msgid "Not found"
@@ -1291,7 +1386,7 @@ msgstr "貼文建立成功"
 msgid "Note that you can verify your links belong to you by making the linked pages also link to your Hackers' Pub profile with {0} attribute."
 msgstr "你可以驗證這些連結確實屬於你。在連結的頁面上使用 {0} 屬性連結回你的 Hackers' Pub 個人資料頁。"
 
-#: src/components/ProfileTabs.tsx:43
+#: src/components/ProfileTabs.tsx:44
 #: src/routes/(root)/bookmarks/index.tsx:85
 msgid "Notes"
 msgstr "貼文"
@@ -1299,7 +1394,7 @@ msgstr "貼文"
 #~ msgid "Nothing to preview"
 #~ msgstr "沒有可預覽的內容"
 
-#: src/components/AppSidebar.tsx:327
+#: src/components/AppSidebar.tsx:328
 msgid "Notifications"
 msgstr "通知"
 
@@ -1323,7 +1418,7 @@ msgstr "或"
 msgid "Or enter the code from the email"
 msgstr "或輸入郵件中的驗證碼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:503
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:531
 msgid "Other languages"
 msgstr "其他語言"
 
@@ -1365,7 +1460,7 @@ msgstr "權限被拒絕"
 msgid "Pin to profile"
 msgstr "釘選到個人資料"
 
-#: src/routes/(root)/[handle]/(profile)/index.tsx:181
+#: src/routes/(root)/[handle]/(profile)/index.tsx:203
 msgid "Pinned posts"
 msgstr "已釘選內容"
 
@@ -1413,7 +1508,8 @@ msgstr "內容已釘選"
 msgid "Post unpinned"
 msgstr "已取消釘選內容"
 
-#: src/components/ProfileTabs.tsx:40
+#: src/components/admin/AdminAccountsTable.tsx:112
+#: src/components/ProfileTabs.tsx:41
 msgid "Posts"
 msgstr "內容"
 
@@ -1444,12 +1540,12 @@ msgstr "偏好語言"
 msgid "Priority"
 msgstr "優先級"
 
-#: src/components/AppSidebar.tsx:616
+#: src/components/AppSidebar.tsx:673
 #: src/routes/(root)/privacy.tsx:48
 msgid "Privacy policy"
 msgstr "隱私權政策"
 
-#: src/components/ProfileActionMenu.tsx:243
+#: src/components/ProfileActionMenu.tsx:249
 msgid "Profile actions"
 msgstr "個人檔案操作"
 
@@ -1513,9 +1609,25 @@ msgstr "閱讀完整文章"
 msgid "Read the full Code of conduct"
 msgstr "閱讀完整的行為守則"
 
-#: src/components/AppSidebar.tsx:540
+#: src/components/AppSidebar.tsx:597
 msgid "Recent drafts"
 msgstr "最近的草稿"
+
+#: src/routes/(root)/admin/invitations.tsx:207
+msgid "Regenerate"
+msgstr "重新發放"
+
+#: src/routes/(root)/admin/invitations.tsx:157
+msgid "Regenerate invitations"
+msgstr "重新發放邀請"
+
+#: src/routes/(root)/admin/invitations.tsx:102
+#~ msgid "Regenerated invitations for {0} accounts."
+#~ msgstr "已為 {0} 個帳號重新發放邀請。"
+
+#: src/routes/(root)/admin/invitations.tsx:207
+msgid "Regenerating…"
+msgstr "正在重新發放…"
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:378
 msgid "Register"
@@ -1600,7 +1712,7 @@ msgstr "儲存草稿以查看預覽"
 msgid "Saving…"
 msgstr "儲存中…"
 
-#: src/components/AppSidebar.tsx:267
+#: src/components/AppSidebar.tsx:268
 #: src/routes/(root)/search.tsx:149
 msgid "Search"
 msgstr "搜尋"
@@ -1643,7 +1755,7 @@ msgstr "發送中…"
 msgid "Set your personal preferences."
 msgstr "設定您的個人偏好設定。"
 
-#: src/components/AppSidebar.tsx:396
+#: src/components/AppSidebar.tsx:397
 msgid "Settings"
 msgstr "設定"
 
@@ -1651,7 +1763,7 @@ msgstr "設定"
 msgid "Share"
 msgstr "分享"
 
-#: src/components/ProfileTabs.tsx:53
+#: src/components/ProfileTabs.tsx:54
 msgid "Shares"
 msgstr "轉貼"
 
@@ -1659,7 +1771,7 @@ msgstr "轉貼"
 msgid "Show preview"
 msgstr "顯示預覽"
 
-#: src/components/AppSidebar.tsx:300
+#: src/components/AppSidebar.tsx:301
 #: src/routes/(root)/sign/index.tsx:396
 msgid "Sign in"
 msgstr "登入"
@@ -1676,7 +1788,7 @@ msgstr "登入後投票"
 msgid "Sign in with passkey"
 msgstr "使用通行金鑰登入"
 
-#: src/components/AppSidebar.tsx:601
+#: src/components/AppSidebar.tsx:658
 msgid "Sign out"
 msgstr "登出"
 
@@ -1744,9 +1856,9 @@ msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:411
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:419
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:668
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:439
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:447
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:696
 msgid "Table of contents"
 msgstr "目錄"
 
@@ -1756,7 +1868,7 @@ msgstr "目錄"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:677
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:705
 msgid "Tags"
 msgstr "標籤"
 
@@ -1819,7 +1931,7 @@ msgstr "註冊連結無效。請確保你使用的是你收到的正確郵件連
 
 #. placeholder {0}: "GITHUB_REPOSITORY"
 #. placeholder {1}: "AGPL-3.0"
-#: src/components/AppSidebar.tsx:639
+#: src/components/AppSidebar.tsx:696
 msgid "The source code of this website is available on {0} under the {1} license."
 msgstr "可在 {0} 上以 {1} 授權取得該網站的原始碼。"
 
@@ -1864,7 +1976,7 @@ msgstr "該服務不支援遠端關注。"
 msgid "This will be part of the article URL"
 msgstr "這將成為文章網址的一部分"
 
-#: src/components/AppSidebar.tsx:128
+#: src/components/AppSidebar.tsx:129
 msgid "Timeline"
 msgstr "時間軸"
 
@@ -1886,13 +1998,18 @@ msgstr "要關注{0}，請輸入你的聯邦宇宙使用者名稱。"
 msgid "Toggle sidebar"
 msgstr "切換側邊欄"
 
+#. placeholder {0}: formatNumber(conn().totalCount)
+#: src/components/admin/AdminAccountsTable.tsx:98
+msgid "Total: {0}"
+msgstr "共 {0} 個"
+
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:196
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:487
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:295
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:323
 msgid "Translating…"
 msgstr "正在翻譯…"
 
@@ -1911,17 +2028,17 @@ msgstr "無法新增反應。請重試。"
 msgid "Unable to remove reaction. Please try again."
 msgstr "無法移除反應。請重試。"
 
-#: src/components/ProfileActionMenu.tsx:262
-#: src/components/ProfileActionMenu.tsx:290
+#: src/components/ProfileActionMenu.tsx:270
 #: src/components/ProfileActionMenu.tsx:298
+#: src/components/ProfileActionMenu.tsx:306
 msgid "Unblock"
 msgstr "解除封鎖"
 
-#: src/components/ProfileActionMenu.tsx:273
+#: src/components/ProfileActionMenu.tsx:281
 msgid "Unblock user?"
 msgstr "解除封鎖使用者？"
 
-#: src/components/FollowButton.tsx:196
+#: src/components/FollowButton.tsx:192
 msgid "Unfollow"
 msgstr "取消關注"
 
@@ -1946,7 +2063,7 @@ msgstr "更新於 {0}"
 msgid "URL"
 msgstr "URL"
 
-#: src/components/ProfileActionMenu.tsx:218
+#: src/components/ProfileActionMenu.tsx:226
 msgid "User blocked"
 msgstr "已封鎖使用者"
 
@@ -1954,7 +2071,7 @@ msgstr "已封鎖使用者"
 msgid "User not found."
 msgstr "未找到使用者資訊。"
 
-#: src/components/ProfileActionMenu.tsx:191
+#: src/components/ProfileActionMenu.tsx:208
 msgid "User unblocked"
 msgstr "已解除封鎖使用者"
 
@@ -1985,7 +2102,7 @@ msgstr "您邀請的使用者"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:202
+#: src/components/ProfileCard.tsx:204
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "已於{1}驗證此連結歸{0}所有"
 
@@ -1993,7 +2110,7 @@ msgstr "已於{1}驗證此連結歸{0}所有"
 msgid "Verifying your invitation…"
 msgstr "驗證您的邀請…"
 
-#: src/components/AppSidebar.tsx:564
+#: src/components/AppSidebar.tsx:621
 msgid "View all drafts →"
 msgstr "查看所有草稿 →"
 
@@ -2049,11 +2166,11 @@ msgstr "什麼是 Hackers' Pub？"
 msgid "What's on your mind?"
 msgstr "你在想什麼？"
 
-#: src/components/AppSidebar.tsx:167
+#: src/components/AppSidebar.tsx:168
 msgid "Without shares"
 msgstr "不含轉貼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:618
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:646
 msgid "Write a reply…"
 msgstr "寫個回覆…"
 
@@ -2070,11 +2187,11 @@ msgstr "在此撰寫文章。您可以使用 Markdown。在您撰寫時，文章
 msgid "You are about to follow {0}."
 msgstr "你即將關注{0}。"
 
-#: src/components/ProfileCard.tsx:125
+#: src/components/ProfileCard.tsx:127
 msgid "You are blocked by this user. You can't follow them or see their posts."
 msgstr "你已被此使用者封鎖。你無法關注該使用者或查看該使用者的內容。"
 
-#: src/components/ProfileCard.tsx:118
+#: src/components/ProfileCard.tsx:120
 msgid "You are blocking this user. They can't follow you or see your posts."
 msgstr "你正在封鎖此使用者。該使用者無法關注你或查看你的內容。"
 
@@ -2112,10 +2229,9 @@ msgstr "您尚未註冊任何通行金鑰。"
 msgid "You have no invitations left. Please wait until you receive more."
 msgstr "你沒有剩餘邀請名額。請稍後再試。"
 
-#: src/components/FollowButton.tsx:134
-#: src/components/FollowButton.tsx:152
-#: src/components/ProfileActionMenu.tsx:180
-#: src/components/ProfileActionMenu.tsx:209
+#: src/components/FollowButton.tsx:131
+#: src/components/FollowButton.tsx:149
+#: src/components/ProfileActionMenu.tsx:165
 msgid "You must be signed in"
 msgstr "請先登入"
 
