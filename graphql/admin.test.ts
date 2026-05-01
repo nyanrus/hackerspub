@@ -431,6 +431,52 @@ Deno.test({
   },
 });
 
+const nonModeratorAccountByUsernameQuery = parse(`
+  query NonModViewerStats($username: String!) {
+    accountByUsername(username: $username) {
+      username
+      postCount
+      lastPostPublished
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "Account.postCount returns null for non-moderators without null-bubbling",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const normal = await insertAccountWithActor(tx, {
+        username: "statsguard",
+        name: "Stats Guard",
+        email: "statsguard@example.com",
+      });
+      const result = await execute({
+        schema,
+        document: nonModeratorAccountByUsernameQuery,
+        variableValues: { username: "statsguard" },
+        contextValue: makeUserContext(tx, normal.account),
+        onError: "NO_PROPAGATE",
+      });
+      // The whole `accountByUsername` payload must still be present even
+      // though the moderator-only fields evaluate to null for non-mods.
+      const data = result.data as {
+        accountByUsername: {
+          username: string;
+          postCount: number | null;
+          lastPostPublished: string | null;
+        } | null;
+      };
+      assert(data.accountByUsername != null);
+      assertEquals(data.accountByUsername.username, "statsguard");
+      assertEquals(data.accountByUsername.postCount, null);
+      assertEquals(data.accountByUsername.lastPostPublished, null);
+    });
+  },
+});
+
 Deno.test({
   name: "adminAccounts batches Account.postCount across rows (no N+1)",
   sanitizeOps: false,

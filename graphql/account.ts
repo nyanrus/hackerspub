@@ -142,8 +142,9 @@ export const Account = builder.drizzleNode("accountTable", {
       }),
     }),
     postCount: t.int({
+      nullable: true,
       description:
-        "The total number of posts authored by this account.  Visible only to moderators.",
+        "The total number of posts authored by this account.  Visible only to moderators; null otherwise.",
       authScopes: { moderator: true },
       async resolve(account, _, ctx) {
         const stats = await getAdminAccountStats(ctx, account.id);

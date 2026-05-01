@@ -26,9 +26,9 @@ type Account implements Node {
   passkeys(after: String, before: String, first: Int, last: Int): AccountPasskeysConnection!
 
   """
-  The total number of posts authored by this account.  Visible only to moderators.
+  The total number of posts authored by this account.  Visible only to moderators; null otherwise.
   """
-  postCount: Int!
+  postCount: Int
   preferAiSummary: Boolean!
   updated: DateTime!
   username: String!

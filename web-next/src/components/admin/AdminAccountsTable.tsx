@@ -169,7 +169,7 @@ export function AdminAccountsTable(props: AdminAccountsTableProps) {
                         </A>
                       </TableCell>
                       <TableCell class="text-right">
-                        {formatNumber(edge.node.postCount)}
+                        {formatNumber(edge.node.postCount ?? 0)}
                       </TableCell>
                       <TableCell class="text-right">
                         {formatNumber(edge.node.invitationsLeft)}
