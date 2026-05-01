@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, or } from "drizzle-orm";
 import type { Database } from "./db.ts";
 import {
   type Account,
@@ -43,23 +43,22 @@ export async function deleteBookmark(
   return row ?? null;
 }
 
-export async function isPostBookmarkedBy(
+export async function arePostsBookmarkedBy(
   db: Database,
-  post: Post,
-  account?: Account | null,
-): Promise<boolean> {
-  if (account == null) return false;
+  postIds: readonly Uuid[],
+  account: Account,
+): Promise<Set<Uuid>> {
+  if (postIds.length < 1) return new Set();
   const rows = await db
     .select({ postId: bookmarkTable.postId })
     .from(bookmarkTable)
     .where(
       and(
         eq(bookmarkTable.accountId, account.id),
-        eq(bookmarkTable.postId, post.id),
+        inArray(bookmarkTable.postId, postIds as Uuid[]),
       ),
-    )
-    .limit(1);
-  return rows.length > 0;
+    );
+  return new Set(rows.map((row) => row.postId));
 }
 
 export interface BookmarkCursor {

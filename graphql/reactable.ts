@@ -1,14 +1,43 @@
-import type { RelationsFilter } from "@hackerspub/models/db";
-import { relations } from "@hackerspub/models/relations";
-import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { assertNever } from "@std/assert/unstable-never";
+import type { RelationsFilter } from "@hackerspub/models/db";
+import { getViewerReactionsForPosts } from "@hackerspub/models/reaction";
+import { relations } from "@hackerspub/models/relations";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { Actor } from "./actor.ts";
-import { builder, Node } from "./builder.ts";
+import { builder, Node, type UserContext } from "./builder.ts";
 
 export interface Reactable {
   id: Uuid;
   reactionsCounts: Record<string, number>;
+}
+
+interface ViewerHasReactedKey {
+  postId: Uuid;
+  emoji: string | null;
+  customEmojiId: Uuid | null;
+}
+
+// Encoded as JSON because federated reaction emoji can contain any
+// character; a delimiter-based encoding could collide.
+function encodeReactionKey(connection: {
+  postId: Uuid;
+  where: RelationsFilter<"reactionTable">;
+}): string {
+  const filter = connection.where as {
+    emoji?: string;
+    customEmojiId?: Uuid;
+  };
+  const key: ViewerHasReactedKey = {
+    postId: connection.postId,
+    emoji: filter.emoji ?? null,
+    customEmojiId: filter.customEmojiId ?? null,
+  };
+  return JSON.stringify(key);
+}
+
+function decodeReactionKey(key: string): ViewerHasReactedKey {
+  return JSON.parse(key) as ViewerHasReactedKey;
 }
 
 export const Reactable = builder.interfaceRef<Reactable>("Reactable");
@@ -101,23 +130,31 @@ export const ReactionGroup = builder.interfaceRef<ReactionGroup>(
       },
       fields: (t) => ({
         totalCount: t.exposeInt("totalCount"),
-        viewerHasReacted: t.boolean({
-          async resolve(connection, _, ctx) {
-            if (ctx.account == null) return false;
-
-            // Build the where condition based on connection.where filter
-            const whereCondition = {
-              actorId: ctx.account.actor.id,
-              postId: connection.postId,
-              ...connection.where,
-            };
-
-            const reaction = await ctx.db.query.reactionTable.findFirst({
-              where: whereCondition,
-            });
-
-            return !!reaction;
+        viewerHasReacted: t.loadable({
+          type: "Boolean",
+          loaderOptions: { cache: false },
+          load: async (
+            keys: string[],
+            ctx: UserContext,
+          ): Promise<boolean[]> => {
+            if (ctx.account == null) return keys.map(() => false);
+            const decoded = keys.map(decodeReactionKey);
+            const postIds = [...new Set(decoded.map((k) => k.postId))];
+            const rows = await getViewerReactionsForPosts(
+              ctx.db,
+              postIds,
+              ctx.account.actor,
+            );
+            return decoded.map((key) =>
+              rows.some((row) =>
+                row.postId === key.postId &&
+                (key.emoji == null || row.emoji === key.emoji) &&
+                (key.customEmojiId == null ||
+                  row.customEmojiId === key.customEmojiId)
+              )
+            );
           },
+          resolve: (connection) => encodeReactionKey(connection),
         }),
       }),
     }),

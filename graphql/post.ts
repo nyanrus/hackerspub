@@ -11,9 +11,9 @@ import {
   updateArticleDraft,
 } from "@hackerspub/models/article";
 import {
+  arePostsBookmarkedBy,
   createBookmark,
   deleteBookmark,
-  isPostBookmarkedBy,
 } from "@hackerspub/models/bookmark";
 import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
 import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
@@ -21,14 +21,14 @@ import { negotiateLocale } from "@hackerspub/models/i18n";
 import { renderMarkup } from "@hackerspub/models/markup";
 import { createNote } from "@hackerspub/models/note";
 import {
-  isPostPinnedBy,
+  arePostsPinnedBy,
   pinPost as pinPostModel,
   unpinPost as unpinPostModel,
 } from "@hackerspub/models/pin";
 import {
+  arePostsSharedBy,
   deletePost,
   getPostVisibilityFilter,
-  isPostSharedBy,
   isPostVisibleTo,
   sharePost,
   unsharePost,
@@ -46,10 +46,10 @@ import {
   SUPPORTED_IMAGE_TYPES,
   uploadImage,
 } from "@hackerspub/models/upload";
-import { generateUuidV7 } from "@hackerspub/models/uuid";
+import { generateUuidV7, type Uuid } from "@hackerspub/models/uuid";
 import { Account } from "./account.ts";
 import { Actor } from "./actor.ts";
-import { builder, Node } from "./builder.ts";
+import { builder, Node, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
 import { putArticleOgImage } from "./og.ts";
@@ -165,32 +165,46 @@ export const Post = builder.drizzleInterface("postTable", {
     actor: t.relation("actor"),
     media: t.relation("media"),
     link: t.relation("link", { type: PostLink, nullable: true }),
-    viewerHasShared: t.boolean({
-      select: {
-        columns: { id: true },
+    viewerHasShared: t.loadable({
+      type: "Boolean",
+      // cache: false so a mutation that flips share state in the same
+      // request (e.g., share + read viewerHasShared) re-queries instead
+      // of returning the pre-mutation value.
+      loaderOptions: { cache: false },
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
+        const shared = await arePostsSharedBy(ctx.db, postIds, ctx.account);
+        return postIds.map((id) => shared.has(id));
       },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
-        return await isPostSharedBy(ctx.db, post, ctx.account);
-      },
+      resolve: (post) => post.id,
     }),
-    viewerHasBookmarked: t.boolean({
-      select: {
-        columns: { id: true },
+    viewerHasBookmarked: t.loadable({
+      type: "Boolean",
+      loaderOptions: { cache: false },
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
+        const bookmarked = await arePostsBookmarkedBy(
+          ctx.db,
+          postIds,
+          ctx.account,
+        );
+        return postIds.map((id) => bookmarked.has(id));
       },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
-        return await isPostBookmarkedBy(ctx.db, post, ctx.account);
-      },
+      resolve: (post) => post.id,
     }),
-    viewerHasPinned: t.boolean({
-      select: {
-        columns: { id: true },
+    viewerHasPinned: t.loadable({
+      type: "Boolean",
+      loaderOptions: { cache: false },
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
+        const pinned = await arePostsPinnedBy(
+          ctx.db,
+          postIds,
+          ctx.account.actor,
+        );
+        return postIds.map((id) => pinned.has(id));
       },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
-        return await isPostPinnedBy(ctx.db, post, ctx.account.actor);
-      },
+      resolve: (post) => post.id,
     }),
   }),
 });

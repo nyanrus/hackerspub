@@ -2,7 +2,7 @@ import type { Context, DocumentLoader } from "@fedify/fedify";
 import { isActor } from "@fedify/vocab";
 import * as vocab from "@fedify/vocab";
 import { getEmojiReact, getEmojiReactId } from "@hackerspub/federation/objects";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { getPersistedActor, persistActor } from "./actor.ts";
 import type { ContextData } from "./context.ts";
 import type { Database } from "./db.ts";
@@ -334,6 +334,34 @@ export async function undoReaction(
     },
   );
   return rows[0];
+}
+
+export interface ViewerReactionRow {
+  postId: Uuid;
+  emoji: string | null;
+  customEmojiId: Uuid | null;
+}
+
+export async function getViewerReactionsForPosts(
+  db: Database,
+  postIds: readonly Uuid[],
+  actor: Actor,
+): Promise<ViewerReactionRow[]> {
+  if (postIds.length < 1) return [];
+  const rows = await db
+    .select({
+      postId: reactionTable.postId,
+      emoji: reactionTable.emoji,
+      customEmojiId: reactionTable.customEmojiId,
+    })
+    .from(reactionTable)
+    .where(
+      and(
+        eq(reactionTable.actorId, actor.id),
+        inArray(reactionTable.postId, postIds as Uuid[]),
+      ),
+    );
+  return rows;
 }
 
 export async function updateReactionsCounts(

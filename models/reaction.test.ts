@@ -1,6 +1,8 @@
 import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
-import { react, undoReaction } from "./reaction.ts";
+import { customEmojiTable, reactionTable } from "./schema.ts";
+import { generateUuidV7 } from "./uuid.ts";
+import { getViewerReactionsForPosts, react, undoReaction } from "./reaction.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
@@ -173,6 +175,126 @@ Deno.test({
         },
       });
       assertEquals(notification, undefined);
+    });
+  },
+});
+
+Deno.test({
+  name: "getViewerReactionsForPosts() returns viewer reactions across post IDs",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "viewerreactionsauthor",
+        name: "ViewerReactions Author",
+        email: "viewerreactionsauthor@example.com",
+      });
+      const viewer = await insertAccountWithActor(tx, {
+        username: "viewerreactionsviewer",
+        name: "ViewerReactions Viewer",
+        email: "viewerreactionsviewer@example.com",
+      });
+      const other = await insertAccountWithActor(tx, {
+        username: "viewerreactionsother",
+        name: "ViewerReactions Other",
+        email: "viewerreactionsother@example.com",
+      });
+      const customEmojiId = generateUuidV7();
+      await tx.insert(customEmojiTable).values({
+        id: customEmojiId,
+        iri: `http://localhost/emojis/${customEmojiId}`,
+        name: ":party:",
+        imageUrl: `https://cdn.example/emoji/${customEmojiId}.png`,
+      });
+
+      const { post: postA } = await insertNotePost(tx, {
+        account: author.account,
+        content: "A",
+      });
+      const { post: postB } = await insertNotePost(tx, {
+        account: author.account,
+        content: "B",
+      });
+      const { post: postC } = await insertNotePost(tx, {
+        account: author.account,
+        content: "C",
+      });
+
+      // Viewer reacts to A with ❤️ and to A with the custom emoji.
+      // Viewer reacts to C with 🎉.
+      // Other reacts to B with ❤️ — should not appear in viewer's set.
+      await tx.insert(reactionTable).values([
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postA.id,
+          actorId: viewer.actor.id,
+          emoji: "❤️",
+        },
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postA.id,
+          actorId: viewer.actor.id,
+          customEmojiId,
+        },
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postC.id,
+          actorId: viewer.actor.id,
+          emoji: "🎉",
+        },
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postB.id,
+          actorId: other.actor.id,
+          emoji: "❤️",
+        },
+      ]);
+
+      const rows = await getViewerReactionsForPosts(
+        tx,
+        [postA.id, postB.id, postC.id],
+        viewer.actor,
+      );
+
+      const summary = rows
+        .map((r) => ({
+          postId: r.postId,
+          emoji: r.emoji,
+          customEmojiId: r.customEmojiId,
+        }))
+        .sort((a, b) =>
+          `${a.postId}|${a.emoji}|${a.customEmojiId}`
+            .localeCompare(`${b.postId}|${b.emoji}|${b.customEmojiId}`)
+        );
+      const expected = [
+        { postId: postA.id, emoji: "❤️", customEmojiId: null },
+        { postId: postA.id, emoji: null, customEmojiId },
+        { postId: postC.id, emoji: "🎉", customEmojiId: null },
+      ].sort((a, b) =>
+        `${a.postId}|${a.emoji}|${a.customEmojiId}`
+          .localeCompare(`${b.postId}|${b.emoji}|${b.customEmojiId}`)
+      );
+      assertEquals(summary, expected);
+    });
+  },
+});
+
+Deno.test({
+  name: "getViewerReactionsForPosts() returns an empty array for no input",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "viewerreactionsemptyviewer",
+        name: "ViewerReactions Empty Viewer",
+        email: "viewerreactionsemptyviewer@example.com",
+      });
+
+      const rows = await getViewerReactionsForPosts(tx, [], viewer.actor);
+
+      assertEquals(rows, []);
     });
   },
 });
