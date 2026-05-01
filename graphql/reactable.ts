@@ -1,4 +1,5 @@
 import type { RelationsFilter } from "@hackerspub/models/db";
+import { getViewerReactionsForPosts } from "@hackerspub/models/reaction";
 import { relations } from "@hackerspub/models/relations";
 import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
@@ -104,19 +105,18 @@ export const ReactionGroup = builder.interfaceRef<ReactionGroup>(
         viewerHasReacted: t.boolean({
           async resolve(connection, _, ctx) {
             if (ctx.account == null) return false;
-
-            // Build the where condition based on connection.where filter
-            const whereCondition = {
-              actorId: ctx.account.actor.id,
-              postId: connection.postId,
-              ...connection.where,
-            };
-
-            const reaction = await ctx.db.query.reactionTable.findFirst({
-              where: whereCondition,
-            });
-
-            return !!reaction;
+            const rows = await getViewerReactionsForPosts(
+              ctx.db,
+              [connection.postId],
+              ctx.account.actor,
+            );
+            const filter = connection.where;
+            return rows.some((row) =>
+              row.postId === connection.postId &&
+              (filter.emoji == null || row.emoji === filter.emoji) &&
+              (filter.customEmojiId == null ||
+                row.customEmojiId === filter.customEmojiId)
+            );
           },
         }),
       }),
