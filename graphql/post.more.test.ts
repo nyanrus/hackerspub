@@ -618,10 +618,7 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
       ),
     );
     assert.equal(disk.putKeys.length, 2);
-    assert.deepEqual(disk.deleteKeys.sort(), [
-      "og/v2/stale-article-en.png",
-      "og/v2/stale-article-ko.png",
-    ]);
+    assert.deepEqual(disk.deleteKeys, []);
 
     const stored = await tx.query.articleContentTable.findMany({
       where: { sourceId },
@@ -640,10 +637,7 @@ test("ArticleContent.ogImageUrl renders per-language article images", async () =
       firstContentsByLanguage,
     );
     assert.equal(disk.putKeys.length, 2);
-    assert.deepEqual(disk.deleteKeys.sort(), [
-      "og/v2/stale-article-en.png",
-      "og/v2/stale-article-ko.png",
-    ]);
+    assert.deepEqual(disk.deleteKeys, []);
   });
 });
 

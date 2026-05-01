@@ -493,9 +493,6 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
                 eq(articleContentTable.language, content.language),
               ),
             );
-          if (content.ogImageKey != null) {
-            await ctx.disk.delete(content.ogImageKey);
-          }
         }
         return new URL(await ctx.disk.getUrl(key));
       },

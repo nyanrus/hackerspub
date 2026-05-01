@@ -195,7 +195,7 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
     }).accountByUsername.ogImageUrl;
     assert.match(firstUrl, /^http:\/\/localhost\/media\/og\/v2\/.+\.png$/);
     assert.equal(disk.putKeys.length, 1);
-    assert.deepEqual(disk.deleteKeys, ["og/v2/stale-profile.png"]);
+    assert.deepEqual(disk.deleteKeys, []);
 
     const stored = await tx.query.accountTable.findFirst({
       where: { id: account.account.id },
@@ -216,7 +216,7 @@ test("Account.ogImageUrl renders and reuses a cached profile image", async () =>
     }).accountByUsername.ogImageUrl;
     assert.equal(secondUrl, firstUrl);
     assert.equal(disk.putKeys.length, 1);
-    assert.deepEqual(disk.deleteKeys, ["og/v2/stale-profile.png"]);
+    assert.deepEqual(disk.deleteKeys, []);
   });
 });
 

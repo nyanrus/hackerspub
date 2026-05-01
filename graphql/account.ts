@@ -116,9 +116,6 @@ export const Account = builder.drizzleNode("accountTable", {
           await ctx.db.update(accountTable)
             .set({ ogImageKey: key })
             .where(eq(accountTable.id, account.id));
-          if (account.ogImageKey != null) {
-            await ctx.disk.delete(account.ogImageKey);
-          }
         }
         return new URL(await ctx.disk.getUrl(key));
       },
