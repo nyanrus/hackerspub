@@ -1,11 +1,4 @@
 import type { RequestContext } from "@fedify/fedify";
-import { normalizeEmail } from "@hackerspub/models/account";
-import type { ContextData } from "@hackerspub/models/context";
-import type { Database } from "@hackerspub/models/db";
-import { relations } from "@hackerspub/models/relations";
-import type { Account, Actor } from "@hackerspub/models/schema";
-import type { Session } from "@hackerspub/models/session";
-import type { Uuid } from "@hackerspub/models/uuid";
 import SchemaBuilder from "@pothos/core";
 import ComplexityPlugin from "@pothos/plugin-complexity";
 import DataloaderPlugin from "@pothos/plugin-dataloader";
@@ -30,7 +23,18 @@ import {
 } from "graphql-scalars";
 import { createGraphQLError } from "graphql-yoga";
 import type Keyv from "keyv";
-import type { AccountEmail, AccountLink } from "@hackerspub/models/schema";
+import { normalizeEmail } from "@hackerspub/models/account";
+import type { ContextData } from "@hackerspub/models/context";
+import type { Database } from "@hackerspub/models/db";
+import { relations } from "@hackerspub/models/relations";
+import type {
+  Account,
+  AccountEmail,
+  AccountLink,
+  Actor,
+} from "@hackerspub/models/schema";
+import type { Session } from "@hackerspub/models/session";
+import type { Uuid } from "@hackerspub/models/uuid";
 
 export type ValuesOfEnumType<T> = T extends
   PothosSchemaTypes.EnumRef<never, unknown, infer V> ? V : never;
