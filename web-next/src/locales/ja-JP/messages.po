@@ -1994,7 +1994,7 @@ msgstr "サイドバーを切り替える"
 #. placeholder {0}: formatNumber(conn().totalCount)
 #: src/components/admin/AdminAccountsTable.tsx:98
 msgid "Total: {0}"
-msgstr "合計: {0}"
+msgstr "合計：{0}"
 
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:196
