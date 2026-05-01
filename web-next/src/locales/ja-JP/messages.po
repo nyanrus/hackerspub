@@ -18,6 +18,12 @@ msgstr ""
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {#コメント}}"
 
+#. placeholder {0}: status()?.eligibleAccountsCount ?? 0
+#. placeholder {1}: status()?.topThirdCount ?? 0
+#: src/routes/(root)/admin/invitations.tsx:179
+msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
+msgstr "{0, plural, other {対象アカウント#件}}中、{1, plural, other {現在再付与した場合は#件}}に招待状が付与されます。"
+
 #. placeholder {0}: actor().followersCount.totalCount
 #: src/components/ProfileCard.tsx:249
 msgid "{0, plural, one {# follower} other {# followers}}"
@@ -97,11 +103,9 @@ msgstr "{0}さん他{1}人があなたのコンテンツに返信しました"
 msgid "{0} and {1} others shared your post"
 msgstr "{0}さん他{1}人があなたのコンテンツを共有しました"
 
-#. placeholder {0}: (status()?.eligibleAccountsCount ?? 0).toLocaleString( i18n.locale, )
-#. placeholder {1}: (status()?.topThirdCount ?? 0).toLocaleString( i18n.locale, )
 #: src/routes/(root)/admin/invitations.tsx:173
-msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
-msgstr "対象アカウント{0}件中、現在再付与した場合は{1}件に招待状が付与されます。"
+#~ msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
+#~ msgstr "対象アカウント{0}件中、現在再付与した場合は{1}件に招待状が付与されます。"
 
 #. placeholder {0}: "ACTOR"
 #: src/components/notification/FollowNotificationCard.tsx:28
@@ -496,7 +500,7 @@ msgstr "切り抜き"
 msgid "Crop your new avatar"
 msgstr "新しいアイコンを切り抜く"
 
-#: src/routes/(root)/admin/invitations.tsx:166
+#: src/routes/(root)/admin/invitations.tsx:171
 msgid "Cutoff:"
 msgstr "カットオフ："
 
@@ -687,7 +691,7 @@ msgstr "コンテンツの削除に失敗しました"
 msgid "Failed to follow"
 msgstr "フォローに失敗しました"
 
-#: src/components/admin/AdminAccountsTable.tsx:242
+#: src/components/admin/AdminAccountsTable.tsx:233
 msgid "Failed to load more accounts; click to retry"
 msgstr "アカウントの追加読み込みに失敗しました。クリックで再試行"
 
@@ -755,7 +759,7 @@ msgstr "コンテンツを固定できませんでした"
 msgid "Failed to react"
 msgstr "リアクションに失敗しました"
 
-#: src/routes/(root)/admin/invitations.tsx:117
+#: src/routes/(root)/admin/invitations.tsx:122
 msgid "Failed to regenerate invitations."
 msgstr "招待状の再付与に失敗しました。"
 
@@ -899,7 +903,7 @@ msgstr "下書きへ"
 msgid "Go to my drafts"
 msgstr "マイ下書きへ"
 
-#: src/routes/(root)/admin/invitations.tsx:145
+#: src/routes/(root)/admin/invitations.tsx:150
 msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 msgstr "前回の再付与カットオフ以降、最も活発なアカウント（投稿数上位3分の1）に招待状を1通追加で付与します。"
 
@@ -924,7 +928,7 @@ msgstr "Hackers' Pubは、ソフトウェアエンジニアが知識と経験を
 msgid "Hackers' Pub: Admin · Accounts"
 msgstr "Hackers' Pub：管理 · アカウント"
 
-#: src/routes/(root)/admin/invitations.tsx:127
+#: src/routes/(root)/admin/invitations.tsx:132
 msgid "Hackers' Pub: Admin · Invitations"
 msgstr "Hackers' Pub：管理 · 招待"
 
@@ -1026,7 +1030,7 @@ msgstr "招待状を送信しました"
 
 #: src/components/admin/AdminAccountsTable.tsx:115
 #: src/components/AppSidebar.tsx:494
-#: src/routes/(root)/admin/invitations.tsx:139
+#: src/routes/(root)/admin/invitations.tsx:144
 msgid "Invitations"
 msgstr "招待"
 
@@ -1082,7 +1086,7 @@ msgstr "言語設定"
 msgid "Last activity"
 msgstr "最終アクティビティ"
 
-#: src/routes/(root)/admin/invitations.tsx:151
+#: src/routes/(root)/admin/invitations.tsx:156
 msgid "Last regenerated:"
 msgstr "最終再付与："
 
@@ -1119,7 +1123,7 @@ msgstr "リスト"
 msgid "Load more"
 msgstr "さらに読み込む"
 
-#: src/components/admin/AdminAccountsTable.tsx:245
+#: src/components/admin/AdminAccountsTable.tsx:236
 msgid "Load more accounts"
 msgstr "さらにアカウントを読み込む"
 
@@ -1167,7 +1171,7 @@ msgstr "コンテンツをもっと読み込む"
 msgid "Loading draft…"
 msgstr "下書きを読み込み中…"
 
-#: src/components/admin/AdminAccountsTable.tsx:239
+#: src/components/admin/AdminAccountsTable.tsx:230
 msgid "Loading more accounts…"
 msgstr "アカウントを追加で読み込み中…"
 
@@ -1279,8 +1283,7 @@ msgstr "名前が長すぎます。最大50文字です。"
 msgid "Native name"
 msgstr "現地名"
 
-#: src/components/admin/AdminAccountsTable.tsx:211
-#: src/routes/(root)/admin/invitations.tsx:157
+#: src/routes/(root)/admin/invitations.tsx:162
 msgid "Never"
 msgstr "なし"
 
@@ -1352,7 +1355,7 @@ msgstr "Hackers' Pubにそのようなアカウントはありません。もう
 msgid "No user URI provided."
 msgstr "ユーザーURIが提供されていません。"
 
-#: src/routes/(root)/admin/invitations.tsx:108
+#: src/routes/(root)/admin/invitations.tsx:113
 msgid "Not authorized to regenerate invitations."
 msgstr "招待状を再付与する権限がありません。"
 
@@ -1605,11 +1608,11 @@ msgstr "行動規範の全文を読む"
 msgid "Recent drafts"
 msgstr "最近の下書き"
 
-#: src/routes/(root)/admin/invitations.tsx:189
+#: src/routes/(root)/admin/invitations.tsx:198
 msgid "Regenerate"
 msgstr "再付与"
 
-#: src/routes/(root)/admin/invitations.tsx:143
+#: src/routes/(root)/admin/invitations.tsx:148
 msgid "Regenerate invitations"
 msgstr "招待状を再付与"
 
@@ -1618,7 +1621,7 @@ msgstr "招待状を再付与"
 msgid "Regenerated invitations for {0} accounts."
 msgstr "{0}件のアカウントに招待状を再付与しました。"
 
-#: src/routes/(root)/admin/invitations.tsx:189
+#: src/routes/(root)/admin/invitations.tsx:198
 msgid "Regenerating…"
 msgstr "再付与中…"
 

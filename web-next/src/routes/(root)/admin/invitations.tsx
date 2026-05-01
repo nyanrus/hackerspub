@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "~/components/ui/card.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
-import { useLingui } from "~/lib/i18n/macro.d.ts";
+import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import type { invitationsPageQuery } from "./__generated__/invitationsPageQuery.graphql.ts";
 import type { invitationsRegenerateMutation } from "./__generated__/invitationsRegenerateMutation.graphql.ts";
 
@@ -175,15 +175,19 @@ export default function AdminInvitationsPage() {
                         </Show>
                       </p>
                       <p>
-                        {t`${
-                          (status()?.eligibleAccountsCount ?? 0).toLocaleString(
-                            i18n.locale,
-                          )
-                        } eligible account(s); ${
-                          (status()?.topThirdCount ?? 0).toLocaleString(
-                            i18n.locale,
-                          )
-                        } would receive an invitation if regenerated now.`}
+                        {i18n._(
+                          msg`${
+                            plural(status()?.eligibleAccountsCount ?? 0, {
+                              one: "# eligible account",
+                              other: "# eligible accounts",
+                            })
+                          }; ${
+                            plural(status()?.topThirdCount ?? 0, {
+                              one: "# would receive an invitation",
+                              other: "# would receive invitations",
+                            })
+                          } if regenerated now.`,
+                        )}
                       </p>
                     </CardContent>
                     <CardFooter>

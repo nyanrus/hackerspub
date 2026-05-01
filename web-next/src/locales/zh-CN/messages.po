@@ -18,6 +18,12 @@ msgstr ""
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 条评论}}"
 
+#. placeholder {0}: status()?.eligibleAccountsCount ?? 0
+#. placeholder {1}: status()?.topThirdCount ?? 0
+#: src/routes/(root)/admin/invitations.tsx:179
+msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
+msgstr "{0, plural, other {符合条件的账号 # 个}}；若现在重新发放，将向其中 {1, plural, other {# 个账号}}发放邀请。"
+
 #. placeholder {0}: actor().followersCount.totalCount
 #: src/components/ProfileCard.tsx:249
 msgid "{0, plural, one {# follower} other {# followers}}"
@@ -97,11 +103,9 @@ msgstr "{0} 和其他 {1} 人回复了你的内容"
 msgid "{0} and {1} others shared your post"
 msgstr "{0} 和其他 {1} 人转发了你的内容"
 
-#. placeholder {0}: (status()?.eligibleAccountsCount ?? 0).toLocaleString( i18n.locale, )
-#. placeholder {1}: (status()?.topThirdCount ?? 0).toLocaleString( i18n.locale, )
 #: src/routes/(root)/admin/invitations.tsx:173
-msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
-msgstr "符合条件的账号 {0} 个；若现在重新发放，将向其中 {1} 个账号发放邀请。"
+#~ msgid "{0} eligible account(s); {1} would receive an invitation if regenerated now."
+#~ msgstr "符合条件的账号 {0} 个；若现在重新发放，将向其中 {1} 个账号发放邀请。"
 
 #. placeholder {0}: "ACTOR"
 #: src/components/notification/FollowNotificationCard.tsx:28
@@ -496,7 +500,7 @@ msgstr "裁剪"
 msgid "Crop your new avatar"
 msgstr "裁剪你的新头像"
 
-#: src/routes/(root)/admin/invitations.tsx:166
+#: src/routes/(root)/admin/invitations.tsx:171
 msgid "Cutoff:"
 msgstr "截止时间："
 
@@ -687,7 +691,7 @@ msgstr "删除内容失败"
 msgid "Failed to follow"
 msgstr "关注失败"
 
-#: src/components/admin/AdminAccountsTable.tsx:242
+#: src/components/admin/AdminAccountsTable.tsx:233
 msgid "Failed to load more accounts; click to retry"
 msgstr "无法加载更多账号；点击以重试"
 
@@ -755,7 +759,7 @@ msgstr "无法置顶内容"
 msgid "Failed to react"
 msgstr "反应失败"
 
-#: src/routes/(root)/admin/invitations.tsx:117
+#: src/routes/(root)/admin/invitations.tsx:122
 msgid "Failed to regenerate invitations."
 msgstr "重新发放邀请失败。"
 
@@ -899,7 +903,7 @@ msgstr "前往草稿"
 msgid "Go to my drafts"
 msgstr "前往我的草稿"
 
-#: src/routes/(root)/admin/invitations.tsx:145
+#: src/routes/(root)/admin/invitations.tsx:150
 msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 msgstr "向自上次重新发放截止时间以来最活跃的账号（按内容数排名前三分之一）额外发放一份邀请。"
 
@@ -924,7 +928,7 @@ msgstr "Hackers' Pub 是个为软件工程师共同分享知识和经验的地�
 msgid "Hackers' Pub: Admin · Accounts"
 msgstr "Hackers' Pub：管理 · 账号"
 
-#: src/routes/(root)/admin/invitations.tsx:127
+#: src/routes/(root)/admin/invitations.tsx:132
 msgid "Hackers' Pub: Admin · Invitations"
 msgstr "Hackers' Pub：管理 · 邀请"
 
@@ -1026,7 +1030,7 @@ msgstr "邀请已发送"
 
 #: src/components/admin/AdminAccountsTable.tsx:115
 #: src/components/AppSidebar.tsx:494
-#: src/routes/(root)/admin/invitations.tsx:139
+#: src/routes/(root)/admin/invitations.tsx:144
 msgid "Invitations"
 msgstr "邀请"
 
@@ -1082,7 +1086,7 @@ msgstr "语言设置"
 msgid "Last activity"
 msgstr "最近活动"
 
-#: src/routes/(root)/admin/invitations.tsx:151
+#: src/routes/(root)/admin/invitations.tsx:156
 msgid "Last regenerated:"
 msgstr "上次重新发放："
 
@@ -1119,7 +1123,7 @@ msgstr "列表"
 msgid "Load more"
 msgstr "加载更多"
 
-#: src/components/admin/AdminAccountsTable.tsx:245
+#: src/components/admin/AdminAccountsTable.tsx:236
 msgid "Load more accounts"
 msgstr "加载更多账号"
 
@@ -1167,7 +1171,7 @@ msgstr "加载更多内容"
 msgid "Loading draft…"
 msgstr "加载草稿中…"
 
-#: src/components/admin/AdminAccountsTable.tsx:239
+#: src/components/admin/AdminAccountsTable.tsx:230
 msgid "Loading more accounts…"
 msgstr "正在加载更多账号…"
 
@@ -1279,8 +1283,7 @@ msgstr "用户名太长。不能长于 50 字符。"
 msgid "Native name"
 msgstr "本地名称"
 
-#: src/components/admin/AdminAccountsTable.tsx:211
-#: src/routes/(root)/admin/invitations.tsx:157
+#: src/routes/(root)/admin/invitations.tsx:162
 msgid "Never"
 msgstr "从未"
 
@@ -1352,7 +1355,7 @@ msgstr "Hackers' Pub 中无此账户，请重试。"
 msgid "No user URI provided."
 msgstr "未提供用户 URI。"
 
-#: src/routes/(root)/admin/invitations.tsx:108
+#: src/routes/(root)/admin/invitations.tsx:113
 msgid "Not authorized to regenerate invitations."
 msgstr "无权重新发放邀请。"
 
@@ -1605,11 +1608,11 @@ msgstr "阅读完整的行为准则"
 msgid "Recent drafts"
 msgstr "最近的草稿"
 
-#: src/routes/(root)/admin/invitations.tsx:189
+#: src/routes/(root)/admin/invitations.tsx:198
 msgid "Regenerate"
 msgstr "重新发放"
 
-#: src/routes/(root)/admin/invitations.tsx:143
+#: src/routes/(root)/admin/invitations.tsx:148
 msgid "Regenerate invitations"
 msgstr "重新发放邀请"
 
@@ -1618,7 +1621,7 @@ msgstr "重新发放邀请"
 msgid "Regenerated invitations for {0} accounts."
 msgstr "已为 {0} 个账号重新发放邀请。"
 
-#: src/routes/(root)/admin/invitations.tsx:189
+#: src/routes/(root)/admin/invitations.tsx:198
 msgid "Regenerating…"
 msgstr "正在重新发放…"
 
