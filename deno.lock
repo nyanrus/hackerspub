@@ -129,6 +129,7 @@
     "npm:@peculiar/x509@^1.14.3": "1.14.3",
     "npm:@pothos/core@^4.12.0": "4.12.0_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
     "npm:@pothos/plugin-complexity@^4.1.2": "4.1.2_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
+    "npm:@pothos/plugin-dataloader@^4.4.3": "4.4.3_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_dataloader@2.2.3_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
     "npm:@pothos/plugin-drizzle@~0.11.2": "0.11.2_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_drizzle-orm@1.0.0-beta.1-5e64efc__@opentelemetry+api@1.9.0__postgres@3.4.7_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
     "npm:@pothos/plugin-errors@^4.9.0": "4.9.0_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
     "npm:@pothos/plugin-relay@^4.7.0": "4.7.0_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02",
@@ -174,6 +175,7 @@
     "npm:cssfilter@^0.0.11": "0.0.11",
     "npm:cssnano@6.0.3": "6.0.3_postcss@8.4.35",
     "npm:d3@^7.9.0": "7.9.0_d3-selection@3.0.0",
+    "npm:dataloader@^2.2.3": "2.2.3",
     "npm:dom-serializer@2": "2.0.0",
     "npm:domhandler@^5.0.3": "5.0.3",
     "npm:drizzle-kit@1.0.0-beta.1-5e64efc": "1.0.0-beta.1-5e64efc_esbuild@0.19.12",
@@ -4183,6 +4185,14 @@
       "integrity": "sha512-0RUiYvhcR7bWlcnr49nK1rbT7nTlfjUaL+ISrDZ+aB5E5Te1iUbY1tcaukA/NRPV4vEd4Pwt+CmgIPvGml7gOA==",
       "dependencies": [
         "@pothos/core",
+        "graphql"
+      ]
+    },
+    "@pothos/plugin-dataloader@4.4.3_@pothos+core@4.12.0__graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02_dataloader@2.2.3_graphql@16.11.0-canary.pr.4364.2b4ffe237616247a733274dfdcb404c3d55d9f02": {
+      "integrity": "sha512-W80Cne0+IkoO/splip7ndrg9FRdHfaDoTPfwoZjJT7rGXb57kTGuQWDnm66O8363Z58jqdcVVfwwO2+EmkdEFw==",
+      "dependencies": [
+        "@pothos/core",
+        "dataloader",
         "graphql"
       ]
     },
@@ -12674,6 +12684,7 @@
       "npm:@parcel/watcher@^2.5.1",
       "npm:@pothos/core@^4.12.0",
       "npm:@pothos/plugin-complexity@^4.1.2",
+      "npm:@pothos/plugin-dataloader@^4.4.3",
       "npm:@pothos/plugin-drizzle@~0.11.2",
       "npm:@pothos/plugin-errors@^4.9.0",
       "npm:@pothos/plugin-relay@^4.7.0",
@@ -12697,6 +12708,7 @@
       "npm:cheerio@^1.1.0",
       "npm:cssfilter@^0.0.11",
       "npm:d3@^7.9.0",
+      "npm:dataloader@^2.2.3",
       "npm:drizzle-kit@1.0.0-beta.1-5e64efc",
       "npm:drizzle-orm@1.0.0-beta.1-5e64efc",
       "npm:feed@^4.2.2",

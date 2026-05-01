@@ -8,6 +8,7 @@ import type { Session } from "@hackerspub/models/session";
 import type { Uuid } from "@hackerspub/models/uuid";
 import SchemaBuilder from "@pothos/core";
 import ComplexityPlugin from "@pothos/plugin-complexity";
+import DataloaderPlugin from "@pothos/plugin-dataloader";
 import DrizzlePlugin from "@pothos/plugin-drizzle";
 import ErrorsPlugin from "@pothos/plugin-errors";
 import RelayPlugin from "@pothos/plugin-relay";
@@ -119,6 +120,7 @@ export const builder = new SchemaBuilder<PothosTypes>({
     RelayPlugin,
     ScopeAuthPlugin,
     DrizzlePlugin,
+    DataloaderPlugin,
     SimpleObjectsPlugin,
     TracingPlugin,
     WithInputPlugin,
