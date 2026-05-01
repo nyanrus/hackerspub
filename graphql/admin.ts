@@ -82,23 +82,31 @@ export function getAdminAccountStats(
 interface AdminAccountRow {
   account: typeof accountTable.$inferSelect;
   lastActivity: Date;
+  // The raw `timestamptz` text from PostgreSQL, preserving microsecond
+  // precision.  We carry it alongside the JS Date so the cursor round-
+  // trips bit-for-bit; a JS Date only keeps milliseconds and would
+  // truncate the boundary timestamp, causing rows in the rounded
+  // microsecond window to be skipped on the next page.
+  lastActivityRaw: string;
 }
 
 function encodeAdminCursor(row: AdminAccountRow): string {
-  return `${row.lastActivity.toISOString()}|${row.account.id}`;
+  return `${row.lastActivityRaw}|${row.account.id}`;
 }
 
 function decodeAdminCursor(
   cursor: string,
-): { lastActivity: Date; accountId: Uuid } | null {
+): { lastActivityRaw: string; accountId: Uuid } | null {
   const sep = cursor.indexOf("|");
   if (sep < 0) return null;
-  const ts = cursor.slice(0, sep);
+  const lastActivityRaw = cursor.slice(0, sep);
   const rawId = cursor.slice(sep + 1);
-  const lastActivity = new Date(ts);
-  if (Number.isNaN(lastActivity.getTime())) return null;
+  // Validate by attempting to parse to a Date.  Microsecond precision
+  // is lost in JS but the raw string is what gets passed back to
+  // PostgreSQL via `::timestamptz`, where full precision is preserved.
+  if (Number.isNaN(new Date(lastActivityRaw).getTime())) return null;
   if (!validateUuid(rawId)) return null;
-  return { lastActivity, accountId: rawId };
+  return { lastActivityRaw, accountId: rawId };
 }
 
 const AdminAccountEdge = builder.simpleObject("AdminAccountEdge", {
@@ -199,14 +207,14 @@ builder.queryField("adminAccounts", (t) =>
       // The cursor timestamp and id are bound as text and cast inside
       // the SQL so postgres-js can serialise them (it has no parameter
       // type for the COALESCE expression).
-      function tupleLessThan(ts: Date, id: string): SQL {
-        const tsLit = sql`${ts.toISOString()}::timestamptz`;
+      function tupleLessThan(tsRaw: string, id: string): SQL {
+        const tsLit = sql`${tsRaw}::timestamptz`;
         const idLit = sql`${id}::uuid`;
         return sql`(${lastActivityExpr} < ${tsLit}) OR (${lastActivityExpr} = ${tsLit} AND ${accountTable.id} < ${idLit})`;
       }
 
-      function tupleGreaterThan(ts: Date, id: string): SQL {
-        const tsLit = sql`${ts.toISOString()}::timestamptz`;
+      function tupleGreaterThan(tsRaw: string, id: string): SQL {
+        const tsLit = sql`${tsRaw}::timestamptz`;
         const idLit = sql`${id}::uuid`;
         return sql`(${lastActivityExpr} > ${tsLit}) OR (${lastActivityExpr} = ${tsLit} AND ${accountTable.id} > ${idLit})`;
       }
@@ -227,11 +235,11 @@ builder.queryField("adminAccounts", (t) =>
           const beforeFilter = beforeCursor == null
             ? undefined
             : tupleGreaterThan(
-              beforeCursor.lastActivity,
+              beforeCursor.lastActivityRaw,
               beforeCursor.accountId,
             );
           const afterFilter = afterCursor == null ? undefined : tupleLessThan(
-            afterCursor.lastActivity,
+            afterCursor.lastActivityRaw,
             afterCursor.accountId,
           );
 
@@ -252,14 +260,27 @@ builder.queryField("adminAccounts", (t) =>
             )
             .limit(limit);
 
-          return rows.map((r) => ({
-            account: r.account,
-            // `MAX(timestamp)` is returned as a string by postgres-js;
-            // coerce to a Date so the cursor encoder can serialise it.
-            lastActivity: r.lastActivity instanceof Date
-              ? r.lastActivity
-              : new Date(r.lastActivity as unknown as string),
-          }));
+          return rows.map((r) => {
+            const raw = r.lastActivity as unknown as Date | string;
+            // postgres-js parses `timestamptz` columns to JS Dates by
+            // default (millisecond precision), but the bare COALESCE
+            // expression doesn't carry a column type, so it comes
+            // through as the raw `YYYY-MM-DD HH:MM:SS.UUUUUU+00`
+            // string (microsecond precision).  Keep both: the string
+            // for the cursor (so boundaries round-trip exactly) and a
+            // Date for the GraphQL output.
+            const lastActivityRaw = raw instanceof Date
+              ? raw.toISOString()
+              : raw;
+            const lastActivity = raw instanceof Date
+              ? raw
+              : new Date(raw as string);
+            return {
+              account: r.account,
+              lastActivity,
+              lastActivityRaw,
+            };
+          });
         },
       );
 

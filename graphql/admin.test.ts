@@ -2,7 +2,7 @@ import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
 import { INVITATIONS_LAST_REGEN_KEY } from "@hackerspub/models/admin";
 import { accountTable } from "@hackerspub/models/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { execute, parse } from "graphql";
 import { schema } from "./mod.ts";
 import {
@@ -334,6 +334,86 @@ Deno.test({
         ? edge.lastActivity.toISOString()
         : edge.lastActivity;
       assertEquals(iso, updated.toISOString());
+    });
+  },
+});
+
+Deno.test({
+  name: "adminAccounts cursor preserves microsecond precision across pages",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "microsecmod");
+      // Two accounts with `updated` timestamps that differ only below
+      // millisecond precision (microseconds 100 vs 900 of the same
+      // millisecond).  If the cursor truncated to milliseconds, the
+      // boundary would round and the second-page filter would skip
+      // the row in the rounded window.
+      const a = await insertAccountWithActor(tx, {
+        username: "microseca",
+        name: "Microsec A",
+        email: "microseca@example.com",
+      });
+      const b = await insertAccountWithActor(tx, {
+        username: "microsecb",
+        name: "Microsec B",
+        email: "microsecb@example.com",
+      });
+      await tx.execute(
+        sql`UPDATE account SET updated = '2026-04-15 00:00:00.000900+00' WHERE id = ${a.account.id}`,
+      );
+      await tx.execute(
+        sql`UPDATE account SET updated = '2026-04-15 00:00:00.000100+00' WHERE id = ${b.account.id}`,
+      );
+      await tx.update(accountTable).set({
+        updated: new Date("2026-03-01T00:00:00.000Z"),
+      }).where(eq(accountTable.id, mod.account.id));
+
+      // First page: take just the first row (the moderator with the
+      // newest .000900 microseconds will sort first… actually no, A
+      // has .000900 which is bigger, so A comes first).
+      const first = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: { first: 1 },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(first.errors, undefined);
+      const firstData = first.data as {
+        adminAccounts: {
+          edges: { cursor: string; node: { username: string } }[];
+        };
+      };
+      assertEquals(
+        firstData.adminAccounts.edges.map((e) => e.node.username),
+        ["microseca"],
+      );
+
+      // Second page: the cursor must encode microseconds so that B
+      // (whose .000100 is also rounded to .000 in millisecond mode)
+      // is correctly returned and not skipped by the boundary.
+      const second = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: {
+          first: 1,
+          after: firstData.adminAccounts.edges[0].cursor,
+        },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(second.errors, undefined);
+      const secondData = second.data as {
+        adminAccounts: {
+          edges: { node: { username: string } }[];
+        };
+      };
+      assertEquals(
+        secondData.adminAccounts.edges.map((e) => e.node.username),
+        ["microsecb"],
+      );
     });
   },
 });
