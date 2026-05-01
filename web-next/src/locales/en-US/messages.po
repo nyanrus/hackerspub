@@ -20,7 +20,7 @@ msgstr "{0, plural, one {# comment} other {# comments}}"
 
 #. placeholder {0}: status()?.eligibleAccountsCount ?? 0
 #. placeholder {1}: status()?.topThirdCount ?? 0
-#: src/routes/(root)/admin/invitations.tsx:179
+#: src/routes/(root)/admin/invitations.tsx:188
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 
@@ -60,6 +60,11 @@ msgstr "{0, plural, one {+1 more} other {+# more}}"
 #: src/routes/(root)/[handle]/settings/invite.tsx:298
 msgid "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
 msgstr "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
+
+#. placeholder {0}: result.accountsAffected!
+#: src/routes/(root)/admin/invitations.tsx:103
+msgid "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
+msgstr "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
 
 #. placeholder {0}: account().inviteesCount.totalCount
 #: src/routes/(root)/[handle]/settings/invite.tsx:425
@@ -500,7 +505,7 @@ msgstr "Crop"
 msgid "Crop your new avatar"
 msgstr "Crop your new avatar"
 
-#: src/routes/(root)/admin/invitations.tsx:171
+#: src/routes/(root)/admin/invitations.tsx:180
 msgid "Cutoff:"
 msgstr "Cutoff:"
 
@@ -763,7 +768,7 @@ msgstr "Failed to pin post"
 msgid "Failed to react"
 msgstr "Failed to react"
 
-#: src/routes/(root)/admin/invitations.tsx:122
+#: src/routes/(root)/admin/invitations.tsx:131
 msgid "Failed to regenerate invitations."
 msgstr "Failed to regenerate invitations."
 
@@ -907,7 +912,7 @@ msgstr "Go to Drafts"
 msgid "Go to my drafts"
 msgstr "Go to my drafts"
 
-#: src/routes/(root)/admin/invitations.tsx:150
+#: src/routes/(root)/admin/invitations.tsx:159
 msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 msgstr "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 
@@ -932,7 +937,7 @@ msgstr "Hackers' Pub is a place for software engineers to share their knowledge 
 msgid "Hackers' Pub: Admin · Accounts"
 msgstr "Hackers' Pub: Admin · Accounts"
 
-#: src/routes/(root)/admin/invitations.tsx:132
+#: src/routes/(root)/admin/invitations.tsx:141
 msgid "Hackers' Pub: Admin · Invitations"
 msgstr "Hackers' Pub: Admin · Invitations"
 
@@ -1034,7 +1039,7 @@ msgstr "Invitation sent"
 
 #: src/components/admin/AdminAccountsTable.tsx:115
 #: src/components/AppSidebar.tsx:494
-#: src/routes/(root)/admin/invitations.tsx:144
+#: src/routes/(root)/admin/invitations.tsx:153
 msgid "Invitations"
 msgstr "Invitations"
 
@@ -1090,7 +1095,7 @@ msgstr "Language settings"
 msgid "Last activity"
 msgstr "Last activity"
 
-#: src/routes/(root)/admin/invitations.tsx:156
+#: src/routes/(root)/admin/invitations.tsx:165
 msgid "Last regenerated:"
 msgstr "Last regenerated:"
 
@@ -1287,7 +1292,7 @@ msgstr "Name is too long. Maximum length is 50 characters."
 msgid "Native name"
 msgstr "Native name"
 
-#: src/routes/(root)/admin/invitations.tsx:162
+#: src/routes/(root)/admin/invitations.tsx:171
 msgid "Never"
 msgstr "Never"
 
@@ -1359,7 +1364,7 @@ msgstr "No such account in Hackers' Pub—please try again."
 msgid "No user URI provided."
 msgstr "No user URI provided."
 
-#: src/routes/(root)/admin/invitations.tsx:113
+#: src/routes/(root)/admin/invitations.tsx:122
 msgid "Not authorized to regenerate invitations."
 msgstr "Not authorized to regenerate invitations."
 
@@ -1613,20 +1618,19 @@ msgstr "Read the full Code of conduct"
 msgid "Recent drafts"
 msgstr "Recent drafts"
 
-#: src/routes/(root)/admin/invitations.tsx:198
+#: src/routes/(root)/admin/invitations.tsx:207
 msgid "Regenerate"
 msgstr "Regenerate"
 
-#: src/routes/(root)/admin/invitations.tsx:148
+#: src/routes/(root)/admin/invitations.tsx:157
 msgid "Regenerate invitations"
 msgstr "Regenerate invitations"
 
-#. placeholder {0}: result.accountsAffected!.toLocaleString(i18n.locale)
 #: src/routes/(root)/admin/invitations.tsx:102
-msgid "Regenerated invitations for {0} accounts."
-msgstr "Regenerated invitations for {0} accounts."
+#~ msgid "Regenerated invitations for {0} accounts."
+#~ msgstr "Regenerated invitations for {0} accounts."
 
-#: src/routes/(root)/admin/invitations.tsx:198
+#: src/routes/(root)/admin/invitations.tsx:207
 msgid "Regenerating…"
 msgstr "Regenerating…"
 

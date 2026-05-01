@@ -99,9 +99,14 @@ export default function AdminInvitationsPage() {
         const result = response.regenerateInvitations;
         if (result.__typename === "RegenerateInvitationsPayload") {
           showToast({
-            title: t`Regenerated invitations for ${
-              result.accountsAffected!.toLocaleString(i18n.locale)
-            } accounts.`,
+            title: i18n._(
+              msg`${
+                plural(result.accountsAffected!, {
+                  one: "Regenerated invitations for # account.",
+                  other: "Regenerated invitations for # accounts.",
+                })
+              }`,
+            ),
           });
           // Relay does not normalise the mutation's nested `status`
           // back into the root `Query.invitationRegenerationStatus`
