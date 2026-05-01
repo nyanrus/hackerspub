@@ -432,6 +432,65 @@ Deno.test({
 });
 
 Deno.test({
+  name: "adminAccounts batches Account.postCount across rows (no N+1)",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "batchmod");
+      const seeded = [];
+      for (let i = 0; i < 3; i++) {
+        const acc = await insertAccountWithActor(tx, {
+          username: `batchuser${i}`,
+          name: `Batch User ${i}`,
+          email: `batchuser${i}@example.com`,
+        });
+        for (let j = 0; j < i + 1; j++) {
+          await insertNotePost(tx, {
+            account: acc.account,
+            published: new Date(`2026-04-${10 + j}T00:00:00.000Z`),
+          });
+        }
+        seeded.push(acc);
+      }
+      await insertAccountWithActor(tx, {
+        username: "batchemptyuser",
+        name: "Batch Empty",
+        email: "batchemptyuser@example.com",
+      });
+
+      const result = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: { first: 100 },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        adminAccounts: {
+          edges: {
+            node: {
+              username: string;
+              postCount: number;
+              lastPostPublished: Date | string | null;
+            };
+          }[];
+        };
+      };
+      const byName = new Map(
+        data.adminAccounts.edges.map((e) => [e.node.username, e.node]),
+      );
+      assertEquals(byName.get("batchuser0")?.postCount, 1);
+      assertEquals(byName.get("batchuser1")?.postCount, 2);
+      assertEquals(byName.get("batchuser2")?.postCount, 3);
+      assertEquals(byName.get("batchemptyuser")?.postCount, 0);
+      assertEquals(byName.get("batchemptyuser")?.lastPostPublished, null);
+    });
+  },
+});
+
+Deno.test({
   name: "adminAccounts.lastPostPublished is null for accounts with no posts",
   sanitizeOps: false,
   sanitizeResources: false,

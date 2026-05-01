@@ -11,6 +11,7 @@ import TracingPlugin from "@pothos/plugin-tracing";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type { Transport } from "@upyo/core";
 import { getTableConfig } from "drizzle-orm/pg-core";
+import type DataLoader from "dataloader";
 import type { Disk } from "flydrive";
 import { GraphQLScalarType, Kind } from "graphql";
 import {
@@ -49,12 +50,18 @@ export interface ServerContext {
   connectionInfo?: Deno.ServeHandlerInfo<Deno.Addr>;
 }
 
+export interface AdminAccountStats {
+  postCount: number;
+  lastPostPublished: Date | null;
+}
+
 export interface UserContext extends ServerContext {
   session: Session | undefined;
   account:
     | Account & { actor: Actor; emails: AccountEmail[]; links: AccountLink[] }
     | undefined;
   pollViewerVotes?: Map<Uuid, Promise<ReadonlySet<number>>>;
+  adminAccountStatsLoader?: DataLoader<Uuid, AdminAccountStats>;
 }
 
 export interface PothosTypes {

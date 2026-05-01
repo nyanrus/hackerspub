@@ -8,11 +8,76 @@ import {
   resolveCursorConnection,
   type ResolveCursorConnectionArgs,
 } from "@pothos/plugin-relay";
-import { and, asc, desc, eq, isNotNull, type SQL, sql } from "drizzle-orm";
+import DataLoader from "dataloader";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { Account } from "./account.ts";
-import { builder } from "./builder.ts";
+import {
+  type AdminAccountStats,
+  builder,
+  type UserContext,
+} from "./builder.ts";
 import { NotAuthorizedError } from "./error.ts";
 import { NotAuthenticatedError } from "./session.ts";
+
+// Per-request batching loader for the moderator-only `Account.postCount`
+// and `Account.lastPostPublished` aggregates.  Without this, requesting
+// these fields on a 50-row connection would fan out to 100 separate
+// aggregate queries.
+export function getAdminAccountStats(
+  ctx: UserContext,
+  accountId: Uuid,
+): Promise<AdminAccountStats> {
+  ctx.adminAccountStatsLoader ??= new DataLoader<Uuid, AdminAccountStats>(
+    async (ids) => {
+      const idList = ids as Uuid[];
+      const rows = await ctx.db
+        .select({
+          accountId: actorTable.accountId,
+          postCount: sql<number>`COUNT(*)::int`,
+          lastPublished: sql<Date | null>`MAX(${postTable.published})`,
+        })
+        .from(postTable)
+        .innerJoin(actorTable, eq(actorTable.id, postTable.actorId))
+        .where(
+          and(
+            isNotNull(actorTable.accountId),
+            inArray(actorTable.accountId, idList),
+          ),
+        )
+        .groupBy(actorTable.accountId);
+      const map = new Map<string, AdminAccountStats>();
+      for (const row of rows) {
+        if (row.accountId == null) continue;
+        const raw = row.lastPublished;
+        const lastPostPublished = raw == null
+          ? null
+          : raw instanceof Date
+          ? raw
+          : new Date(raw as unknown as string);
+        map.set(row.accountId, {
+          postCount: Number(row.postCount),
+          lastPostPublished,
+        });
+      }
+      return idList.map((id) =>
+        map.get(id) ?? { postCount: 0, lastPostPublished: null }
+      );
+    },
+    // Disable cross-request memoisation: a regen mutation in the same
+    // request can change post counts for another account.
+    { cache: true },
+  );
+  return ctx.adminAccountStatsLoader.load(accountId);
+}
 
 interface AdminAccountRow {
   account: typeof accountTable.$inferSelect;

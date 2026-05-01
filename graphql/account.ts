@@ -4,7 +4,7 @@ import {
   type ResolveCursorConnectionArgs,
 } from "@pothos/plugin-relay";
 import { assertNever } from "@std/assert/unstable-never";
-import { and, desc, eq, gt, isNotNull, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
 import {
   getAvatarUrl,
   transformAvatar,
@@ -17,9 +17,9 @@ import {
   accountTable,
   actorTable,
   notificationTable,
-  postTable,
 } from "@hackerspub/models/schema";
 import { Actor } from "./actor.ts";
+import { getAdminAccountStats } from "./admin.ts";
 import { builder } from "./builder.ts";
 import { InvitationLink } from "./invitation-link.ts";
 import { Notification } from "./notification.ts";
@@ -146,17 +146,8 @@ export const Account = builder.drizzleNode("accountTable", {
         "The total number of posts authored by this account.  Visible only to moderators.",
       authScopes: { moderator: true },
       async resolve(account, _, ctx) {
-        const [row] = await ctx.db
-          .select({ count: sql<number>`COUNT(*)::int` })
-          .from(postTable)
-          .innerJoin(actorTable, eq(actorTable.id, postTable.actorId))
-          .where(
-            and(
-              isNotNull(actorTable.accountId),
-              eq(actorTable.accountId, account.id),
-            ),
-          );
-        return Number(row?.count ?? 0);
+        const stats = await getAdminAccountStats(ctx, account.id);
+        return stats.postCount;
       },
     }),
     lastPostPublished: t.field({
@@ -166,22 +157,8 @@ export const Account = builder.drizzleNode("accountTable", {
         "The latest `published` timestamp across all posts authored by this account, or null when there are no posts.  Visible only to moderators.",
       authScopes: { moderator: true },
       async resolve(account, _, ctx) {
-        const [row] = await ctx.db
-          .select({
-            maxPublished: sql<Date | null>`MAX(${postTable.published})`,
-          })
-          .from(postTable)
-          .innerJoin(actorTable, eq(actorTable.id, postTable.actorId))
-          .where(
-            and(
-              isNotNull(actorTable.accountId),
-              eq(actorTable.accountId, account.id),
-            ),
-          );
-        const raw = row?.maxPublished ?? null;
-        if (raw == null) return null;
-        // `MAX(timestamp)` is returned as a string by postgres-js.
-        return raw instanceof Date ? raw : new Date(raw as unknown as string);
+        const stats = await getAdminAccountStats(ctx, account.id);
+        return stats.lastPostPublished;
       },
     }),
     preferAiSummary: t.exposeBoolean("preferAiSummary", {
