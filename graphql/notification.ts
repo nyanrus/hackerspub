@@ -1,43 +1,16 @@
 import {
   accountTable,
   type Actor as ActorRow,
-  actorTable,
 } from "@hackerspub/models/schema";
-import type { Uuid } from "@hackerspub/models/uuid";
 import {
   resolveCursorConnection,
   type ResolveCursorConnectionArgs,
 } from "@pothos/plugin-relay";
-import DataLoader from "dataloader";
-import { eq, inArray, sql } from "drizzle-orm";
-import { Actor } from "./actor.ts";
-import { builder, Node, type UserContext } from "./builder.ts";
+import { eq, sql } from "drizzle-orm";
+import { Actor, getActorById } from "./actor.ts";
+import { builder, Node } from "./builder.ts";
 import { Post } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
-
-// Per-request loader keyed by actor id.  Notifications carry an
-// `actorIds: Uuid[]` column, so the unbatched resolver fired one
-// `findMany` per notification.  The loader collapses every actor
-// id requested across the active execution into a single
-// `SELECT … WHERE id = ANY($1)` and dedupes overlapping ids
-// (e.g., the same person mentioned in two notifications).
-function getActorById(
-  ctx: UserContext,
-  actorId: Uuid,
-): Promise<ActorRow | null> {
-  ctx.actorByIdLoader ??= new DataLoader<Uuid, ActorRow | null>(
-    async (ids) => {
-      const idList = ids as Uuid[];
-      const rows = await ctx.db
-        .select()
-        .from(actorTable)
-        .where(inArray(actorTable.id, idList));
-      const byId = new Map(rows.map((row) => [row.id, row]));
-      return idList.map((id) => byId.get(id) ?? null);
-    },
-  );
-  return ctx.actorByIdLoader.load(actorId);
-}
 
 export const NotificationType = builder.enumType("NotificationType", {
   values: [

@@ -1,6 +1,7 @@
 import { assert } from "@std/assert";
 import { isActor } from "@fedify/vocab";
-import { desc, eq } from "drizzle-orm";
+import DataLoader from "dataloader";
+import { desc, eq, inArray } from "drizzle-orm";
 import {
   getAvatarUrl,
   persistActor,
@@ -21,7 +22,7 @@ import {
   unfollow,
 } from "@hackerspub/models/following";
 import { getPostVisibilityFilter } from "@hackerspub/models/post";
-import type { Actor as ActorModel } from "@hackerspub/models/schema";
+import { type Actor as ActorRow, actorTable } from "@hackerspub/models/schema";
 import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { assertNever } from "@std/assert/unstable-never";
@@ -31,6 +32,31 @@ import { builder, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { Article, Note, Post, Question } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
+
+// Per-request loader keyed by actor id.  Several resolvers (e.g.,
+// `Notification.actors`) need to fetch actor rows by id one-by-one
+// while iterating a list; without batching, that fans out to one
+// `SELECT` per actor.  This helper collapses every actor id requested
+// across the active GraphQL execution into a single
+// `SELECT … WHERE id = ANY($1)` and dedupes overlapping ids via
+// DataLoader's per-request cache.
+export function getActorById(
+  ctx: UserContext,
+  actorId: Uuid,
+): Promise<ActorRow | null> {
+  ctx.actorByIdLoader ??= new DataLoader<Uuid, ActorRow | null>(
+    async (ids) => {
+      const idList = ids as Uuid[];
+      const rows = await ctx.db
+        .select()
+        .from(actorTable)
+        .where(inArray(actorTable.id, idList));
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      return idList.map((id) => byId.get(id) ?? null);
+    },
+  );
+  return ctx.actorByIdLoader.load(actorId);
+}
 
 export const ActorType = builder.enumType("ActorType", {
   values: [
@@ -604,7 +630,7 @@ builder.queryFields((t) => ({
     async resolve(query, _, { handle, allowLocalHandle }, ctx) {
       if (handle.startsWith("@")) handle = handle.substring(1);
       const split = handle.split("@");
-      let actor: ActorModel | undefined = undefined;
+      let actor: ActorRow | undefined = undefined;
       if (split.length === 2) {
         const [username, host] = split;
         actor = await ctx.db.query.actorTable.findFirst(
