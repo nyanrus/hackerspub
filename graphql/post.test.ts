@@ -738,3 +738,80 @@ Deno.test({
     });
   },
 });
+
+const timelineWithoutIdQuery = parse(`
+  query TimelineWithoutId {
+    publicTimeline(first: 5, local: true, withoutShares: true) {
+      edges {
+        node {
+          viewerHasShared
+          viewerHasBookmarked
+          viewerHasPinned
+        }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "viewerHas* fields reflect state when id is not in the GraphQL selection",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const fedCtx = createFedCtx(tx);
+      const author = await insertAccountWithActor(tx, {
+        username: "viewerhasnoidauthor",
+        name: "ViewerHas NoId Author",
+        email: "viewerhasnoidauthor@example.com",
+      });
+      const viewer = await insertAccountWithActor(tx, {
+        username: "viewerhasnoidviewer",
+        name: "ViewerHas NoId Viewer",
+        email: "viewerhasnoidviewer@example.com",
+      });
+      const { post } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Will be shared and bookmarked, queried without id",
+      });
+
+      await sharePost(fedCtx, viewer.account, {
+        ...post,
+        actor: author.actor,
+      });
+      await createBookmark(tx, viewer.account, post);
+
+      const result = await execute({
+        schema,
+        document: timelineWithoutIdQuery,
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+
+      const edges = (result.data as {
+        publicTimeline: {
+          edges: {
+            node: {
+              viewerHasShared: boolean;
+              viewerHasBookmarked: boolean;
+              viewerHasPinned: boolean;
+            };
+          }[];
+        };
+      }).publicTimeline.edges;
+
+      // The original post (not the share) should reflect the viewer's state
+      // even though `id` was not requested in the selection set. This guards
+      // against `post.id` becoming undefined inside the t.loadable resolve
+      // function, which would silently make every viewerHas* return false.
+      const original = edges.find((e) =>
+        e.node.viewerHasBookmarked || e.node.viewerHasShared
+      );
+      assertEquals(original?.node.viewerHasShared, true);
+      assertEquals(original?.node.viewerHasBookmarked, true);
+    });
+  },
+});
