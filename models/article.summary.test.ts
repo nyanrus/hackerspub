@@ -643,6 +643,64 @@ test(
 );
 
 test(
+  "applyArticleContentSummary() discards empty or whitespace-only summaries " +
+    "even when the original is one grapheme",
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "summaryapplyempty",
+        name: "Summary Apply Empty",
+        email: "summaryapplyempty@example.com",
+      });
+      const sourceId = generateUuidV7();
+      const published = new Date("2026-04-15T00:00:00.000Z");
+      // Original is a single grapheme, so any non-empty summary that
+      // is shorter cannot exist.  An empty summary would be technically
+      // shorter (0 < 1) but is not useful, so we expect the discard
+      // path to take it (clear summary, mark unnecessary, release the
+      // claim).
+      const original = "A";
+
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug: "summary-apply-empty",
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Apply empty",
+        content: original,
+        summaryStarted: published,
+        published,
+        updated: published,
+      });
+
+      const content = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.ok(content != null);
+
+      // The whitespace-only string is in the same situation: trimmed it
+      // is empty, so persisting it would only show stray whitespace.
+      await applyArticleContentSummary(tx, content, "   \n\t  ");
+
+      const after = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.equal(after?.summary, null);
+      assert.equal(after?.summaryUnnecessary, true);
+      assert.equal(after?.summaryStarted, null);
+    });
+  },
+);
+
+test(
   "applyArticleContentSummary() counts grapheme clusters, not UTF-16 units",
   async () => {
     await withRollback(async (tx) => {

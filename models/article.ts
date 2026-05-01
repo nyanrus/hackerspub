@@ -607,12 +607,14 @@ export async function applyArticleContentSummary(
       articleContentTable.summaryStarted,
       claim,
     );
+    const trimmedSummary = summary.trim();
     if (
-      graphemeCount(summary.trim()) >= graphemeCount(current.content.trim())
+      trimmedSummary.length === 0 ||
+      graphemeCount(trimmedSummary) >= graphemeCount(current.content.trim())
     ) {
       logger.debug(
-        "Summary is not shorter than the original content; discarding " +
-          "({sourceId} {language}).",
+        "Summary is not shorter than the original content (or is empty); " +
+          "discarding ({sourceId} {language}).",
         content,
       );
       const updated = await tx.update(articleContentTable)
