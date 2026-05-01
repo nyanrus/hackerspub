@@ -633,3 +633,58 @@ test(
     });
   },
 );
+
+test(
+  "applyArticleContentSummary() counts grapheme clusters, not UTF-16 units",
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "summarycp",
+        name: "Summary CP",
+        email: "summarycp@example.com",
+      });
+      const sourceId = generateUuidV7();
+      const published = new Date("2026-04-15T00:00:00.000Z");
+      // Each emoji is one grapheme cluster but two UTF-16 code units.
+      // The "abc" summary is 3 graphemes and 3 code units; "😀😀" is
+      // 4 code units but only 2 graphemes.  By UTF-16 length the
+      // summary would look shorter (3 < 4), but in graphemes it is
+      // longer (3 >= 2), so the discard path must trigger.
+      const content = "😀😀";
+      const summary = "abc";
+
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug: "summary-cp",
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Code points",
+        content,
+        summaryStarted: published,
+        published,
+        updated: published,
+      });
+
+      const row = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.ok(row != null);
+
+      await applyArticleContentSummary(tx, row, summary);
+
+      const after = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.equal(after?.summary, null);
+      assert.equal(after?.summaryUnnecessary, true);
+    });
+  },
+);

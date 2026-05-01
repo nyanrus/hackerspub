@@ -38,6 +38,28 @@ import { generateUuidV7, type Uuid } from "./uuid.ts";
 
 const logger = getLogger(["hackerspub", "models", "article"]);
 
+/**
+ * Counts the number of user-perceived characters (extended grapheme
+ * clusters) in a string.
+ *
+ * `String.prototype.length` returns the number of UTF-16 code units,
+ * so non-BMP characters such as emoji count as 2 and a single emoji
+ * family (e.g. 👨‍👩‍👧) counts as several.  Comparing summary and
+ * article body lengths in code units therefore lets a "longer" emoji
+ * heavy summary slip past the discard guard.  Counting graphemes via
+ * `Intl.Segmenter` matches what a reader actually perceives as
+ * "shorter".
+ */
+const graphemeSegmenter = new Intl.Segmenter(undefined, {
+  granularity: "grapheme",
+});
+
+function graphemeCount(text: string): number {
+  let count = 0;
+  for (const _ of graphemeSegmenter.segment(text)) count++;
+  return count;
+}
+
 export class LanguageChangeWithTranslationsError extends Error {
   constructor() {
     super("Cannot change language when translations already exist");
@@ -585,7 +607,9 @@ export async function applyArticleContentSummary(
       articleContentTable.summaryStarted,
       claim,
     );
-    if (summary.trim().length >= current.content.trim().length) {
+    if (
+      graphemeCount(summary.trim()) >= graphemeCount(current.content.trim())
+    ) {
       logger.debug(
         "Summary is not shorter than the original content; discarding " +
           "({sourceId} {language}).",
