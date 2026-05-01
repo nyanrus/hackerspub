@@ -1,13 +1,16 @@
 import { Resvg } from "@resvg/resvg-js";
+import { encodeBase64 } from "@std/encoding/base64";
 import { encodeHex } from "@std/encoding/hex";
 import { join } from "@std/path";
 import type { Disk } from "flydrive";
 import { canonicalize } from "json-canonicalize";
 import satori from "satori";
 
-const OG_VERSION = "v2-4";
+const OG_VERSION = "v2-5";
 const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
+const FALLBACK_IMAGE_DATA_URI = "data:image/png;base64," +
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
 
 type Weight = 400 | 600;
 type FontStyle = "normal";
@@ -114,12 +117,22 @@ function loadFonts(): Promise<FontOptions[]> {
 async function loadBrandLogoDataUri(): Promise<string> {
   brandLogoDataUriPromise ??= Deno.readFile(
     join(import.meta.dirname!, "..", "web-next", "public", "logo-dark.svg"),
-  ).then((svg) => {
-    let binary = "";
-    for (const byte of svg) binary += String.fromCharCode(byte);
-    return `data:image/svg+xml;base64,${btoa(binary)}`;
-  });
+  ).then((svg) => `data:image/svg+xml;base64,${encodeBase64(svg)}`);
   return brandLogoDataUriPromise;
+}
+
+export async function loadImageDataUri(imageUrl: string): Promise<string> {
+  if (imageUrl.startsWith("data:")) return imageUrl;
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) return FALLBACK_IMAGE_DATA_URI;
+    const contentType = response.headers.get("content-type")?.split(";")[0] ??
+      "application/octet-stream";
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return `data:${contentType};base64,${encodeBase64(bytes)}`;
+  } catch {
+    return FALLBACK_IMAGE_DATA_URI;
+  }
 }
 
 function h(
@@ -180,7 +193,10 @@ function brandFooter(logo: string): OgElement {
 async function profileOgElement(
   input: ProfileOgImageInput,
 ): Promise<OgElement> {
-  const logo = await loadBrandLogoDataUri();
+  const [logo, avatar] = await Promise.all([
+    loadBrandLogoDataUri(),
+    loadImageDataUri(input.avatarUrl),
+  ]);
   const bio = truncateText(input.bio, 170);
   return h(
     "div",
@@ -210,7 +226,7 @@ async function profileOgElement(
         },
       },
       h("img", {
-        src: input.avatarUrl,
+        src: avatar,
         width: 172,
         height: 172,
         style: {
@@ -280,7 +296,10 @@ async function profileOgElement(
 async function articleOgElement(
   input: ArticleOgImageInput,
 ): Promise<OgElement> {
-  const logo = await loadBrandLogoDataUri();
+  const [logo, avatar] = await Promise.all([
+    loadBrandLogoDataUri(),
+    loadImageDataUri(input.avatarUrl),
+  ]);
   const excerpt = truncateText(input.excerpt, 132);
   return h(
     "div",
@@ -320,7 +339,7 @@ async function articleOgElement(
           },
         },
         h("img", {
-          src: input.avatarUrl,
+          src: avatar,
           width: 82,
           height: 82,
           style: {
