@@ -673,6 +673,20 @@
       "when": 1777627900806,
       "tag": "0095_admin_state",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1777641388869,
+      "tag": "0096_article_content.summary_unnecessary",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1777642390574,
+      "tag": "0097_clear_oversized_summaries",
+      "breakpoints": true
     }
   ]
 }

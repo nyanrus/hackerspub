@@ -499,6 +499,9 @@ export const articleContentTable = pgTable(
     title: text().notNull(),
     summary: text(),
     summaryStarted: timestamp("summary_started", { withTimezone: true }),
+    summaryUnnecessary: boolean("summary_unnecessary")
+      .notNull()
+      .default(false),
     content: text().notNull(),
     ogImageKey: text("og_image_key").unique(),
     originalLanguage: varchar("original_language"),

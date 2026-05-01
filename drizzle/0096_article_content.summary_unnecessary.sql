@@ -1,0 +1,1 @@
+ALTER TABLE "article_content" ADD COLUMN "summary_unnecessary" boolean DEFAULT false NOT NULL;
