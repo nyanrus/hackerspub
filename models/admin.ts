@@ -122,12 +122,16 @@ export async function regenerateInvitations(
   kv: Keyv,
   options: RegenerateOptions = {},
 ): Promise<RegenerateInvitationsResult> {
-  // Serialise regeneration across concurrent calls: take a transaction
-  // advisory lock first, re-read the KV cutoff inside the lock, do all
-  // updates, and write the new last-regen timestamp before releasing.
-  // Two callers racing the button cannot both grant invitations from
-  // the same eligibility window.
-  const run = async (
+  // Serialise regeneration across concurrent calls.  The DB work runs
+  // inside a transaction with an xact-level advisory lock; the KV
+  // cutoff write happens AFTER the transaction commits, so a commit
+  // failure (deadlock, connection drop) leaves KV at the old value
+  // and the next run picks up the same activity window.  Doing the
+  // KV write inside the transaction callback would make the kv.set
+  // durable even when Drizzle's commit later failed, leaving KV
+  // advanced while leftInvitations rolled back and silently
+  // under-granting invitations forever after.
+  const runDbWork = async (
     tx: Transaction,
   ): Promise<RegenerateInvitationsResult> => {
     await tx.execute(
@@ -151,8 +155,20 @@ export async function regenerateInvitations(
         .returning({ id: accountTable.id });
       accountsAffected = updated.length;
     }
-    await kv.set(INVITATIONS_LAST_REGEN_KEY, now.toISOString());
     return { regeneratedAt: now, accountsAffected, cutoffDate };
   };
-  return isTransaction(db) ? await run(db) : await db.transaction(run);
+  const result = isTransaction(db)
+    ? await runDbWork(db)
+    : await db.transaction(runDbWork);
+  // KV write is sequenced after commit so a commit failure cannot
+  // advance the cutoff without the matching DB rows being durable.
+  // The trade-off is the opposite failure mode: if the process
+  // crashes between commit and this kv.set, the next regen run uses
+  // the stale cutoff and re-grants the same window.  Re-granting is
+  // recoverable; permanently skipping a window is not.
+  await kv.set(
+    INVITATIONS_LAST_REGEN_KEY,
+    result.regeneratedAt.toISOString(),
+  );
+  return result;
 }
