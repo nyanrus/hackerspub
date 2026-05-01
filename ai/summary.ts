@@ -50,9 +50,31 @@ interface HtmlTag {
   start: number;
 }
 
+interface HtmlTagScan {
+  end: number;
+  tag?: HtmlTag;
+}
+
 interface TextRange {
   end: number;
   start: number;
+}
+
+function stripMarkdownContainerPrefix(line: string): string {
+  let rest = line.replace(/^ {0,3}/, "");
+  while (true) {
+    const quoted = rest.match(/^> ?(.*)$/);
+    if (quoted != null) {
+      rest = quoted[1].replace(/^ {0,3}/, "");
+      continue;
+    }
+    const listed = rest.match(/^(?:[-+*]|\d{1,9}[.)]) {1,4}(.*)$/);
+    if (listed != null) {
+      rest = listed[1].replace(/^ {0,3}/, "");
+      continue;
+    }
+    return rest;
+  }
 }
 
 function findFencedCodeRanges(text: string): TextRange[] {
@@ -65,8 +87,9 @@ function findFencedCodeRanges(text: string): TextRange[] {
     const newline = text.indexOf("\n", offset);
     const lineEnd = newline < 0 ? text.length : newline + 1;
     const line = text.slice(offset, lineEnd).replace(/\r?\n$/, "");
+    const contentLine = stripMarkdownContainerPrefix(line);
     if (opened == null) {
-      const opening = line.match(/^(?: {0,3})(`{3,}|~{3,})/);
+      const opening = contentLine.match(/^(`{3,}|~{3,})/);
       if (opening != null) {
         const fence = opening[1];
         opened = {
@@ -76,7 +99,7 @@ function findFencedCodeRanges(text: string): TextRange[] {
         };
       }
     } else {
-      const closing = line.match(/^(?: {0,3})(`{3,}|~{3,})[ \t]*$/);
+      const closing = contentLine.match(/^(`{3,}|~{3,})[ \t]*$/);
       if (
         closing != null &&
         closing[1][0] === opened.char &&
@@ -103,82 +126,103 @@ function advanceRangeIndex(
   return rangeIndex;
 }
 
-function findInlineCodeRanges(
+function findIndentedCodeRanges(
   text: string,
   fencedCodeRanges: readonly TextRange[],
 ): TextRange[] {
   const ranges: TextRange[] = [];
   let fencedCodeRangeIndex = 0;
-  for (let index = 0; index < text.length; index++) {
+  let openedStart: number | undefined;
+  let offset = 0;
+  while (offset < text.length) {
     fencedCodeRangeIndex = advanceRangeIndex(
       fencedCodeRanges,
       fencedCodeRangeIndex,
-      index,
+      offset,
     );
     const fencedCodeRange = fencedCodeRanges[fencedCodeRangeIndex];
-    if (fencedCodeRange != null && index >= fencedCodeRange.start) {
-      index = fencedCodeRange.end - 1;
+    if (fencedCodeRange != null && offset >= fencedCodeRange.start) {
+      if (openedStart != null) {
+        ranges.push({ start: openedStart, end: offset });
+        openedStart = undefined;
+      }
+      offset = fencedCodeRange.end;
+      continue;
+    }
+
+    const newline = text.indexOf("\n", offset);
+    const lineEnd = newline < 0 ? text.length : newline + 1;
+    const line = text.slice(offset, lineEnd).replace(/\r?\n$/, "");
+    if (/^(?: {4}|\t)/.test(line)) {
+      openedStart ??= offset;
+    } else if (openedStart != null) {
+      ranges.push({ start: openedStart, end: offset });
+      openedStart = undefined;
+    }
+    offset = lineEnd;
+  }
+  if (openedStart != null) {
+    ranges.push({ start: openedStart, end: text.length });
+  }
+  return ranges;
+}
+
+function findInlineCodeRanges(
+  text: string,
+  blockCodeRanges: readonly TextRange[],
+): TextRange[] {
+  const ranges: TextRange[] = [];
+  let blockCodeRangeIndex = 0;
+  let opened: { length: number; start: number } | undefined;
+  for (let index = 0; index < text.length; index++) {
+    blockCodeRangeIndex = advanceRangeIndex(
+      blockCodeRanges,
+      blockCodeRangeIndex,
+      index,
+    );
+    const blockCodeRange = blockCodeRanges[blockCodeRangeIndex];
+    if (blockCodeRange != null && index >= blockCodeRange.start) {
+      index = blockCodeRange.end - 1;
       continue;
     }
     if (text[index] !== "`") continue;
     const start = index;
     let length = 1;
     while (text[start + length] === "`") length++;
-
-    let searchIndex = start + length;
-    let searchFencedCodeRangeIndex = fencedCodeRangeIndex;
-    while (searchIndex < text.length) {
-      searchFencedCodeRangeIndex = advanceRangeIndex(
-        fencedCodeRanges,
-        searchFencedCodeRangeIndex,
-        searchIndex,
-      );
-      const searchFencedCodeRange =
-        fencedCodeRanges[searchFencedCodeRangeIndex];
-      if (
-        searchFencedCodeRange != null &&
-        searchIndex >= searchFencedCodeRange.start
-      ) {
-        searchIndex = searchFencedCodeRange.end;
-        continue;
-      }
-
-      const closeStart = text.indexOf("`", searchIndex);
-      if (closeStart < 0) break;
-      searchIndex = closeStart;
-      let closeLength = 1;
-      while (text[closeStart + closeLength] === "`") closeLength++;
-      if (closeLength === length) {
-        ranges.push({ start, end: closeStart + closeLength });
-        index = closeStart + closeLength - 1;
-        break;
-      }
-      searchIndex = closeStart + closeLength;
+    if (opened == null) {
+      opened = { length, start };
+    } else if (length === opened.length) {
+      ranges.push({ start: opened.start, end: start + length });
+      opened = undefined;
     }
+    index = start + length - 1;
   }
   return ranges;
 }
 
 function findMarkdownCodeRanges(text: string): TextRange[] {
   const fencedCodeRanges = findFencedCodeRanges(text);
-  return [
+  const blockCodeRanges = [
     ...fencedCodeRanges,
-    ...findInlineCodeRanges(text, fencedCodeRanges),
+    ...findIndentedCodeRanges(text, fencedCodeRanges),
+  ].sort((a, b) => a.start - b.start);
+  return [
+    ...blockCodeRanges,
+    ...findInlineCodeRanges(text, blockCodeRanges),
   ].sort((a, b) => a.start - b.start);
 }
 
-function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
-  if (text[start] !== "<") return undefined;
+function readHtmlTagAt(text: string, start: number): HtmlTagScan {
+  if (text[start] !== "<") return { end: start + 1 };
   let index = start + 1;
   let closing = false;
   if (text[index] === "/") {
     closing = true;
     index++;
   }
-  while (/\s/.test(text[index] ?? "")) index++;
   const nameStart = index;
   while (/[A-Za-z0-9:-]/.test(text[index] ?? "")) index++;
-  if (index === nameStart) return undefined;
+  if (index === nameStart) return { end: start + 1 };
   const name = text.slice(nameStart, index).toLowerCase();
   let quote: '"' | "'" | undefined;
   for (; index < text.length; index++) {
@@ -188,10 +232,15 @@ function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
     } else if (char === quote) {
       quote = undefined;
     } else if (quote == null && char === ">") {
-      return { closing, end: index + 1, name, start };
+      return {
+        end: index + 1,
+        tag: { closing, end: index + 1, name, start },
+      };
+    } else if (quote == null && (char === "\n" || char === "\r")) {
+      return { end: index + 1 };
     }
   }
-  return { closing, end: text.length, name, start };
+  return { end: text.length };
 }
 
 export function removeDetailsFromSummaryInput(text: string): string {
@@ -212,8 +261,12 @@ export function removeDetailsFromSummaryInput(text: string): string {
       continue;
     }
     if (text[index] !== "<") continue;
-    const tag = readHtmlTagAt(text, index);
-    if (tag?.name !== "details") continue;
+    const scan = readHtmlTagAt(text, index);
+    const tag = scan.tag;
+    if (tag?.name !== "details") {
+      index = scan.end - 1;
+      continue;
+    }
     if (tag.closing) {
       if (depth > 0 && --depth === 0) keepStart = tag.end;
     } else {

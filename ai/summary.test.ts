@@ -146,6 +146,88 @@ test("removeDetailsFromSummaryInput() preserves inline code literals", () => {
   assert.equal(output.includes("Hidden answer."), false);
 });
 
+test("removeDetailsFromSummaryInput() handles many unclosed inline code markers", () => {
+  const input = `${"` ".repeat(2_000)}\nVisible after markers.`;
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Visible after markers."), true);
+});
+
+test("removeDetailsFromSummaryInput() handles many unterminated less-than signs", () => {
+  const input = [
+    "Visible before.",
+    Array.from({ length: 2_000 }, (_, index) => `a${index} < b${index}`).join(
+      "\n",
+    ),
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Visible before."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
+test("removeDetailsFromSummaryInput() preserves indented code blocks", () => {
+  const input = [
+    "Visible before.",
+    "",
+    "    <details>",
+    "    <summary>Example</summary>",
+    "    Example body.",
+    "    </details>",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("<summary>Example</summary>"), true);
+  assert.equal(output.includes("Example body."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
+test("removeDetailsFromSummaryInput() preserves fenced code blocks in block quotes", () => {
+  const input = [
+    "Visible before.",
+    "",
+    "> ```html",
+    "> <details>",
+    "> <summary>Example</summary>",
+    "> Example body.",
+    "> </details>",
+    "> ```",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("<summary>Example</summary>"), true);
+  assert.equal(output.includes("Example body."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
 test("summarize() sends text without details blocks to the model", async () => {
   let promptText: string | undefined;
   const model = new MockLanguageModelV3({
