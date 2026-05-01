@@ -888,18 +888,37 @@ Deno.test({
 // state.  If someone removes `cache: false` (default DataLoader cache
 // is `true`), the second `viewerBlocks` would return the cached `true`
 // from the first read and this test would fail.
+//
+// All four follow/block loaders are selected on the mutation payload
+// to smoke-test their plumbing.  Of the four, only `viewerBlocks`
+// actually flips between the two reads in this scenario; the others
+// stay at `false` because the viewer can't flip them in a single
+// authenticated mutation document.  A companion follow/unfollow test
+// below locks `cache: false` in for `viewerFollows`.
 const blockUnblockMutation = parse(`
   mutation BlockThenUnblock($actorId: ID!) {
     block: blockActor(input: { actorId: $actorId }) {
       __typename
       ... on BlockActorPayload {
-        blockee { id viewerBlocks }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+        }
       }
     }
     unblock: unblockActor(input: { actorId: $actorId }) {
       __typename
       ... on UnblockActorPayload {
-        blockee { id viewerBlocks }
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+        }
       }
     }
   }
@@ -936,21 +955,115 @@ Deno.test({
       const data = result.data as {
         block: {
           __typename: string;
-          blockee?: { id: string; viewerBlocks: boolean };
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+          };
         };
         unblock: {
           __typename: string;
-          blockee?: { id: string; viewerBlocks: boolean };
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+          };
         };
       };
 
       assertEquals(data.block.__typename, "BlockActorPayload");
       assertEquals(data.unblock.__typename, "UnblockActorPayload");
+
+      // Crucial: this asserts the `viewerBlocks` loader re-queried after
+      // the unblock mutation flipped state.  A `cache: true` regression
+      // on `viewerBlocks` would surface here as the stale cached `true`.
       assertEquals(data.block.blockee?.viewerBlocks, true);
-      // Crucial: this asserts the loader re-queried after the unblock
-      // mutation flipped state.  A `cache: true` regression would
-      // surface here as `viewerBlocks: true` (the stale cached value).
       assertEquals(data.unblock.blockee?.viewerBlocks, false);
+
+      // Smoke-test the other three loaders on the mutation payload.
+      // Their values don't flip between the two reads in this scenario,
+      // so cache: true vs cache: false isn't differentiated here — but
+      // a regression that breaks the field plumbing or returns
+      // undefined/null would surface.
+      assertEquals(data.block.blockee?.blocksViewer, false);
+      assertEquals(data.unblock.blockee?.blocksViewer, false);
+      assertEquals(data.block.blockee?.viewerFollows, false);
+      assertEquals(data.unblock.blockee?.viewerFollows, false);
+      assertEquals(data.block.blockee?.followsViewer, false);
+      assertEquals(data.unblock.blockee?.followsViewer, false);
+    });
+  },
+});
+
+// Companion test that genuinely locks `cache: false` in for
+// `viewerFollows`.  followActor creates the follow row and unfollowActor
+// removes it, so the loader's value flips between the two payload reads.
+const followUnfollowMutation = parse(`
+  mutation FollowThenUnfollow($actorId: ID!) {
+    follow: followActor(input: { actorId: $actorId }) {
+      __typename
+      ... on FollowActorPayload {
+        followee { id viewerFollows }
+      }
+    }
+    unfollow: unfollowActor(input: { actorId: $actorId }) {
+      __typename
+      ... on UnfollowActorPayload {
+        followee { id viewerFollows }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "Actor.viewerFollows loader does not cache stale state across serial mutations",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const follower = await insertAccountWithActor(tx, {
+        username: "vfcachefollower",
+        name: "VF Cache Follower",
+        email: "vfcachefollower@example.com",
+      });
+      const followee = await insertAccountWithActor(tx, {
+        username: "vfcachefollowee",
+        name: "VF Cache Followee",
+        email: "vfcachefollowee@example.com",
+      });
+
+      const actorId = encodeGlobalID("Actor", followee.actor.id);
+      const result = await execute({
+        schema,
+        document: followUnfollowMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, follower.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        follow: {
+          __typename: string;
+          followee?: { id: string; viewerFollows: boolean };
+        };
+        unfollow: {
+          __typename: string;
+          followee?: { id: string; viewerFollows: boolean };
+        };
+      };
+
+      assertEquals(data.follow.__typename, "FollowActorPayload");
+      assertEquals(data.unfollow.__typename, "UnfollowActorPayload");
+      assertEquals(data.follow.followee?.viewerFollows, true);
+      // A `cache: true` regression on `viewerFollows` would surface
+      // here as a stale cached `true`.
+      assertEquals(data.unfollow.followee?.viewerFollows, false);
     });
   },
 });
