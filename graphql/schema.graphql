@@ -580,6 +580,31 @@ type InvitationLinkPayload {
   invitationLink: InvitationLink
 }
 
+"""
+A snapshot of the invitation-regeneration state used by the admin UI to preview a regeneration before triggering it.
+"""
+type InvitationRegenerationStatus {
+  """
+  The earliest `published` timestamp a post must have to count an account as eligible.  Equals `lastRegeneratedAt` once a regeneration has been recorded; otherwise defaults to one week before now.
+  """
+  cutoffDate: DateTime!
+
+  """Number of accounts with at least one post past cutoff."""
+  eligibleAccountsCount: Int!
+
+  """
+  When the regeneration was last triggered, or null if it has never been run.
+  """
+  lastRegeneratedAt: DateTime
+
+  """
+  Number of accounts that would receive an invitation if a regeneration were triggered now (ceil(eligible / 3)).
+  """
+  topThirdCount: Int!
+}
+
+union InvitationRegenerationStatusResult = InvitationRegenerationStatus | NotAuthenticatedError | NotAuthorizedError
+
 """A node in the invitation tree."""
 type InvitationTreeNode {
   avatarUrl: URL!
@@ -1082,6 +1107,7 @@ type Query {
   ): Document!
   instanceByHost(host: String!): Instance
   invitationLink(id: UUID!, username: String!): InvitationLink
+  invitationRegenerationStatus: InvitationRegenerationStatusResult!
 
   """Returns all accounts as a flat array for building the invitation tree."""
   invitationTree: [InvitationTreeNode!]!

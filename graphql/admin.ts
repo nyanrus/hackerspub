@@ -1,3 +1,4 @@
+import { getInvitationRegenerationStatus } from "@hackerspub/models/admin";
 import { accountTable, actorTable, postTable } from "@hackerspub/models/schema";
 import {
   resolveCursorConnection,
@@ -189,5 +190,52 @@ builder.queryField("adminAccounts", (t) =>
           endCursor: connection.pageInfo.endCursor ?? null,
         },
       };
+    },
+  }));
+
+const InvitationRegenerationStatus = builder.simpleObject(
+  "InvitationRegenerationStatus",
+  {
+    description:
+      "A snapshot of the invitation-regeneration state used by the admin UI " +
+      "to preview a regeneration before triggering it.",
+    fields: (t) => ({
+      lastRegeneratedAt: t.field({
+        type: "DateTime",
+        nullable: true,
+        description:
+          "When the regeneration was last triggered, or null if it has " +
+          "never been run.",
+      }),
+      cutoffDate: t.field({
+        type: "DateTime",
+        description:
+          "The earliest `published` timestamp a post must have to count " +
+          "an account as eligible.  Equals `lastRegeneratedAt` once a " +
+          "regeneration has been recorded; otherwise defaults to one " +
+          "week before now.",
+      }),
+      eligibleAccountsCount: t.int({
+        description: "Number of accounts with at least one post past cutoff.",
+      }),
+      topThirdCount: t.int({
+        description:
+          "Number of accounts that would receive an invitation if a " +
+          "regeneration were triggered now (ceil(eligible / 3)).",
+      }),
+    }),
+  },
+);
+
+builder.queryField("invitationRegenerationStatus", (t) =>
+  t.field({
+    type: InvitationRegenerationStatus,
+    errors: {
+      types: [NotAuthenticatedError, NotAuthorizedError],
+    },
+    async resolve(_root, _args, ctx) {
+      if (ctx.session == null) throw new NotAuthenticatedError();
+      if (!ctx.account?.moderator) throw new NotAuthorizedError();
+      return await getInvitationRegenerationStatus(ctx.db, ctx.kv);
     },
   }));

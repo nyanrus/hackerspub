@@ -1,10 +1,12 @@
 import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
+import { INVITATIONS_LAST_REGEN_KEY } from "@hackerspub/models/admin";
 import { accountTable } from "@hackerspub/models/schema";
 import { eq } from "drizzle-orm";
 import { execute, parse } from "graphql";
 import { schema } from "./mod.ts";
 import {
+  createTestKv,
   insertAccountWithActor,
   insertNotePost,
   makeGuestContext,
@@ -409,6 +411,196 @@ Deno.test({
       assert(target != null);
       assertEquals(target.node.postCount, 0);
       assertEquals(target.node.lastPostPublished, null);
+    });
+  },
+});
+
+const invitationRegenStatusQuery = parse(`
+  query InvitationRegenerationStatus {
+    invitationRegenerationStatus {
+      __typename
+      ... on InvitationRegenerationStatus {
+        lastRegeneratedAt
+        cutoffDate
+        eligibleAccountsCount
+        topThirdCount
+      }
+      ... on NotAuthenticatedError { notAuthenticated }
+      ... on NotAuthorizedError { notAuthorized }
+    }
+  }
+`);
+
+Deno.test({
+  name: "invitationRegenerationStatus returns NotAuthenticatedError for guest",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await execute({
+        schema,
+        document: invitationRegenStatusQuery,
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        invitationRegenerationStatus: { __typename: string };
+      };
+      assertEquals(
+        data.invitationRegenerationStatus.__typename,
+        "NotAuthenticatedError",
+      );
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "invitationRegenerationStatus returns NotAuthorizedError for non-moderator",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const normal = await insertAccountWithActor(tx, {
+        username: "regenstatusnonmod",
+        name: "Non Mod",
+        email: "regenstatusnonmod@example.com",
+      });
+      const result = await execute({
+        schema,
+        document: invitationRegenStatusQuery,
+        contextValue: makeUserContext(tx, normal.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        invitationRegenerationStatus: { __typename: string };
+      };
+      assertEquals(
+        data.invitationRegenerationStatus.__typename,
+        "NotAuthorizedError",
+      );
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "invitationRegenerationStatus returns null lastRegeneratedAt when KV empty",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenstatusmod1");
+      const { kv } = createTestKv();
+      const result = await execute({
+        schema,
+        document: invitationRegenStatusQuery,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const status = (result.data as {
+        invitationRegenerationStatus: {
+          __typename: string;
+          lastRegeneratedAt: unknown;
+        };
+      }).invitationRegenerationStatus;
+      assertEquals(status.__typename, "InvitationRegenerationStatus");
+      assertEquals(status.lastRegeneratedAt, null);
+    });
+  },
+});
+
+Deno.test({
+  name: "invitationRegenerationStatus returns the stored timestamp from KV",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenstatusmod2");
+      const { kv, store } = createTestKv();
+      const stored = new Date("2026-04-12T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, stored.toISOString());
+      const result = await execute({
+        schema,
+        document: invitationRegenStatusQuery,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const status = (result.data as {
+        invitationRegenerationStatus: {
+          lastRegeneratedAt: Date | string | null;
+          cutoffDate: Date | string;
+        };
+      }).invitationRegenerationStatus;
+      assert(status.lastRegeneratedAt != null);
+      const lastIso = status.lastRegeneratedAt instanceof Date
+        ? status.lastRegeneratedAt.toISOString()
+        : status.lastRegeneratedAt;
+      assertEquals(lastIso, stored.toISOString());
+      const cutoffIso = status.cutoffDate instanceof Date
+        ? status.cutoffDate.toISOString()
+        : status.cutoffDate;
+      assertEquals(cutoffIso, stored.toISOString());
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "invitationRegenerationStatus reports eligible/topThird based on posts since cutoff",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenstatusmod3");
+      const { kv, store } = createTestKv();
+      const cutoff = new Date("2026-04-08T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, cutoff.toISOString());
+
+      // Two accounts with posts past cutoff, one without.
+      const a = await insertAccountWithActor(tx, {
+        username: "regenstateligible1",
+        name: "Eligible 1",
+        email: "regenstateligible1@example.com",
+      });
+      const b = await insertAccountWithActor(tx, {
+        username: "regenstateligible2",
+        name: "Eligible 2",
+        email: "regenstateligible2@example.com",
+      });
+      await insertAccountWithActor(tx, {
+        username: "regenstatineligible",
+        name: "Ineligible",
+        email: "regenstatineligible@example.com",
+      });
+      await insertNotePost(tx, {
+        account: a.account,
+        published: new Date("2026-04-09T00:00:00.000Z"),
+      });
+      await insertNotePost(tx, {
+        account: b.account,
+        published: new Date("2026-04-10T00:00:00.000Z"),
+      });
+
+      const result = await execute({
+        schema,
+        document: invitationRegenStatusQuery,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const status = (result.data as {
+        invitationRegenerationStatus: {
+          eligibleAccountsCount: number;
+          topThirdCount: number;
+        };
+      }).invitationRegenerationStatus;
+      assertEquals(status.eligibleAccountsCount, 2);
+      assertEquals(status.topThirdCount, 1);
     });
   },
 });
