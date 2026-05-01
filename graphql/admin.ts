@@ -386,11 +386,22 @@ builder.mutationField("regenerateInvitations", (t) =>
       if (ctx.session == null) throw new NotAuthenticatedError();
       if (!ctx.account?.moderator) throw new NotAuthorizedError();
       const result = await regenerateInvitations(ctx.db, ctx.kv);
-      const status = await getInvitationRegenerationStatus(ctx.db, ctx.kv);
+      // The post-regen status is fully determined by the result the
+      // model just produced: cutoffDate becomes regeneratedAt, and
+      // since the cutoff has just moved to "now", no account has a
+      // post past it (modulo future-dated posts, which the eligibility
+      // query also excludes), so eligibleAccountsCount and
+      // topThirdCount are both 0.  Constructing the status here
+      // avoids a redundant aggregate query against postTable.
       return {
         regeneratedAt: result.regeneratedAt,
         accountsAffected: result.accountsAffected,
-        status,
+        status: {
+          lastRegeneratedAt: result.regeneratedAt,
+          cutoffDate: result.regeneratedAt,
+          eligibleAccountsCount: 0,
+          topThirdCount: 0,
+        },
       };
     },
   }));
