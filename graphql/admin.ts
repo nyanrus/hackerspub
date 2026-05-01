@@ -105,6 +105,11 @@ const AdminAccountEdge = builder.simpleObject("AdminAccountEdge", {
   fields: (t) => ({
     cursor: t.string(),
     node: t.field({ type: Account }),
+    lastActivity: t.field({
+      type: "DateTime",
+      description:
+        "The timestamp this row is sorted by: COALESCE(MAX(post.published), account.updated).  Always defined.",
+    }),
   }),
 });
 
@@ -119,7 +124,11 @@ const AdminAccountPageInfo = builder.simpleObject("AdminAccountPageInfo", {
 
 interface AdminAccountConnectionShape {
   totalCount: number;
-  edges: { cursor: string; node: typeof accountTable.$inferSelect }[];
+  edges: {
+    cursor: string;
+    node: typeof accountTable.$inferSelect;
+    lastActivity: Date;
+  }[];
   pageInfo: {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
@@ -259,6 +268,7 @@ builder.queryField("adminAccounts", (t) =>
         edges: connection.edges.map((edge) => ({
           cursor: edge.cursor,
           node: edge.node.account,
+          lastActivity: edge.node.lastActivity,
         })),
         pageInfo: {
           hasNextPage: connection.pageInfo.hasNextPage,

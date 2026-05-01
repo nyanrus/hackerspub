@@ -36,6 +36,7 @@ export function AdminAccountsTable(props: AdminAccountsTableProps) {
         {
           totalCount
           edges {
+            lastActivity
             node {
               id
               uuid
@@ -45,7 +46,6 @@ export function AdminAccountsTable(props: AdminAccountsTableProps) {
               avatarUrl
               invitationsLeft
               postCount
-              lastPostPublished
               created
               actor {
                 followers(first: 0) {
@@ -204,16 +204,7 @@ export function AdminAccountsTable(props: AdminAccountsTableProps) {
                         {formatNumber(edge.node.invitees.totalCount)}
                       </TableCell>
                       <TableCell>
-                        <Show
-                          when={edge.node.lastPostPublished}
-                          fallback={
-                            <span class="text-muted-foreground/70">
-                              {t`Never`}
-                            </span>
-                          }
-                        >
-                          {(ts) => <Timestamp value={ts()} />}
-                        </Show>
+                        <Timestamp value={edge.lastActivity} />
                       </TableCell>
                       <TableCell>
                         <Timestamp value={edge.node.created} />

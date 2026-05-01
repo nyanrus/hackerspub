@@ -25,6 +25,7 @@ const adminAccountsQuery = parse(`
       totalCount
       edges {
         cursor
+        lastActivity
         node {
           uuid
           username
@@ -287,6 +288,52 @@ Deno.test({
           `cursor leak: ${u} appears in both pages`,
         );
       }
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "adminAccounts edge.lastActivity falls back to account.updated for no-post accounts",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "lastactmod");
+      const noPosts = await insertAccountWithActor(tx, {
+        username: "lastactnoposts",
+        name: "No Posts",
+        email: "lastactnoposts@example.com",
+      });
+      const updated = new Date("2026-04-12T00:00:00.000Z");
+      await tx.update(accountTable).set({ updated }).where(
+        eq(accountTable.id, noPosts.account.id),
+      );
+
+      const result = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: { first: 100 },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        adminAccounts: {
+          edges: {
+            lastActivity: Date | string;
+            node: { username: string };
+          }[];
+        };
+      };
+      const edge = data.adminAccounts.edges.find(
+        (e) => e.node.username === "lastactnoposts",
+      );
+      assert(edge != null);
+      const iso = edge.lastActivity instanceof Date
+        ? edge.lastActivity.toISOString()
+        : edge.lastActivity;
+      assertEquals(iso, updated.toISOString());
     });
   },
 });

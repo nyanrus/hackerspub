@@ -299,6 +299,11 @@ type AdminAccountConnection {
 
 type AdminAccountEdge {
   cursor: String!
+
+  """
+  The timestamp this row is sorted by: COALESCE(MAX(post.published), account.updated).  Always defined.
+  """
+  lastActivity: DateTime!
   node: Account!
 }
 
