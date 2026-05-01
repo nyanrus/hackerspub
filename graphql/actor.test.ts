@@ -2,6 +2,7 @@ import { assertEquals } from "@std/assert/equals";
 import { and, eq, or } from "drizzle-orm";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
+import { block } from "@hackerspub/models/blocking";
 import { follow } from "@hackerspub/models/following";
 import { blockingTable, followingTable } from "@hackerspub/models/schema";
 import { schema } from "./mod.ts";
@@ -534,6 +535,14 @@ const followRelationshipBatchQuery = parse(`
   }
 `);
 
+const viewerBlocksBatchQuery = parse(`
+  query ViewerBlocksBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerBlocks }
+    b: actorByUuid(uuid: $b) { id viewerBlocks }
+    c: actorByUuid(uuid: $c) { id viewerBlocks }
+  }
+`);
+
 Deno.test({
   name: "Actor.viewerFollows returns the right state per actor when batched",
   sanitizeOps: false,
@@ -696,6 +705,104 @@ Deno.test({
           followsViewer: false,
         },
       });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerBlocks returns the right state per actor when batched",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "vbviewer",
+        name: "VB Viewer",
+        email: "vbviewer@example.com",
+      });
+      const blocked = await insertAccountWithActor(tx, {
+        username: "vbblocked",
+        name: "VB Blocked",
+        email: "vbblocked@example.com",
+      });
+      const notBlocked = await insertAccountWithActor(tx, {
+        username: "vbnotblocked",
+        name: "VB Not Blocked",
+        email: "vbnotblocked@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "vbstranger",
+        name: "VB Stranger",
+        email: "vbstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      await block(fedCtx, viewer.account, blocked.actor);
+
+      const result = await execute({
+        schema,
+        document: viewerBlocksBatchQuery,
+        variableValues: {
+          a: blocked.actor.id,
+          b: notBlocked.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", blocked.actor.id),
+          viewerBlocks: true,
+        },
+        b: {
+          id: encodeGlobalID("Actor", notBlocked.actor.id),
+          viewerBlocks: false,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerBlocks: false,
+        },
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerBlocks returns false for a guest viewer",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const someone = await insertAccountWithActor(tx, {
+        username: "vbguesttarget",
+        name: "VB Guest Target",
+        email: "vbguesttarget@example.com",
+      });
+
+      const result = await execute({
+        schema,
+        document: viewerBlocksBatchQuery,
+        variableValues: {
+          a: someone.actor.id,
+          b: someone.actor.id,
+          c: someone.actor.id,
+        },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        a: { viewerBlocks: boolean };
+        b: { viewerBlocks: boolean };
+        c: { viewerBlocks: boolean };
+      };
+      assertEquals(data.a.viewerBlocks, false);
+      assertEquals(data.b.viewerBlocks, false);
+      assertEquals(data.c.viewerBlocks, false);
     });
   },
 });

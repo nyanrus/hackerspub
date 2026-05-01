@@ -6,7 +6,11 @@ import {
   persistActor,
   recommendActors,
 } from "@hackerspub/models/actor";
-import { block, unblock } from "@hackerspub/models/blocking";
+import {
+  block,
+  getBlockedActorIds,
+  unblock,
+} from "@hackerspub/models/blocking";
 import { renderCustomEmojis } from "@hackerspub/models/emoji";
 import {
   follow,
@@ -390,20 +394,22 @@ builder.drizzleObjectFields(Actor, (t) => ({
     },
     resolve: (actor) => actor.id,
   }),
-  viewerBlocks: t.field({
+  viewerBlocks: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.blockingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          blockerId: ctx.account.actor.id,
-          blockeeId: actor.id,
-        },
-      }) != null;
+    // cache: false so blockActor and unblockActor mutations are
+    // reflected by subsequent reads of the field within the same
+    // request rather than a stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+      if (ctx.account?.actor == null) return actorIds.map(() => false);
+      const blocked = await getBlockedActorIds(
+        ctx.db,
+        ctx.account.actor.id,
+        actorIds,
+      );
+      return actorIds.map((id) => blocked.has(id));
     },
+    resolve: (actor) => actor.id,
   }),
   blocksViewer: t.field({
     type: "Boolean",

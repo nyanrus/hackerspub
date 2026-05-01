@@ -1,9 +1,10 @@
 import type { Context, DocumentLoader } from "@fedify/fedify";
 import { isActor } from "@fedify/vocab";
 import * as vocab from "@fedify/vocab";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getPersistedActor, persistActor, toRecipient } from "./actor.ts";
 import type { ContextData } from "./context.ts";
+import type { Database } from "./db.ts";
 import { removeFollower, unfollow } from "./following.ts";
 import {
   type Account,
@@ -11,7 +12,7 @@ import {
   type Blocking,
   blockingTable,
 } from "./schema.ts";
-import { generateUuidV7 } from "./uuid.ts";
+import { generateUuidV7, type Uuid } from "./uuid.ts";
 
 export async function persistBlocking(
   fedCtx: Context<ContextData>,
@@ -153,4 +154,22 @@ export async function unblock(
     );
   }
   return rows[0];
+}
+
+export async function getBlockedActorIds(
+  db: Database,
+  blockerId: Uuid,
+  blockeeIds: readonly Uuid[],
+): Promise<Set<Uuid>> {
+  if (blockeeIds.length < 1) return new Set();
+  const rows = await db
+    .select({ blockeeId: blockingTable.blockeeId })
+    .from(blockingTable)
+    .where(
+      and(
+        eq(blockingTable.blockerId, blockerId),
+        inArray(blockingTable.blockeeId, blockeeIds as Uuid[]),
+      ),
+    );
+  return new Set(rows.map((row) => row.blockeeId));
 }
