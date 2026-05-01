@@ -68,6 +68,7 @@ test("getOriginalArticleContent() picks the earliest non-translation content", (
     title: "Original",
     summary: null,
     summaryStarted: null,
+    summaryUnnecessary: false,
     content: "Original body",
     ogImageKey: null,
     originalLanguage: null,
