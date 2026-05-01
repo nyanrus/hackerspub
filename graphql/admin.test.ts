@@ -2,7 +2,7 @@ import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
 import { INVITATIONS_LAST_REGEN_KEY } from "@hackerspub/models/admin";
 import { accountTable } from "@hackerspub/models/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { execute, parse } from "graphql";
 import { schema } from "./mod.ts";
 import {
@@ -600,6 +600,87 @@ Deno.test({
       assertEquals(data.accountByUsername.username, "statsguard");
       assertEquals(data.accountByUsername.postCount, null);
       assertEquals(data.accountByUsername.lastPostPublished, null);
+    });
+  },
+});
+
+Deno.test({
+  name: "Account.invitees.totalCount batches across rows in adminAccounts",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "inviteebatchmod");
+      const inviter1 = await insertAccountWithActor(tx, {
+        username: "inviteebatch1",
+        name: "Inviter 1",
+        email: "inviteebatch1@example.com",
+      });
+      const inviter2 = await insertAccountWithActor(tx, {
+        username: "inviteebatch2",
+        name: "Inviter 2",
+        email: "inviteebatch2@example.com",
+      });
+      // inviter1 invited two accounts; inviter2 invited one.
+      const invitees1 = [];
+      for (let i = 0; i < 2; i++) {
+        const inv = await insertAccountWithActor(tx, {
+          username: `inviteechild1${i}`,
+          name: `Child 1-${i}`,
+          email: `inviteechild1${i}@example.com`,
+        });
+        invitees1.push(inv);
+      }
+      const inv2 = await insertAccountWithActor(tx, {
+        username: "inviteechild2",
+        name: "Child 2",
+        email: "inviteechild2@example.com",
+      });
+      await tx.update(accountTable).set({ inviterId: inviter1.account.id })
+        .where(
+          inArray(
+            accountTable.id,
+            invitees1.map((i) => i.account.id),
+          ),
+        );
+      await tx.update(accountTable).set({ inviterId: inviter2.account.id })
+        .where(eq(accountTable.id, inv2.account.id));
+
+      const queryWithInvitees = parse(`
+        query AdminAccountsInvitees {
+          adminAccounts(first: 100) {
+            edges {
+              node {
+                username
+                invitees(first: 0) { totalCount }
+              }
+            }
+          }
+        }
+      `);
+      const result = await execute({
+        schema,
+        document: queryWithInvitees,
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        adminAccounts: {
+          edges: {
+            node: { username: string; invitees: { totalCount: number } };
+          }[];
+        };
+      };
+      const byName = new Map(
+        data.adminAccounts.edges.map((e) => [
+          e.node.username,
+          e.node.invitees.totalCount,
+        ]),
+      );
+      assertEquals(byName.get("inviteebatch1"), 2);
+      assertEquals(byName.get("inviteebatch2"), 1);
+      assertEquals(byName.get("inviteechild10"), 0);
     });
   },
 });

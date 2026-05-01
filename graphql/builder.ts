@@ -62,6 +62,7 @@ export interface UserContext extends ServerContext {
     | undefined;
   pollViewerVotes?: Map<Uuid, Promise<ReadonlySet<number>>>;
   adminAccountStatsLoader?: DataLoader<Uuid, AdminAccountStats>;
+  inviteeCountLoader?: DataLoader<Uuid, number>;
 }
 
 export interface PothosTypes {
