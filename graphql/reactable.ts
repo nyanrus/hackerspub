@@ -5,11 +5,39 @@ import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { assertNever } from "@std/assert/unstable-never";
 import { Actor } from "./actor.ts";
-import { builder, Node } from "./builder.ts";
+import { builder, Node, type UserContext } from "./builder.ts";
 
 export interface Reactable {
   id: Uuid;
   reactionsCounts: Record<string, number>;
+}
+
+interface ViewerHasReactedKey {
+  postId: Uuid;
+  emoji: string | null;
+  customEmojiId: Uuid | null;
+}
+
+function encodeReactionKey(connection: {
+  postId: Uuid;
+  where: RelationsFilter<"reactionTable">;
+}): string {
+  const filter = connection.where as {
+    emoji?: string;
+    customEmojiId?: Uuid;
+  };
+  return `${connection.postId}|${filter.emoji ?? ""}|${
+    filter.customEmojiId ?? ""
+  }`;
+}
+
+function decodeReactionKey(key: string): ViewerHasReactedKey {
+  const [postId, emoji, customEmojiId] = key.split("|");
+  return {
+    postId: postId as Uuid,
+    emoji: emoji === "" ? null : emoji,
+    customEmojiId: customEmojiId === "" ? null : (customEmojiId as Uuid),
+  };
 }
 
 export const Reactable = builder.interfaceRef<Reactable>("Reactable");
@@ -102,22 +130,30 @@ export const ReactionGroup = builder.interfaceRef<ReactionGroup>(
       },
       fields: (t) => ({
         totalCount: t.exposeInt("totalCount"),
-        viewerHasReacted: t.boolean({
-          async resolve(connection, _, ctx) {
-            if (ctx.account == null) return false;
+        viewerHasReacted: t.loadable({
+          type: "Boolean",
+          load: async (
+            keys: string[],
+            ctx: UserContext,
+          ): Promise<boolean[]> => {
+            if (ctx.account == null) return keys.map(() => false);
+            const decoded = keys.map(decodeReactionKey);
+            const postIds = [...new Set(decoded.map((k) => k.postId))];
             const rows = await getViewerReactionsForPosts(
               ctx.db,
-              [connection.postId],
+              postIds,
               ctx.account.actor,
             );
-            const filter = connection.where;
-            return rows.some((row) =>
-              row.postId === connection.postId &&
-              (filter.emoji == null || row.emoji === filter.emoji) &&
-              (filter.customEmojiId == null ||
-                row.customEmojiId === filter.customEmojiId)
+            return decoded.map((key) =>
+              rows.some((row) =>
+                row.postId === key.postId &&
+                (key.emoji == null || row.emoji === key.emoji) &&
+                (key.customEmojiId == null ||
+                  row.customEmojiId === key.customEmojiId)
+              )
             );
           },
+          resolve: (connection) => encodeReactionKey(connection),
         }),
       }),
     }),
