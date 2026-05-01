@@ -1026,22 +1026,25 @@ export async function unsharePost(
   return unshared[0];
 }
 
-export async function isPostSharedBy(
+export async function arePostsSharedBy(
   db: Database,
-  post: Post,
-  account?: Account & { actor: Actor } | null,
-): Promise<boolean> {
-  if (account == null) return false;
-  const rows = await db.select({ id: postTable.id })
+  postIds: readonly Uuid[],
+  account: Account & { actor: Actor },
+): Promise<Set<Uuid>> {
+  if (postIds.length < 1) return new Set();
+  const rows = await db.select({ sharedPostId: postTable.sharedPostId })
     .from(postTable)
     .where(
       and(
         eq(postTable.actorId, account.actor.id),
-        eq(postTable.sharedPostId, post.id),
+        inArray(postTable.sharedPostId, postIds as Uuid[]),
       ),
-    )
-    .limit(1);
-  return rows.length > 0;
+    );
+  const result = new Set<Uuid>();
+  for (const row of rows) {
+    if (row.sharedPostId != null) result.add(row.sharedPostId);
+  }
+  return result;
 }
 
 export function getPersistedPost(

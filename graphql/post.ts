@@ -26,9 +26,9 @@ import {
   unpinPost as unpinPostModel,
 } from "@hackerspub/models/pin";
 import {
+  arePostsSharedBy,
   deletePost,
   getPostVisibilityFilter,
-  isPostSharedBy,
   isPostVisibleTo,
   sharePost,
   unsharePost,
@@ -171,7 +171,12 @@ export const Post = builder.drizzleInterface("postTable", {
       },
       async resolve(post, _, ctx) {
         if (ctx.account == null) return false;
-        return await isPostSharedBy(ctx.db, post, ctx.account);
+        const shared = await arePostsSharedBy(
+          ctx.db,
+          [post.id],
+          ctx.account,
+        );
+        return shared.has(post.id);
       },
     }),
     viewerHasBookmarked: t.boolean({
