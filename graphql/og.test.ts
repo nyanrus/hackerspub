@@ -74,6 +74,33 @@ test("loadImageDataUri falls back when remote images are too large", async () =>
   }
 });
 
+test("loadImageDataUri falls back when streamed images are too large", async () => {
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, () =>
+    new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(Uint8Array.from([1, 2]));
+          controller.enqueue(Uint8Array.from([3]));
+          controller.close();
+        },
+      }),
+      { headers: { "content-type": "image/png" } },
+    ));
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.png`;
+    assert.equal(
+      await loadImageDataUri(url, { maxBytes: 2 }),
+      smallPngDataUrl,
+    );
+  } finally {
+    await server.shutdown();
+  }
+});
+
 test("loadImageDataUri falls back when remote images time out", async () => {
   const server = Deno.serve({
     hostname: "127.0.0.1",
@@ -91,6 +118,40 @@ test("loadImageDataUri falls back when remote images time out", async () => {
       await loadImageDataUri(url, { timeoutMs: 1 }),
       smallPngDataUrl,
     );
+  } finally {
+    await server.shutdown();
+  }
+});
+
+test("putProfileOgImage skips image fetches on cache hits", async () => {
+  const { disk, putKeys } = createOgTestDisk();
+  const input = {
+    avatarKey: "avatar/profile.png",
+    avatarUrl: smallPngDataUrl,
+    bio: "Cached profile OG",
+    displayName: "Cached Profile",
+    handle: "@cached@localhost",
+  };
+  const key = await putProfileOgImage(disk, null, input);
+  let requests = 0;
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, () => {
+    requests++;
+    return new Response(smallPngBytes, {
+      headers: { "content-type": "image/png" },
+    });
+  });
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.png`;
+    assert.equal(
+      await putProfileOgImage(disk, key, { ...input, avatarUrl: url }),
+      key,
+    );
+    assert.equal(requests, 0);
+    assert.equal(putKeys.length, 1);
   } finally {
     await server.shutdown();
   }

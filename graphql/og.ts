@@ -151,13 +151,43 @@ export async function loadImageDataUri(
     }
     const contentType = response.headers.get("content-type")?.split(";")[0] ??
       "application/octet-stream";
-    const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > maxBytes) return FALLBACK_IMAGE_DATA_URI;
-    const bytes = new Uint8Array(buffer);
+    const bytes = await readResponseBytes(response, maxBytes);
+    if (bytes == null) return FALLBACK_IMAGE_DATA_URI;
     return `data:${contentType};base64,${encodeBase64(bytes)}`;
   } catch {
     return FALLBACK_IMAGE_DATA_URI;
   }
+}
+
+async function readResponseBytes(
+  response: Response,
+  maxBytes: number,
+): Promise<Uint8Array | null> {
+  if (response.body == null) return new Uint8Array();
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
 }
 
 function h(
@@ -463,7 +493,7 @@ async function putOgImage(
   disk: Disk,
   existingKey: string | null | undefined,
   input: unknown,
-  element: OgElement,
+  createElement: () => Promise<OgElement>,
 ): Promise<string> {
   const canonicalInput = canonicalize({
     version: OG_VERSION,
@@ -476,7 +506,7 @@ async function putOgImage(
   );
   const key = `${OG_NAMESPACE}/${encodeHex(digest)}.png`;
   if (existingKey === key) return key;
-  const png = await renderPng(element);
+  const png = await renderPng(await createElement());
   await disk.put(key, png);
   return key;
 }
@@ -491,7 +521,7 @@ export async function putProfileOgImage(
     disk,
     existingKey,
     { type: "profile", ...cacheInput },
-    await profileOgElement(input),
+    () => profileOgElement(input),
   );
 }
 
@@ -505,7 +535,7 @@ export async function putArticleOgImage(
     disk,
     existingKey,
     { type: "article", ...cacheInput },
-    await articleOgElement(input),
+    () => articleOgElement(input),
   );
 }
 
