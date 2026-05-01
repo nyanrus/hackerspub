@@ -218,9 +218,7 @@ export function AdminAccountsTable(props: AdminAccountsTableProps) {
               <div class="border-t p-4 text-center">
                 <Button
                   variant="outline"
-                  on:click={loadingState() === "loading"
-                    ? undefined
-                    : onLoadMore}
+                  on:click={onLoadMore}
                   disabled={data.pending || loadingState() === "loading"}
                 >
                   <Switch>
