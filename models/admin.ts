@@ -57,7 +57,7 @@ function resolveCutoff(
     DEFAULT_REGEN_CUTOFF_DURATION;
   // `Temporal.Instant.subtract` rejects calendar units like days, so
   // convert the duration to milliseconds first.
-  const ms = duration.total({ unit: "milliseconds" });
+  const ms = duration.total({ unit: "millisecond" });
   const cutoffDate = new Date(now.getTime() - ms);
   return { now, cutoffDate };
 }
@@ -81,13 +81,14 @@ async function selectActiveAccounts(
     )
     .groupBy(actorTable.accountId)
     .orderBy(desc(count()));
-  const out: { accountId: Uuid; postCount: number }[] = [];
-  for (const row of rows) {
-    if (row.accountId == null) continue;
-    if (!validateUuid(row.accountId)) continue;
-    out.push({ accountId: row.accountId, postCount: Number(row.postCount) });
-  }
-  return out;
+  return rows
+    .filter((row): row is typeof row & { accountId: Uuid } =>
+      row.accountId != null && validateUuid(row.accountId)
+    )
+    .map((row) => ({
+      accountId: row.accountId,
+      postCount: Number(row.postCount),
+    }));
 }
 
 export async function getInvitationRegenerationStatus(
