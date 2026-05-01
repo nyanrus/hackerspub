@@ -1,4 +1,4 @@
-import { Navigate, query, revalidate } from "@solidjs/router";
+import { Navigate, query, revalidate, useNavigate } from "@solidjs/router";
 import { graphql } from "relay-runtime";
 import { createSignal, Show } from "solid-js";
 import {
@@ -81,6 +81,7 @@ const invitationsRegenerateMutation = graphql`
 
 export default function AdminInvitationsPage() {
   const { i18n, t } = useLingui();
+  const navigate = useNavigate();
   const data = createPreloadedQuery<invitationsPageQuery>(
     invitationsPageQuery,
     () => loadAdminInvitationsPageQuery(),
@@ -116,7 +117,7 @@ export default function AdminInvitationsPage() {
         } else if (result.__typename === "NotAuthenticatedError") {
           // Session expired while the page was open; send the user
           // back through sign-in instead of a misleading toast.
-          location.replace("/sign?next=%2Fadmin%2Finvitations");
+          navigate("/sign?next=%2Fadmin%2Finvitations", { replace: true });
         } else {
           showToast({
             title: t`Not authorized to regenerate invitations.`,
