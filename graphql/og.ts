@@ -11,6 +11,8 @@ const OG_NAMESPACE = "og/v2";
 const OG_SIZE = { width: 1200, height: 630 } as const;
 const FALLBACK_IMAGE_DATA_URI = "data:image/png;base64," +
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
+const MAX_REMOTE_IMAGE_BYTES = 2 * 1024 * 1024;
+const REMOTE_IMAGE_TIMEOUT_MS = 3_000;
 
 type Weight = 400 | 600;
 type FontStyle = "normal";
@@ -123,14 +125,35 @@ async function loadBrandLogoDataUri(): Promise<string> {
   return brandLogoDataUriPromise;
 }
 
-export async function loadImageDataUri(imageUrl: string): Promise<string> {
+interface ImageDataUriOptions {
+  maxBytes?: number;
+  timeoutMs?: number;
+}
+
+export async function loadImageDataUri(
+  imageUrl: string,
+  options: ImageDataUriOptions = {},
+): Promise<string> {
   if (imageUrl.startsWith("data:")) return imageUrl;
+  const maxBytes = options.maxBytes ?? MAX_REMOTE_IMAGE_BYTES;
+  const timeoutMs = options.timeoutMs ?? REMOTE_IMAGE_TIMEOUT_MS;
   try {
-    const response = await fetch(imageUrl);
+    const response = await fetch(imageUrl, {
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     if (!response.ok) return FALLBACK_IMAGE_DATA_URI;
+    const contentLength = response.headers.get("content-length");
+    if (
+      contentLength != null &&
+      Number.parseInt(contentLength, 10) > maxBytes
+    ) {
+      return FALLBACK_IMAGE_DATA_URI;
+    }
     const contentType = response.headers.get("content-type")?.split(";")[0] ??
       "application/octet-stream";
-    const bytes = new Uint8Array(await response.arrayBuffer());
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength > maxBytes) return FALLBACK_IMAGE_DATA_URI;
+    const bytes = new Uint8Array(buffer);
     return `data:${contentType};base64,${encodeBase64(bytes)}`;
   } catch {
     return FALLBACK_IMAGE_DATA_URI;

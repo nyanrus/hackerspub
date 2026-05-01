@@ -54,6 +54,48 @@ test("loadImageDataUri embeds remote images", async () => {
   }
 });
 
+test("loadImageDataUri falls back when remote images are too large", async () => {
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, () =>
+    new Response(Uint8Array.from([1, 2, 3]), {
+      headers: { "content-type": "image/png", "content-length": "3" },
+    }));
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.png`;
+    assert.equal(
+      await loadImageDataUri(url, { maxBytes: 2 }),
+      smallPngDataUrl,
+    );
+  } finally {
+    await server.shutdown();
+  }
+});
+
+test("loadImageDataUri falls back when remote images time out", async () => {
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    return new Response(smallPngBytes, {
+      headers: { "content-type": "image/png" },
+    });
+  });
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.png`;
+    assert.equal(
+      await loadImageDataUri(url, { timeoutMs: 1 }),
+      smallPngDataUrl,
+    );
+  } finally {
+    await server.shutdown();
+  }
+});
+
 test("putProfileOgImage keys avatars by stable identity", async () => {
   const { disk, putKeys } = createOgTestDisk();
   const input = {
