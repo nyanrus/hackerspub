@@ -21,7 +21,6 @@ import {
 } from "@hackerspub/models/schema";
 import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { Actor } from "./actor.ts";
-import { getAdminAccountStats } from "./admin.ts";
 import { builder, type UserContext } from "./builder.ts";
 import { InvitationLink } from "./invitation-link.ts";
 import { Notification } from "./notification.ts";
@@ -142,27 +141,6 @@ export const Account = builder.drizzleNode("accountTable", {
         moderator: true,
         selfAccount: parent.id,
       }),
-    }),
-    postCount: t.int({
-      nullable: true,
-      description:
-        "The total number of posts authored by this account.  Visible only to moderators; null otherwise.",
-      authScopes: { moderator: true },
-      async resolve(account, _, ctx) {
-        const stats = await getAdminAccountStats(ctx, account.id);
-        return stats.postCount;
-      },
-    }),
-    lastPostPublished: t.field({
-      type: "DateTime",
-      nullable: true,
-      description:
-        "The latest `published` timestamp across all posts authored by this account, or null when there are no posts.  Visible only to moderators.",
-      authScopes: { moderator: true },
-      async resolve(account, _, ctx) {
-        const stats = await getAdminAccountStats(ctx, account.id);
-        return stats.lastPostPublished;
-      },
     }),
     preferAiSummary: t.exposeBoolean("preferAiSummary", {
       authScopes: (parent) => ({

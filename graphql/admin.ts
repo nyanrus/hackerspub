@@ -83,6 +83,36 @@ export function getAdminAccountStats(
   return ctx.adminAccountStatsLoader.load(accountId);
 }
 
+// Attach the moderator-only post aggregates to the Account type from
+// here, where the loader lives.  Defining these as drizzleObjectField
+// calls in admin.ts (rather than as fields on the Account.drizzleNode
+// definition in account.ts) keeps the import graph one-way:
+// admin.ts → account.ts only, never the reverse.
+builder.drizzleObjectField(Account, "postCount", (t) =>
+  t.int({
+    nullable: true,
+    description:
+      "The total number of posts authored by this account.  Visible only to moderators; null otherwise.",
+    authScopes: { moderator: true },
+    async resolve(account, _, ctx) {
+      const stats = await getAdminAccountStats(ctx, account.id);
+      return stats.postCount;
+    },
+  }));
+
+builder.drizzleObjectField(Account, "lastPostPublished", (t) =>
+  t.field({
+    type: "DateTime",
+    nullable: true,
+    description:
+      "The latest `published` timestamp across all posts authored by this account, or null when there are no posts.  Visible only to moderators.",
+    authScopes: { moderator: true },
+    async resolve(account, _, ctx) {
+      const stats = await getAdminAccountStats(ctx, account.id);
+      return stats.lastPostPublished;
+    },
+  }));
+
 interface AdminAccountRow {
   account: typeof accountTable.$inferSelect;
   lastActivity: Date;
