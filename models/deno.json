@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "exports": {
     "./account": "./account.ts",
+    "./admin": "./admin.ts",
     "./apns": "./apns.ts",
     "./fcm": "./fcm.ts",
     "./actor": "./actor.ts",
