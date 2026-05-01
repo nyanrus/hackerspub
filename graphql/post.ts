@@ -187,19 +187,18 @@ export const Post = builder.drizzleInterface("postTable", {
       },
       resolve: (post) => post.id,
     }),
-    viewerHasPinned: t.boolean({
-      select: {
-        columns: { id: true },
-      },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
+    viewerHasPinned: t.loadable({
+      type: "Boolean",
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
         const pinned = await arePostsPinnedBy(
           ctx.db,
-          [post.id],
+          postIds,
           ctx.account.actor,
         );
-        return pinned.has(post.id);
+        return postIds.map((id) => pinned.has(id));
       },
+      resolve: (post) => post.id,
     }),
   }),
 });
