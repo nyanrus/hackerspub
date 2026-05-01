@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import {
   and,
   asc,
@@ -10,6 +11,8 @@ import {
   sql,
 } from "drizzle-orm";
 import type Keyv from "keyv";
+
+const logger = getLogger(["hackerspub", "models", "admin"]);
 import type { Database, Transaction } from "./db.ts";
 import {
   accountTable,
@@ -188,7 +191,29 @@ export async function regenerateInvitations(
       });
     return { regeneratedAt: now, accountsAffected, cutoffDate };
   };
-  return isTransaction(db)
+  const result = isTransaction(db)
     ? await runDbWork(db)
     : await db.transaction(runDbWork);
+  // Best-effort sync to the legacy KV key so the legacy
+  // /admin/invitations route (which still reads
+  // INVITATIONS_LAST_REGEN_KEY from KV) sees the new cutoff during
+  // the dual-stack soak.  The DB row remains the authoritative
+  // source for the new path; if this write fails the legacy route
+  // may use a stale cutoff and over-grant on its next run, which is
+  // recoverable.  When the legacy route is removed the sync (and
+  // the kv parameter) can go away too.
+  if (kv != null) {
+    try {
+      await kv.set(
+        INVITATIONS_LAST_REGEN_KEY,
+        result.regeneratedAt.toISOString(),
+      );
+    } catch (error) {
+      logger.warn(
+        "Failed to sync legacy KV invitation cutoff: {error}",
+        { error },
+      );
+    }
+  }
+  return result;
 }

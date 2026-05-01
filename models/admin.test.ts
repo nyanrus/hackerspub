@@ -226,6 +226,27 @@ Deno.test({
 });
 
 Deno.test({
+  name: "regenerateInvitations also syncs the cutoff to the legacy KV key",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const { kv, store } = createTestKv();
+      const now = new Date("2026-04-15T00:00:00.000Z");
+      await regenerateInvitations(tx, kv, { now });
+      // Sync is best-effort and runs after commit; with the in-memory
+      // KV used here it always succeeds, so the legacy admin route
+      // (which still reads from KV during the soak) sees the new
+      // cutoff immediately.
+      assertEquals(
+        store.get(INVITATIONS_LAST_REGEN_KEY),
+        now.toISOString(),
+      );
+    });
+  },
+});
+
+Deno.test({
   name:
     "regenerateInvitations writes the cutoff into admin_state inside the same transaction",
   sanitizeOps: false,
