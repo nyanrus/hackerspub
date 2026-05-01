@@ -17,25 +17,20 @@ import {
 const adminAccountsQuery = parse(`
   query AdminAccounts($first: Int, $after: String) {
     adminAccounts(first: $first, after: $after) {
-      __typename
-      ... on AdminAccountConnection {
-        totalCount
-        edges {
-          cursor
-          node {
-            uuid
-            username
-            postCount
-            lastPostPublished
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
+      totalCount
+      edges {
+        cursor
+        node {
+          uuid
+          username
+          postCount
+          lastPostPublished
         }
       }
-      ... on NotAuthenticatedError { notAuthenticated }
-      ... on NotAuthorizedError { notAuthorized }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
 `);
@@ -59,7 +54,7 @@ async function makeModerator(
 }
 
 Deno.test({
-  name: "adminAccounts returns NotAuthenticatedError for guest",
+  name: "adminAccounts errors with NotAuthenticatedError for guest",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -71,17 +66,17 @@ Deno.test({
         contextValue: makeGuestContext(tx),
         onError: "NO_PROPAGATE",
       });
-      assertEquals(result.errors, undefined);
-      const data = result.data as {
-        adminAccounts: { __typename: string };
-      };
-      assertEquals(data.adminAccounts.__typename, "NotAuthenticatedError");
+      assert(result.errors != null && result.errors.length >= 1);
+      assertEquals(
+        result.errors[0].originalError?.constructor.name,
+        "NotAuthenticatedError",
+      );
     });
   },
 });
 
 Deno.test({
-  name: "adminAccounts returns NotAuthorizedError for non-moderator",
+  name: "adminAccounts errors with NotAuthorizedError for non-moderator",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -98,11 +93,11 @@ Deno.test({
         contextValue: makeUserContext(tx, normal.account),
         onError: "NO_PROPAGATE",
       });
-      assertEquals(result.errors, undefined);
-      const data = result.data as {
-        adminAccounts: { __typename: string };
-      };
-      assertEquals(data.adminAccounts.__typename, "NotAuthorizedError");
+      assert(result.errors != null && result.errors.length >= 1);
+      assertEquals(
+        result.errors[0].originalError?.constructor.name,
+        "NotAuthorizedError",
+      );
     });
   },
 });
@@ -132,12 +127,10 @@ Deno.test({
       assertEquals(result.errors, undefined);
       const data = result.data as {
         adminAccounts: {
-          __typename: string;
           totalCount: number;
           edges: { node: { username: string } }[];
         };
       };
-      assertEquals(data.adminAccounts.__typename, "AdminAccountConnection");
       assertEquals(data.adminAccounts.totalCount, 4);
       assertEquals(data.adminAccounts.edges.length, 4);
       const usernames = data.adminAccounts.edges.map((e) => e.node.username)

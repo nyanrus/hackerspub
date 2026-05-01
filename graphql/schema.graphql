@@ -309,8 +309,6 @@ type AdminAccountPageInfo {
   startCursor: String
 }
 
-union AdminAccountsResult = AdminAccountConnection | NotAuthenticatedError | NotAuthorizedError
-
 type Article implements Node & Post & Reactable {
   account: Account!
   actor: Actor!
@@ -1101,7 +1099,11 @@ type Query {
     handle: String!
   ): Actor
   actorByUuid(uuid: UUID!): Actor
-  adminAccounts(after: String, before: String, first: Int, last: Int): AdminAccountsResult!
+
+  """
+  Moderator-only connection of every account, ordered by latest post `published` falling back to `account.updated`.  Throws NotAuthenticatedError or NotAuthorizedError if the viewer is not a moderator; routes should guard with `viewer.moderator` before issuing the query.
+  """
+  adminAccounts(after: String, before: String, first: Int, last: Int): AdminAccountConnection!
   articleByYearAndSlug(handle: String!, idOrYear: String!, slug: String!): Article
   articleDraft(id: ID, uuid: UUID): ArticleDraft
   availableLocales: [Locale!]!

@@ -72,14 +72,17 @@ const AdminAccountConnection = builder.simpleObject("AdminAccountConnection", {
 builder.queryField("adminAccounts", (t) =>
   t.field({
     type: AdminAccountConnection,
+    description:
+      "Moderator-only connection of every account, ordered by latest " +
+      "post `published` falling back to `account.updated`.  Throws " +
+      "NotAuthenticatedError or NotAuthorizedError if the viewer is " +
+      "not a moderator; routes should guard with `viewer.moderator` " +
+      "before issuing the query.",
     args: {
       first: t.arg.int(),
       after: t.arg.string(),
       last: t.arg.int(),
       before: t.arg.string(),
-    },
-    errors: {
-      types: [NotAuthenticatedError, NotAuthorizedError],
     },
     async resolve(_root, args, ctx): Promise<AdminAccountConnectionShape> {
       if (ctx.session == null) throw new NotAuthenticatedError();
