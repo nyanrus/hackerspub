@@ -11,9 +11,9 @@ import {
   updateArticleDraft,
 } from "@hackerspub/models/article";
 import {
+  arePostsBookmarkedBy,
   createBookmark,
   deleteBookmark,
-  isPostBookmarkedBy,
 } from "@hackerspub/models/bookmark";
 import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
 import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
@@ -185,7 +185,12 @@ export const Post = builder.drizzleInterface("postTable", {
       },
       async resolve(post, _, ctx) {
         if (ctx.account == null) return false;
-        return await isPostBookmarkedBy(ctx.db, post, ctx.account);
+        const bookmarked = await arePostsBookmarkedBy(
+          ctx.db,
+          [post.id],
+          ctx.account,
+        );
+        return bookmarked.has(post.id);
       },
     }),
     viewerHasPinned: t.boolean({
