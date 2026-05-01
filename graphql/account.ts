@@ -1,15 +1,3 @@
-import {
-  getAvatarUrl,
-  transformAvatar,
-  updateAccount,
-} from "@hackerspub/models/account";
-import { syncActorFromAccount } from "@hackerspub/models/actor";
-import type { Locale } from "@hackerspub/models/i18n";
-import {
-  accountTable,
-  actorTable,
-  notificationTable,
-} from "@hackerspub/models/schema";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import {
   resolveCursorConnection,
@@ -17,16 +5,32 @@ import {
 } from "@pothos/plugin-relay";
 import { assertNever } from "@std/assert/unstable-never";
 import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
+import {
+  getAvatarUrl,
+  transformAvatar,
+  updateAccount,
+} from "@hackerspub/models/account";
+import { syncActorFromAccount } from "@hackerspub/models/actor";
+import type { Locale } from "@hackerspub/models/i18n";
+import { renderMarkup } from "@hackerspub/models/markup";
+import {
+  accountTable,
+  actorTable,
+  notificationTable,
+} from "@hackerspub/models/schema";
 import { Actor } from "./actor.ts";
 import { builder } from "./builder.ts";
 import { InvitationLink } from "./invitation-link.ts";
 import { Notification } from "./notification.ts";
+import { putProfileOgImage } from "./og.ts";
 import { ArticleDraft } from "./post.ts";
 import {
   fromPostVisibility,
   PostVisibility,
   toPostVisibility,
 } from "./postvisibility.ts";
+
+const profileOgImageComplexity = 2_000;
 
 export const Account = builder.drizzleNode("accountTable", {
   name: "Account",
@@ -72,6 +76,48 @@ export const Account = builder.drizzleNode("accountTable", {
       async resolve(account, _, ctx) {
         const url = await getAvatarUrl(ctx.disk, account);
         return new URL(url);
+      },
+    }),
+    ogImageUrl: t.field({
+      type: "URL",
+      complexity: profileOgImageComplexity,
+      select: {
+        columns: {
+          avatarKey: true,
+          bio: true,
+          id: true,
+          name: true,
+          ogImageKey: true,
+          username: true,
+        },
+        with: {
+          actor: {
+            columns: {
+              handleHost: true,
+            },
+          },
+          emails: true,
+        },
+      },
+      async resolve(account, _, ctx) {
+        const avatarUrl = await getAvatarUrl(ctx.disk, account);
+        const bio = await renderMarkup(ctx.fedCtx, account.bio, {
+          kv: ctx.kv,
+        });
+        const handle = `@${account.username}@${account.actor.handleHost}`;
+        const key = await putProfileOgImage(ctx.disk, account.ogImageKey, {
+          avatarKey: account.avatarKey ?? avatarUrl,
+          avatarUrl,
+          bio: bio.text,
+          displayName: account.name,
+          handle,
+        });
+        if (key !== account.ogImageKey) {
+          await ctx.db.update(accountTable)
+            .set({ ogImageKey: key })
+            .where(eq(accountTable.id, account.id));
+        }
+        return new URL(await ctx.disk.getUrl(key));
       },
     }),
     locales: t.field({

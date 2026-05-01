@@ -1,7 +1,8 @@
-import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
-import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
-import { negotiateLocale } from "@hackerspub/models/i18n";
-import { renderMarkup } from "@hackerspub/models/markup";
+import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
+import { unreachable } from "@std/assert";
+import { assertNever } from "@std/assert/unstable-never";
+import { and, eq } from "drizzle-orm";
+import { getAvatarUrl } from "@hackerspub/models/account";
 import {
   createArticle,
   deleteArticleDraft,
@@ -14,6 +15,10 @@ import {
   deleteBookmark,
   isPostBookmarkedBy,
 } from "@hackerspub/models/bookmark";
+import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
+import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
+import { negotiateLocale } from "@hackerspub/models/i18n";
+import { renderMarkup } from "@hackerspub/models/markup";
 import { createNote } from "@hackerspub/models/note";
 import {
   isPostPinnedBy,
@@ -30,29 +35,29 @@ import {
 } from "@hackerspub/models/post";
 import { react, undoReaction } from "@hackerspub/models/reaction";
 import {
+  articleContentTable,
   articleDraftTable,
   articleMediumTable,
 } from "@hackerspub/models/schema";
+import type * as schema from "@hackerspub/models/schema";
+import { withTransaction } from "@hackerspub/models/tx";
 import {
   MAX_IMAGE_SIZE,
   SUPPORTED_IMAGE_TYPES,
   uploadImage,
 } from "@hackerspub/models/upload";
-import type * as schema from "@hackerspub/models/schema";
-import { withTransaction } from "@hackerspub/models/tx";
 import { generateUuidV7 } from "@hackerspub/models/uuid";
-import { and, eq } from "drizzle-orm";
-import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
-import { unreachable } from "@std/assert";
-import { assertNever } from "@std/assert/unstable-never";
 import { Account } from "./account.ts";
 import { Actor } from "./actor.ts";
 import { builder, Node } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
+import { putArticleOgImage } from "./og.ts";
 import { PostVisibility, toPostVisibility } from "./postvisibility.ts";
 import { Reactable, Reaction } from "./reactable.ts";
 import { NotAuthenticatedError } from "./session.ts";
+
+const articleContentOgImageComplexity = 2_000;
 
 class SharedPostDeletionNotAllowedError extends Error {
   public constructor(public readonly inputPath: string) {
@@ -274,6 +279,10 @@ export const Article = builder.drizzleNode("postTable", {
           defaultValue: false,
         }),
       },
+      complexity: (args) => ({
+        field: 1,
+        multiplier: args.language == null ? 10 : 1,
+      }),
       select: (args) => ({
         with: {
           articleSource: {
@@ -430,6 +439,64 @@ export const ArticleContent = builder.drizzleNode("articleContentTable", {
     beingTranslated: t.exposeBoolean("beingTranslated"),
     updated: t.expose("updated", { type: "DateTime" }),
     published: t.expose("published", { type: "DateTime" }),
+    ogImageUrl: t.field({
+      type: "URL",
+      complexity: articleContentOgImageComplexity,
+      select: {
+        columns: {
+          content: true,
+          language: true,
+          ogImageKey: true,
+          sourceId: true,
+          summary: true,
+          title: true,
+        },
+        with: {
+          source: {
+            with: {
+              account: {
+                with: {
+                  actor: {
+                    columns: {
+                      handleHost: true,
+                    },
+                  },
+                  emails: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      async resolve(content, _, ctx) {
+        const account = content.source.account;
+        const rendered = await renderMarkup(ctx.fedCtx, content.content, {
+          kv: ctx.kv,
+        });
+        const avatarUrl = await getAvatarUrl(ctx.disk, account);
+        const key = await putArticleOgImage(ctx.disk, content.ogImageKey, {
+          authorName: account.name,
+          avatarKey: account.avatarKey ?? avatarUrl,
+          avatarUrl,
+          excerpt: content.summary ?? rendered.text,
+          handle: `@${account.username}@${account.actor.handleHost}`,
+          language: content.language,
+          sourceId: content.sourceId,
+          title: content.title,
+        });
+        if (key !== content.ogImageKey) {
+          await ctx.db.update(articleContentTable)
+            .set({ ogImageKey: key })
+            .where(
+              and(
+                eq(articleContentTable.sourceId, content.sourceId),
+                eq(articleContentTable.language, content.language),
+              ),
+            );
+        }
+        return new URL(await ctx.disk.getUrl(key));
+      },
+    }),
     url: t.field({
       type: "URL",
       select: {

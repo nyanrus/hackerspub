@@ -135,6 +135,7 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
         }
         language
         iri
+        url
         published
         updated
         hashtags {
@@ -159,6 +160,18 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
             <Meta property="og:title" content={title()} />
             <Meta property="og:description" content={description()} />
             <Meta property="og:type" content="article" />
+            <For each={articleOgImageUrls(article().url, article().contents)}>
+              {(ogImageUrl) => (
+                <>
+                  <Meta property="og:image" content={ogImageUrl} />
+                  <Meta property="og:image:width" content="1200" />
+                  <Meta property="og:image:height" content="630" />
+                </>
+              )}
+            </For>
+            <Show when={article().url}>
+              <Meta name="twitter:card" content="summary_large_image" />
+            </Show>
             <Meta
               property="article:published_time"
               content={article().published}
@@ -195,6 +208,21 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
       }}
     </Show>
   );
+}
+
+function articleOgImageUrls(
+  articleUrl: string | null | undefined,
+  contents: readonly { readonly language: string }[] | null | undefined,
+) {
+  if (articleUrl == null) return [];
+  const ogImageUrl = new URL(articleUrl);
+  ogImageUrl.pathname = `${ogImageUrl.pathname.replace(/\/$/, "")}/ogimage`;
+  if (contents == null || contents.length < 1) return [ogImageUrl.toString()];
+  return contents.map((content) => {
+    const url = new URL(ogImageUrl);
+    url.searchParams.set("l", content.language);
+    return url.toString();
+  });
 }
 
 interface ArticleBodyProps {

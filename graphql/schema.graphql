@@ -17,6 +17,7 @@ type Account implements Node {
   moderator: Boolean!
   name: String!
   notifications(after: String, before: String, first: Int, last: Int): AccountNotificationsConnection!
+  ogImageUrl: URL!
   passkeys(after: String, before: String, first: Int, last: Int): AccountPasskeysConnection!
   preferAiSummary: Boolean!
   updated: DateTime!
@@ -323,6 +324,7 @@ type ArticleContent implements Node {
   content: HTML!
   id: ID!
   language: Locale!
+  ogImageUrl: URL!
   originalLanguage: Locale
   published: DateTime!
 
