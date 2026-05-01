@@ -1,6 +1,6 @@
 import type { Context } from "@fedify/fedify";
 import { Follow, Reject, Undo } from "@fedify/vocab";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { toRecipient } from "./actor.ts";
 import type { ContextData } from "./context.ts";
 import type { Database } from "./db.ts";
@@ -190,6 +190,24 @@ export async function removeFollower(
     );
   }
   return rows[0];
+}
+
+export async function getFollowedActorIds(
+  db: Database,
+  followerId: Uuid,
+  followeeIds: readonly Uuid[],
+): Promise<Set<Uuid>> {
+  if (followeeIds.length < 1) return new Set();
+  const rows = await db
+    .select({ followeeId: followingTable.followeeId })
+    .from(followingTable)
+    .where(
+      and(
+        eq(followingTable.followerId, followerId),
+        inArray(followingTable.followeeId, followeeIds as Uuid[]),
+      ),
+    );
+  return new Set(rows.map((row) => row.followeeId));
 }
 
 export async function updateFolloweesCount(

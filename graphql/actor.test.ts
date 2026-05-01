@@ -517,3 +517,109 @@ Deno.test({
     });
   },
 });
+
+const viewerFollowsBatchQuery = parse(`
+  query ViewerFollowsBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerFollows }
+    b: actorByUuid(uuid: $b) { id viewerFollows }
+    c: actorByUuid(uuid: $c) { id viewerFollows }
+  }
+`);
+
+Deno.test({
+  name: "Actor.viewerFollows returns the right state per actor when batched",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "vfviewer",
+        name: "VF Viewer",
+        email: "vfviewer@example.com",
+      });
+      const followed = await insertAccountWithActor(tx, {
+        username: "vffollowed",
+        name: "VF Followed",
+        email: "vffollowed@example.com",
+      });
+      const notFollowed = await insertAccountWithActor(tx, {
+        username: "vfnotfollowed",
+        name: "VF Not Followed",
+        email: "vfnotfollowed@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "vfstranger",
+        name: "VF Stranger",
+        email: "vfstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      await follow(fedCtx, viewer.account, followed.actor);
+
+      const result = await execute({
+        schema,
+        document: viewerFollowsBatchQuery,
+        variableValues: {
+          a: followed.actor.id,
+          b: notFollowed.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", followed.actor.id),
+          viewerFollows: true,
+        },
+        b: {
+          id: encodeGlobalID("Actor", notFollowed.actor.id),
+          viewerFollows: false,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerFollows: false,
+        },
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerFollows returns false for a guest viewer",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const someone = await insertAccountWithActor(tx, {
+        username: "vfguesttarget",
+        name: "VF Guest Target",
+        email: "vfguesttarget@example.com",
+      });
+
+      const result = await execute({
+        schema,
+        document: viewerFollowsBatchQuery,
+        variableValues: {
+          a: someone.actor.id,
+          b: someone.actor.id,
+          c: someone.actor.id,
+        },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        a: { viewerFollows: boolean };
+        b: { viewerFollows: boolean };
+        c: { viewerFollows: boolean };
+      };
+      assertEquals(data.a.viewerFollows, false);
+      assertEquals(data.b.viewerFollows, false);
+      assertEquals(data.c.viewerFollows, false);
+    });
+  },
+});

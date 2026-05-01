@@ -10,17 +10,18 @@ import { block, unblock } from "@hackerspub/models/blocking";
 import { renderCustomEmojis } from "@hackerspub/models/emoji";
 import {
   follow,
+  getFollowedActorIds,
   removeFollower as removeFollowerModel,
   unfollow,
 } from "@hackerspub/models/following";
 import { getPostVisibilityFilter } from "@hackerspub/models/post";
 import type { Actor as ActorModel } from "@hackerspub/models/schema";
-import { validateUuid } from "@hackerspub/models/uuid";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { assertNever } from "@std/assert/unstable-never";
 import { escape } from "@std/html/entities";
 import xss from "xss";
-import { builder } from "./builder.ts";
+import { builder, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { Article, Note, Post, Question } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
@@ -371,20 +372,22 @@ builder.drizzleObjectFields(Actor, (t) => ({
       return ctx.account?.actor?.id === actor.id;
     },
   }),
-  viewerFollows: t.field({
+  viewerFollows: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.followingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          followerId: ctx.account.actor.id,
-          followeeId: actor.id,
-        },
-      }) != null;
+    // cache: false so a mutation that changes follow state in the same
+    // request (e.g., followActor + read viewerFollows in the payload)
+    // re-queries instead of returning the pre-mutation value.
+    loaderOptions: { cache: false },
+    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+      if (ctx.account?.actor == null) return actorIds.map(() => false);
+      const followed = await getFollowedActorIds(
+        ctx.db,
+        ctx.account.actor.id,
+        actorIds,
+      );
+      return actorIds.map((id) => followed.has(id));
     },
+    resolve: (actor) => actor.id,
   }),
   viewerBlocks: t.field({
     type: "Boolean",

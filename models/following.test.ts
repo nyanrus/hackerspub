@@ -1,9 +1,14 @@
 import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
 import { eq } from "drizzle-orm";
-import { acceptFollowing, follow, unfollow } from "./following.ts";
+import {
+  acceptFollowing,
+  follow,
+  getFollowedActorIds,
+  unfollow,
+} from "./following.ts";
 import { actorTable, followingTable, notificationTable } from "./schema.ts";
-import { generateUuidV7 } from "./uuid.ts";
+import { generateUuidV7, type Uuid } from "./uuid.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
@@ -189,6 +194,62 @@ Deno.test({
         followee.actor.id,
       ));
       assertEquals(followings, []);
+    });
+  },
+});
+
+Deno.test({
+  name: "getFollowedActorIds returns the subset that the follower follows",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      await seedLocalInstance(tx);
+      const fedCtx = createFedCtx(tx);
+      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+      const viewer = await insertAccountWithActor(tx, {
+        username: `gfaiviewer${suffix}`,
+        name: "GFAI Viewer",
+        email: `gfaiviewer-${suffix}@example.com`,
+      });
+      const followed = await insertAccountWithActor(tx, {
+        username: `gfaifollowed${suffix}`,
+        name: "GFAI Followed",
+        email: `gfaifollowed-${suffix}@example.com`,
+      });
+      const notFollowed = await insertAccountWithActor(tx, {
+        username: `gfainotfollowed${suffix}`,
+        name: "GFAI Not Followed",
+        email: `gfainotfollowed-${suffix}@example.com`,
+      });
+
+      await follow(fedCtx, viewer.account, followed.actor);
+
+      const result = await getFollowedActorIds(tx, viewer.actor.id, [
+        followed.actor.id,
+        notFollowed.actor.id,
+        generateUuidV7() as Uuid,
+      ]);
+
+      assertEquals(result.has(followed.actor.id), true);
+      assertEquals(result.has(notFollowed.actor.id), false);
+      assertEquals(result.size, 1);
+    });
+  },
+});
+
+Deno.test({
+  name: "getFollowedActorIds returns empty for empty input",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await getFollowedActorIds(
+        tx,
+        generateUuidV7() as Uuid,
+        [],
+      );
+      assertEquals(result.size, 0);
     });
   },
 });
