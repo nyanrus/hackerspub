@@ -30,3 +30,4 @@ invitationLink → 招待リンク
 medium → メディア
 preferences → 環境設定
 notification → 通知
+moderator → モデレーター
