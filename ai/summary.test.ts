@@ -71,6 +71,34 @@ test("removeDetailsFromSummaryInput() removes unclosed details to EOF", () => {
   assert.equal(output.includes("Still hidden."), false);
 });
 
+test("removeDetailsFromSummaryInput() preserves fenced code blocks", () => {
+  const input = [
+    "Visible before.",
+    "",
+    "```html",
+    "<details>",
+    "<summary>Example</summary>",
+    "Example body.",
+    "</details>",
+    "```",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("<summary>Example</summary>"), true);
+  assert.equal(output.includes("Example body."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
 test("summarize() sends text without details blocks to the model", async () => {
   let promptText: string | undefined;
   const model = new MockLanguageModelV3({

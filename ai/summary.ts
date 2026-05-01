@@ -50,6 +50,48 @@ interface HtmlTag {
   start: number;
 }
 
+interface TextRange {
+  end: number;
+  start: number;
+}
+
+function findFencedCodeRanges(text: string): TextRange[] {
+  const ranges: TextRange[] = [];
+  let opened:
+    | { char: "`" | "~"; length: number; start: number }
+    | undefined;
+  let offset = 0;
+  while (offset < text.length) {
+    const newline = text.indexOf("\n", offset);
+    const lineEnd = newline < 0 ? text.length : newline + 1;
+    const line = text.slice(offset, lineEnd).replace(/\r?\n$/, "");
+    if (opened == null) {
+      const opening = line.match(/^(?: {0,3})(`{3,}|~{3,})/);
+      if (opening != null) {
+        const fence = opening[1];
+        opened = {
+          char: fence[0] as "`" | "~",
+          length: fence.length,
+          start: offset,
+        };
+      }
+    } else {
+      const closing = line.match(/^(?: {0,3})(`{3,}|~{3,})[ \t]*$/);
+      if (
+        closing != null &&
+        closing[1][0] === opened.char &&
+        closing[1].length >= opened.length
+      ) {
+        ranges.push({ start: opened.start, end: lineEnd });
+        opened = undefined;
+      }
+    }
+    offset = lineEnd;
+  }
+  if (opened != null) ranges.push({ start: opened.start, end: text.length });
+  return ranges;
+}
+
 function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
   if (text[start] !== "<") return undefined;
   let index = start + 1;
@@ -78,10 +120,27 @@ function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
 }
 
 export function removeDetailsFromSummaryInput(text: string): string {
+  const fencedCodeRanges = findFencedCodeRanges(text);
+  let fencedCodeRangeIndex = 0;
   let result = "";
   let keepStart = 0;
   let depth = 0;
   for (let index = 0; index < text.length; index++) {
+    while (
+      fencedCodeRangeIndex < fencedCodeRanges.length &&
+      index >= fencedCodeRanges[fencedCodeRangeIndex].end
+    ) {
+      fencedCodeRangeIndex++;
+    }
+    const fencedCodeRange = fencedCodeRanges[fencedCodeRangeIndex];
+    if (
+      depth === 0 &&
+      fencedCodeRange != null &&
+      index >= fencedCodeRange.start
+    ) {
+      index = fencedCodeRange.end - 1;
+      continue;
+    }
     if (text[index] !== "<") continue;
     const tag = readHtmlTagAt(text, index);
     if (tag?.name !== "details") continue;
