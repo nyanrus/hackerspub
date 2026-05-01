@@ -18,8 +18,8 @@ export async function GET({ params, request }: APIEvent) {
   }
 
   const requestUrl = new URL(request.url);
-  const requestedLanguage = requestUrl.searchParams.get("l");
-  const language = requestedLanguage ??
+  const requestedLanguage = requestUrl.searchParams.get("l")?.trim();
+  const language = requestedLanguage ||
     await getDefaultLanguage(handle, idOrYear, slug);
   if (language == null) {
     return new Response("Not Found", { status: 404 });
