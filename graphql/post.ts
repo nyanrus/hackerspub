@@ -46,10 +46,10 @@ import {
   SUPPORTED_IMAGE_TYPES,
   uploadImage,
 } from "@hackerspub/models/upload";
-import { generateUuidV7 } from "@hackerspub/models/uuid";
+import { generateUuidV7, type Uuid } from "@hackerspub/models/uuid";
 import { Account } from "./account.ts";
 import { Actor } from "./actor.ts";
-import { builder, Node } from "./builder.ts";
+import { builder, Node, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
 import { putArticleOgImage } from "./og.ts";
@@ -165,19 +165,14 @@ export const Post = builder.drizzleInterface("postTable", {
     actor: t.relation("actor"),
     media: t.relation("media"),
     link: t.relation("link", { type: PostLink, nullable: true }),
-    viewerHasShared: t.boolean({
-      select: {
-        columns: { id: true },
+    viewerHasShared: t.loadable({
+      type: "Boolean",
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
+        const shared = await arePostsSharedBy(ctx.db, postIds, ctx.account);
+        return postIds.map((id) => shared.has(id));
       },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
-        const shared = await arePostsSharedBy(
-          ctx.db,
-          [post.id],
-          ctx.account,
-        );
-        return shared.has(post.id);
-      },
+      resolve: (post) => post.id,
     }),
     viewerHasBookmarked: t.boolean({
       select: {
