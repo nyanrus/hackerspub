@@ -174,19 +174,18 @@ export const Post = builder.drizzleInterface("postTable", {
       },
       resolve: (post) => post.id,
     }),
-    viewerHasBookmarked: t.boolean({
-      select: {
-        columns: { id: true },
-      },
-      async resolve(post, _, ctx) {
-        if (ctx.account == null) return false;
+    viewerHasBookmarked: t.loadable({
+      type: "Boolean",
+      load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+        if (ctx.account == null) return postIds.map(() => false);
         const bookmarked = await arePostsBookmarkedBy(
           ctx.db,
-          [post.id],
+          postIds,
           ctx.account,
         );
-        return bookmarked.has(post.id);
+        return postIds.map((id) => bookmarked.has(id));
       },
+      resolve: (post) => post.id,
     }),
     viewerHasPinned: t.boolean({
       select: {
