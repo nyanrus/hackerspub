@@ -1161,7 +1161,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "regenerateInvitations payload.status reflects future-dated posts past the new cutoff",
+    "regenerateInvitations does not credit accounts whose posts are dated in the future",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -1177,15 +1177,20 @@ Deno.test({
         name: "Future Winner",
         email: "regenmutfuturewinner@example.com",
       });
-      // A post-cutoff post so the regen actually has work to do.
+      // A post-cutoff, past-dated post so the regen actually has
+      // work to do.
       await insertNotePost(tx, {
         account: winner.account,
         published: new Date("2026-04-10T00:00:00.000Z"),
       });
-      // A future-dated post (clock-skewed federation input).  After
-      // regen moves the cutoff to "now", this post's `published`
-      // remains greater than the new cutoff, so the post-regen
-      // status query should still report it as eligible.
+      // A future-dated post (clock-skewed federation input or
+      // scheduled post).  selectActiveAccounts clamps the eligibility
+      // window to `now`, so this post should NOT make its account
+      // eligible until its `published` becomes <= now.  After regen
+      // moves the cutoff to "now", the status should report 0
+      // eligible accounts (the past-dated winner has already been
+      // credited and falls below the new cutoff; the future-dated
+      // post is excluded by the clamp).
       const future = await insertAccountWithActor(tx, {
         username: "regenmutfutureposter",
         name: "Future Poster",
@@ -1206,13 +1211,23 @@ Deno.test({
       assertEquals(result.errors, undefined);
       const payload = (result.data as {
         regenerateInvitations: {
+          accountsAffected: number;
           status: { eligibleAccountsCount: number; topThirdCount: number };
         };
       }).regenerateInvitations;
-      // The future-dated post remains > new cutoff so the post-regen
-      // status should report it (not the hardcoded 0).
-      assertEquals(payload.status.eligibleAccountsCount, 1);
-      assertEquals(payload.status.topThirdCount, 1);
+      // Only the past-dated winner is credited; the future-dated
+      // poster is excluded by the now-clamp.
+      assertEquals(payload.accountsAffected, 1);
+      // Post-regen, the cutoff has moved to now, so no past-dated
+      // post is eligible and the future-dated post is also excluded.
+      assertEquals(payload.status.eligibleAccountsCount, 0);
+      assertEquals(payload.status.topThirdCount, 0);
+
+      // Confirm the future-dated poster was not credited.
+      const futureRow = await tx.query.accountTable.findFirst({
+        where: { id: future.account.id },
+      });
+      assertEquals(futureRow?.leftInvitations, 0);
     });
   },
 });

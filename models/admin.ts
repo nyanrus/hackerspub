@@ -8,6 +8,7 @@ import {
   gt,
   inArray,
   isNotNull,
+  lte,
   sql,
 } from "drizzle-orm";
 import type Keyv from "keyv";
@@ -100,6 +101,7 @@ function resolveCutoff(
 async function selectActiveAccounts(
   db: Database,
   cutoffDate: Date,
+  now: Date,
 ): Promise<{ accountId: Uuid; postCount: number }[]> {
   const rows = await db
     .select({
@@ -112,6 +114,10 @@ async function selectActiveAccounts(
       and(
         isNotNull(actorTable.accountId),
         gt(postTable.published, cutoffDate),
+        // Clamp to `now` so future-dated posts (clock-skewed
+        // federation input, scheduled posts) do not award
+        // invitations before they are actually published.
+        lte(postTable.published, now),
       ),
     )
     .groupBy(actorTable.accountId)
@@ -132,8 +138,8 @@ export async function getInvitationRegenerationStatus(
   options: RegenerateOptions = {},
 ): Promise<InvitationRegenerationStatus> {
   const lastRegeneratedAt = await getInvitationsLastRegen(db, kv);
-  const { cutoffDate } = resolveCutoff(lastRegeneratedAt, options);
-  const active = await selectActiveAccounts(db, cutoffDate);
+  const { now, cutoffDate } = resolveCutoff(lastRegeneratedAt, options);
+  const active = await selectActiveAccounts(db, cutoffDate, now);
   return {
     lastRegeneratedAt,
     cutoffDate,
@@ -162,7 +168,7 @@ export async function regenerateInvitations(
     );
     const lastRegen = await getInvitationsLastRegen(tx, kv);
     const { now, cutoffDate } = resolveCutoff(lastRegen, options);
-    const active = await selectActiveAccounts(tx, cutoffDate);
+    const active = await selectActiveAccounts(tx, cutoffDate, now);
     const topThirdCount = Math.ceil(active.length / 3);
     const topAccountIds = active.slice(0, topThirdCount).map((a) =>
       a.accountId
