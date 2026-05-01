@@ -58,6 +58,33 @@ export function getActorById(
   return ctx.actorByIdLoader.load(actorId);
 }
 
+// Builds a Pothos `t.loadable` `load` function for boolean relationship
+// fields like `viewerFollows`/`viewerBlocks`/`blocksViewer`/`followsViewer`.
+// Each of those fields asks "for these N actor ids, which ones are in the
+// directional relationship with the viewer?" and only differs by which
+// model helper produces the matched-id Set.  Hoisting the shared shape
+// here keeps the field declarations to one line of `load:` each.
+function createRelationshipBooleanLoader(
+  getMatchedIds: (
+    db: UserContext["db"],
+    viewerId: Uuid,
+    targetIds: readonly Uuid[],
+  ) => Promise<Set<Uuid>>,
+) {
+  return async (
+    actorIds: Uuid[],
+    ctx: UserContext,
+  ): Promise<boolean[]> => {
+    if (ctx.account?.actor == null) return actorIds.map(() => false);
+    const matched = await getMatchedIds(
+      ctx.db,
+      ctx.account.actor.id,
+      actorIds,
+    );
+    return actorIds.map((id) => matched.has(id));
+  };
+}
+
 export const ActorType = builder.enumType("ActorType", {
   values: [
     "APPLICATION",
@@ -410,15 +437,7 @@ builder.drizzleObjectFields(Actor, (t) => ({
     // request (e.g., followActor + read viewerFollows in the payload)
     // re-queries instead of returning the pre-mutation value.
     loaderOptions: { cache: false },
-    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
-      if (ctx.account?.actor == null) return actorIds.map(() => false);
-      const followed = await getFollowedActorIds(
-        ctx.db,
-        ctx.account.actor.id,
-        actorIds,
-      );
-      return actorIds.map((id) => followed.has(id));
-    },
+    load: createRelationshipBooleanLoader(getFollowedActorIds),
     resolve: (actor) => actor.id,
   }),
   viewerBlocks: t.loadable({
@@ -427,15 +446,7 @@ builder.drizzleObjectFields(Actor, (t) => ({
     // reflected by subsequent reads of the field within the same
     // request rather than a stale per-request cached value.
     loaderOptions: { cache: false },
-    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
-      if (ctx.account?.actor == null) return actorIds.map(() => false);
-      const blocked = await getBlockedActorIds(
-        ctx.db,
-        ctx.account.actor.id,
-        actorIds,
-      );
-      return actorIds.map((id) => blocked.has(id));
-    },
+    load: createRelationshipBooleanLoader(getBlockedActorIds),
     resolve: (actor) => actor.id,
   }),
   blocksViewer: t.loadable({
@@ -444,15 +455,7 @@ builder.drizzleObjectFields(Actor, (t) => ({
     // reflected by a subsequent read of the field rather than a
     // stale per-request cached value.
     loaderOptions: { cache: false },
-    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
-      if (ctx.account?.actor == null) return actorIds.map(() => false);
-      const blockers = await getBlockerActorIds(
-        ctx.db,
-        ctx.account.actor.id,
-        actorIds,
-      );
-      return actorIds.map((id) => blockers.has(id));
-    },
+    load: createRelationshipBooleanLoader(getBlockerActorIds),
     resolve: (actor) => actor.id,
   }),
   followsViewer: t.loadable({
@@ -461,15 +464,7 @@ builder.drizzleObjectFields(Actor, (t) => ({
     // (e.g., removeFollower) is reflected by a subsequent read of
     // the field rather than a stale per-request cached value.
     loaderOptions: { cache: false },
-    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
-      if (ctx.account?.actor == null) return actorIds.map(() => false);
-      const followers = await getFollowerActorIds(
-        ctx.db,
-        ctx.account.actor.id,
-        actorIds,
-      );
-      return actorIds.map((id) => followers.has(id));
-    },
+    load: createRelationshipBooleanLoader(getFollowerActorIds),
     resolve: (actor) => actor.id,
   }),
   followees: t.connection(
