@@ -134,6 +134,154 @@ Deno.test({
   },
 });
 
+const customEmojiBatchQuery = parse(`
+  query CustomEmojiBatchQuery($a: ID!, $b: ID!) {
+    a: node(id: $a) {
+      ... on Post {
+        reactionGroups {
+          ... on CustomEmojiReactionGroup {
+            customEmoji {
+              id
+              name
+              imageUrl
+            }
+          }
+        }
+      }
+    }
+    b: node(id: $b) {
+      ... on Post {
+        reactionGroups {
+          ... on CustomEmojiReactionGroup {
+            customEmoji {
+              id
+              name
+              imageUrl
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "CustomEmojiReactionGroup.customEmoji resolves the right emoji per post when batched",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const timestamp = new Date("2026-04-15T00:00:00.000Z");
+      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+
+      await seedLocalInstance(tx);
+
+      const author = await insertAccountWithActor(tx, {
+        username: `author${suffix}`,
+        name: "Author",
+        email: `author-${suffix}@example.com`,
+      });
+      const reactor = await insertAccountWithActor(tx, {
+        username: `reactor${suffix}`,
+        name: "Reactor",
+        email: `reactor-${suffix}@example.com`,
+      });
+
+      const partyId = generateUuidV7();
+      const cakeId = generateUuidV7();
+      await tx.insert(customEmojiTable).values([
+        {
+          id: partyId,
+          iri: `http://localhost/emojis/${partyId}`,
+          name: ":party:",
+          imageUrl: `https://cdn.example/emoji/${partyId}.png`,
+        },
+        {
+          id: cakeId,
+          iri: `http://localhost/emojis/${cakeId}`,
+          name: ":cake:",
+          imageUrl: `https://cdn.example/emoji/${cakeId}.png`,
+        },
+      ]);
+
+      const { post: postA } = await insertNotePost(tx, {
+        account: author.account,
+        content: "First",
+        contentHtml: "<p>First</p>",
+        published: timestamp,
+        updated: timestamp,
+        reactionsCounts: { [partyId]: 1 },
+      });
+      const { post: postB } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Second",
+        contentHtml: "<p>Second</p>",
+        published: new Date(timestamp.getTime() + 1000),
+        updated: new Date(timestamp.getTime() + 1000),
+        reactionsCounts: { [cakeId]: 1 },
+      });
+
+      await tx.insert(reactionTable).values([
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postA.id,
+          actorId: reactor.actor.id,
+          customEmojiId: partyId,
+          created: new Date(timestamp.getTime() + 100),
+        },
+        {
+          iri: `http://localhost/reactions/${generateUuidV7()}`,
+          postId: postB.id,
+          actorId: reactor.actor.id,
+          customEmojiId: cakeId,
+          created: new Date(timestamp.getTime() + 1100),
+        },
+      ]);
+
+      const result = await execute({
+        schema,
+        document: customEmojiBatchQuery,
+        variableValues: {
+          a: encodeGlobalID("Note", postA.id),
+          b: encodeGlobalID("Note", postB.id),
+        },
+        contextValue: makeUserContext(tx, reactor.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+
+      const data = result.data as {
+        a: {
+          reactionGroups: {
+            customEmoji?: { id: string; name: string; imageUrl: string };
+          }[];
+        } | null;
+        b: {
+          reactionGroups: {
+            customEmoji?: { id: string; name: string; imageUrl: string };
+          }[];
+        } | null;
+      };
+
+      const aEmoji = data.a?.reactionGroups
+        .map((group) => group.customEmoji)
+        .find((emoji) => emoji != null);
+      const bEmoji = data.b?.reactionGroups
+        .map((group) => group.customEmoji)
+        .find((emoji) => emoji != null);
+
+      assert(aEmoji != null);
+      assert(bEmoji != null);
+      assertEquals(aEmoji.name, ":party:");
+      assertEquals(aEmoji.imageUrl, `https://cdn.example/emoji/${partyId}.png`);
+      assertEquals(bEmoji.name, ":cake:");
+      assertEquals(bEmoji.imageUrl, `https://cdn.example/emoji/${cakeId}.png`);
+    });
+  },
+});
+
 async function seedReactedNote(
   tx: Transaction,
 ): Promise<ReactedNoteSeedResult> {

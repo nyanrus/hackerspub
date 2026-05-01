@@ -195,26 +195,6 @@ export interface CustomEmojiReactionGroup extends ReactionGroup {
   customEmojiId: Uuid;
 }
 
-const CustomEmojiReactionGroup = builder.objectRef<CustomEmojiReactionGroup>(
-  "CustomEmojiReactionGroup",
-);
-
-CustomEmojiReactionGroup.implement({
-  interfaces: [ReactionGroup],
-  fields: (t) => ({
-    customEmoji: t.drizzleField({
-      type: "customEmojiTable",
-      async resolve(query, group, _, ctx) {
-        const customEmoji = await ctx.db.query.customEmojiTable.findFirst(
-          query({ where: { id: group.customEmojiId } }),
-        );
-        if (!customEmoji) throw new Error(`Custom emoji not found`);
-        return customEmoji;
-      },
-    }),
-  }),
-});
-
 export const CustomEmoji = builder.drizzleNode("customEmojiTable", {
   name: "CustomEmoji",
   id: {
@@ -227,6 +207,33 @@ export const CustomEmoji = builder.drizzleNode("customEmojiTable", {
     }),
     name: t.exposeString("name"),
     imageUrl: t.exposeString("imageUrl"),
+  }),
+});
+
+const CustomEmojiReactionGroup = builder.objectRef<CustomEmojiReactionGroup>(
+  "CustomEmojiReactionGroup",
+);
+
+CustomEmojiReactionGroup.implement({
+  interfaces: [ReactionGroup],
+  fields: (t) => ({
+    customEmoji: t.loadable({
+      type: CustomEmoji,
+      load: async (ids: Uuid[], ctx: UserContext) => {
+        const rows = await ctx.db.query.customEmojiTable.findMany({
+          where: { id: { in: ids } },
+        });
+        const byId = new Map(rows.map((row) => [row.id, row]));
+        return ids.map((id) => {
+          const row = byId.get(id);
+          if (row == null) {
+            return new Error(`Custom emoji not found: ${id}`);
+          }
+          return row;
+        });
+      },
+      resolve: (group) => group.customEmojiId,
+    }),
   }),
 });
 
