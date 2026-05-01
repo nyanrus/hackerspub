@@ -1933,7 +1933,7 @@ msgstr "注册链接无效。请确保你使用的是你收到的正确邮件链
 #. placeholder {1}: "AGPL-3.0"
 #: src/components/AppSidebar.tsx:696
 msgid "The source code of this website is available on {0} under the {1} license."
-msgstr "可在 {1} 上以 {0} 许可获取该网站的源代码。"
+msgstr "可在 {0} 上以 {1} 许可获取该网站的源代码。"
 
 #: src/routes/(root)/[handle]/settings/index.tsx:550
 msgid "The URL of the link, e.g., https://github.com/yourhandle."
