@@ -226,7 +226,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "regenerateInvitations also syncs the cutoff to the legacy KV key",
+  name:
+    "regenerateInvitations skips the KV sync when called inside an existing transaction",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -234,14 +235,12 @@ Deno.test({
       const { kv, store } = createTestKv();
       const now = new Date("2026-04-15T00:00:00.000Z");
       await regenerateInvitations(tx, kv, { now });
-      // Sync is best-effort and runs after commit; with the in-memory
-      // KV used here it always succeeds, so the legacy admin route
-      // (which still reads from KV during the soak) sees the new
-      // cutoff immediately.
-      assertEquals(
-        store.get(INVITATIONS_LAST_REGEN_KEY),
-        now.toISOString(),
-      );
+      // The caller controls the commit/rollback boundary when they
+      // pass an existing transaction; running the KV sync here would
+      // advance KV ahead of the outer commit and leave KV out of
+      // sync if the outer caller rolled back.  Production calls go
+      // through the non-tx branch, which does sync KV.
+      assertEquals(store.get(INVITATIONS_LAST_REGEN_KEY), undefined);
     });
   },
 });
