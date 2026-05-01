@@ -18,6 +18,8 @@ interface ViewerHasReactedKey {
   customEmojiId: Uuid | null;
 }
 
+// Encoded as JSON because federated reaction emoji can contain any
+// character; a delimiter-based encoding could collide.
 function encodeReactionKey(connection: {
   postId: Uuid;
   where: RelationsFilter<"reactionTable">;
@@ -26,18 +28,16 @@ function encodeReactionKey(connection: {
     emoji?: string;
     customEmojiId?: Uuid;
   };
-  return `${connection.postId}|${filter.emoji ?? ""}|${
-    filter.customEmojiId ?? ""
-  }`;
+  const key: ViewerHasReactedKey = {
+    postId: connection.postId,
+    emoji: filter.emoji ?? null,
+    customEmojiId: filter.customEmojiId ?? null,
+  };
+  return JSON.stringify(key);
 }
 
 function decodeReactionKey(key: string): ViewerHasReactedKey {
-  const [postId, emoji, customEmojiId] = key.split("|");
-  return {
-    postId: postId as Uuid,
-    emoji: emoji === "" ? null : emoji,
-    customEmojiId: customEmojiId === "" ? null : (customEmojiId as Uuid),
-  };
+  return JSON.parse(key) as ViewerHasReactedKey;
 }
 
 export const Reactable = builder.interfaceRef<Reactable>("Reactable");
