@@ -11,6 +11,7 @@ import { renderCustomEmojis } from "@hackerspub/models/emoji";
 import {
   follow,
   getFollowedActorIds,
+  getFollowerActorIds,
   removeFollower as removeFollowerModel,
   unfollow,
 } from "@hackerspub/models/following";
@@ -419,20 +420,22 @@ builder.drizzleObjectFields(Actor, (t) => ({
       }) != null;
     },
   }),
-  followsViewer: t.field({
+  followsViewer: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.followingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          followerId: actor.id,
-          followeeId: ctx.account.actor.id,
-        },
-      }) != null;
+    // cache: false so a follow-state mutation in the same request
+    // (e.g., removeFollower) is reflected by a subsequent read of
+    // the field rather than a stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+      if (ctx.account?.actor == null) return actorIds.map(() => false);
+      const followers = await getFollowerActorIds(
+        ctx.db,
+        ctx.account.actor.id,
+        actorIds,
+      );
+      return actorIds.map((id) => followers.has(id));
     },
+    resolve: (actor) => actor.id,
   }),
   followees: t.connection(
     {

@@ -5,6 +5,7 @@ import {
   acceptFollowing,
   follow,
   getFollowedActorIds,
+  getFollowerActorIds,
   unfollow,
 } from "./following.ts";
 import { actorTable, followingTable, notificationTable } from "./schema.ts";
@@ -245,6 +246,62 @@ Deno.test({
   async fn() {
     await withRollback(async (tx) => {
       const result = await getFollowedActorIds(
+        tx,
+        generateUuidV7() as Uuid,
+        [],
+      );
+      assertEquals(result.size, 0);
+    });
+  },
+});
+
+Deno.test({
+  name: "getFollowerActorIds returns the subset that follows the followee",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      await seedLocalInstance(tx);
+      const fedCtx = createFedCtx(tx);
+      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+      const target = await insertAccountWithActor(tx, {
+        username: `gfraitarget${suffix}`,
+        name: "GFRAI Target",
+        email: `gfraitarget-${suffix}@example.com`,
+      });
+      const fan = await insertAccountWithActor(tx, {
+        username: `gfraifan${suffix}`,
+        name: "GFRAI Fan",
+        email: `gfraifan-${suffix}@example.com`,
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: `gfraistranger${suffix}`,
+        name: "GFRAI Stranger",
+        email: `gfraistranger-${suffix}@example.com`,
+      });
+
+      await follow(fedCtx, fan.account, target.actor);
+
+      const result = await getFollowerActorIds(tx, target.actor.id, [
+        fan.actor.id,
+        stranger.actor.id,
+        generateUuidV7() as Uuid,
+      ]);
+
+      assertEquals(result.has(fan.actor.id), true);
+      assertEquals(result.has(stranger.actor.id), false);
+      assertEquals(result.size, 1);
+    });
+  },
+});
+
+Deno.test({
+  name: "getFollowerActorIds returns empty for empty input",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await getFollowerActorIds(
         tx,
         generateUuidV7() as Uuid,
         [],

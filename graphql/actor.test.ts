@@ -526,6 +526,14 @@ const viewerFollowsBatchQuery = parse(`
   }
 `);
 
+const followRelationshipBatchQuery = parse(`
+  query FollowRelationshipBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerFollows followsViewer }
+    b: actorByUuid(uuid: $b) { id viewerFollows followsViewer }
+    c: actorByUuid(uuid: $c) { id viewerFollows followsViewer }
+  }
+`);
+
 Deno.test({
   name: "Actor.viewerFollows returns the right state per actor when batched",
   sanitizeOps: false,
@@ -620,6 +628,74 @@ Deno.test({
       assertEquals(data.a.viewerFollows, false);
       assertEquals(data.b.viewerFollows, false);
       assertEquals(data.c.viewerFollows, false);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "Actor.viewerFollows and followsViewer are batched into independent results",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "frelviewer",
+        name: "FREL Viewer",
+        email: "frelviewer@example.com",
+      });
+      const followed = await insertAccountWithActor(tx, {
+        username: "frelfollowed",
+        name: "FREL Followed",
+        email: "frelfollowed@example.com",
+      });
+      const fan = await insertAccountWithActor(tx, {
+        username: "frelfan",
+        name: "FREL Fan",
+        email: "frelfan@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "frelstranger",
+        name: "FREL Stranger",
+        email: "frelstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      // Viewer follows `followed` (viewerFollows=true on followed).
+      await follow(fedCtx, viewer.account, followed.actor);
+      // `fan` follows viewer (followsViewer=true on fan).
+      await follow(fedCtx, fan.account, viewer.actor);
+
+      const result = await execute({
+        schema,
+        document: followRelationshipBatchQuery,
+        variableValues: {
+          a: followed.actor.id,
+          b: fan.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", followed.actor.id),
+          viewerFollows: true,
+          followsViewer: false,
+        },
+        b: {
+          id: encodeGlobalID("Actor", fan.actor.id),
+          viewerFollows: false,
+          followsViewer: true,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerFollows: false,
+          followsViewer: false,
+        },
+      });
     });
   },
 });

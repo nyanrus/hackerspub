@@ -210,6 +210,24 @@ export async function getFollowedActorIds(
   return new Set(rows.map((row) => row.followeeId));
 }
 
+export async function getFollowerActorIds(
+  db: Database,
+  followeeId: Uuid,
+  followerIds: readonly Uuid[],
+): Promise<Set<Uuid>> {
+  if (followerIds.length < 1) return new Set();
+  const rows = await db
+    .select({ followerId: followingTable.followerId })
+    .from(followingTable)
+    .where(
+      and(
+        eq(followingTable.followeeId, followeeId),
+        inArray(followingTable.followerId, followerIds as Uuid[]),
+      ),
+    );
+  return new Set(rows.map((row) => row.followerId));
+}
+
 export async function updateFolloweesCount(
   db: Database,
   followerId: Uuid,
