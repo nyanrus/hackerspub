@@ -1161,6 +1161,64 @@ Deno.test({
 
 Deno.test({
   name:
+    "regenerateInvitations payload.status reflects future-dated posts past the new cutoff",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenmutmodfuture");
+      const { kv, store } = createTestKv();
+      // Pin a cutoff so the regen has eligible accounts to credit.
+      const cutoff = new Date("2026-04-01T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, cutoff.toISOString());
+
+      const winner = await insertAccountWithActor(tx, {
+        username: "regenmutfuturewinner",
+        name: "Future Winner",
+        email: "regenmutfuturewinner@example.com",
+      });
+      // A post-cutoff post so the regen actually has work to do.
+      await insertNotePost(tx, {
+        account: winner.account,
+        published: new Date("2026-04-10T00:00:00.000Z"),
+      });
+      // A future-dated post (clock-skewed federation input).  After
+      // regen moves the cutoff to "now", this post's `published`
+      // remains greater than the new cutoff, so the post-regen
+      // status query should still report it as eligible.
+      const future = await insertAccountWithActor(tx, {
+        username: "regenmutfutureposter",
+        name: "Future Poster",
+        email: "regenmutfutureposter@example.com",
+      });
+      const farFuture = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      await insertNotePost(tx, {
+        account: future.account,
+        published: farFuture,
+      });
+
+      const result = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const payload = (result.data as {
+        regenerateInvitations: {
+          status: { eligibleAccountsCount: number; topThirdCount: number };
+        };
+      }).regenerateInvitations;
+      // The future-dated post remains > new cutoff so the post-regen
+      // status should report it (not the hardcoded 0).
+      assertEquals(payload.status.eligibleAccountsCount, 1);
+      assertEquals(payload.status.topThirdCount, 1);
+    });
+  },
+});
+
+Deno.test({
+  name:
     "regenerateInvitations called twice in immediate succession returns 0 affected on second",
   sanitizeOps: false,
   sanitizeResources: false,
