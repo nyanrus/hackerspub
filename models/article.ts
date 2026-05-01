@@ -305,8 +305,13 @@ export async function updateArticleSource(
     content?: string;
     language?: string;
   },
+  models?: Models,
 ): Promise<ArticleSource & { contents: ArticleContent[] } | undefined> {
-  return await db.transaction(async (tx) => {
+  // Captured inside the transaction and used after it commits so we
+  // can enqueue a fresh summarization for the row whose body or
+  // language just changed.
+  let resummarizeTarget: ArticleContent | undefined;
+  const result = await db.transaction(async (tx) => {
     const sources = await tx.update(articleSourceTable)
       .set({ ...source, updated: sql`CURRENT_TIMESTAMP` })
       .where(eq(articleSourceTable.id, id))
@@ -332,7 +337,7 @@ export async function updateArticleSource(
       const contentChanged = newContent !== originalContent.content;
       const languageChanged = newLanguage !== originalContent.language;
       try {
-        await tx.update(articleContentTable)
+        const updatedRows = await tx.update(articleContentTable)
           .set({
             language: newLanguage,
             title: source.title ?? originalContent.title,
@@ -356,7 +361,13 @@ export async function updateArticleSource(
               eq(articleContentTable.sourceId, id),
               eq(articleContentTable.language, originalContent.language),
             ),
-          );
+          )
+          .returning();
+        if (
+          (contentChanged || languageChanged) && updatedRows.length > 0
+        ) {
+          resummarizeTarget = updatedRows[0];
+        }
       } catch (error) {
         if (
           error instanceof postgres.PostgresError && error.code === "23503"
@@ -372,6 +383,13 @@ export async function updateArticleSource(
     });
     return { ...sources[0], contents };
   });
+  // Queue a fresh summarization outside of the transaction so the
+  // claim is visible to other workers as soon as it is acquired and
+  // the deferred apply step does not try to use a closed transaction.
+  if (resummarizeTarget != null && models != null) {
+    await startArticleContentSummary(db, models.summarizer, resummarizeTarget);
+  }
+  return result;
 }
 
 export async function updateArticle(
@@ -393,11 +411,16 @@ export async function updateArticle(
     };
   } | undefined
 > {
-  const { db } = fedCtx.data;
+  const { db, models } = fedCtx.data;
   const previousPost = await db.query.postTable.findFirst({
     where: { articleSourceId },
   });
-  const articleSource = await updateArticleSource(db, articleSourceId, source);
+  const articleSource = await updateArticleSource(
+    db,
+    articleSourceId,
+    source,
+    models,
+  );
   if (articleSource == null) return undefined;
   const account = await db.query.accountTable.findFirst({
     where: { id: articleSource.accountId },

@@ -512,6 +512,131 @@ test(
 );
 
 test(
+  "updateArticleSource() queues a re-summarization when content changes " +
+    "and models are provided",
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "summaryrequeue",
+        name: "Summary Requeue",
+        email: "summaryrequeue@example.com",
+      });
+      const sourceId = generateUuidV7();
+      const published = new Date("2026-04-15T00:00:00.000Z");
+
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug: "summary-requeue",
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      // Row is in the steady "no summary needed" state.  After the
+      // edit, we expect the reset path to fire AND summarization to
+      // be queued so a fresh attempt runs against the new body.
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Original",
+        content: "Hi.",
+        summary: null,
+        summaryUnnecessary: true,
+        published,
+        updated: published,
+      });
+
+      // Use a model whose `summarize()` Promise never resolves, so the
+      // background `.then`/`.catch` handlers cannot race with our
+      // assertions or with `withRollback`'s teardown.  All we want to
+      // verify is that the synchronous claim-acquisition step ran.
+      const hangingPromise = new Promise<never>(() => {});
+      const hangingModel = {
+        // Just enough surface for `generateText` to start without
+        // crashing synchronously in summarize().
+        specificationVersion: "v2",
+        provider: "test",
+        modelId: "hanging",
+        doGenerate: () => hangingPromise,
+        doStream: () => hangingPromise,
+        supportedUrls: {},
+      } as unknown as never;
+
+      const updated = await updateArticleSource(
+        tx,
+        sourceId,
+        {
+          content: "This article body is now long enough to be worth " +
+            "summarizing again, so we expect a fresh claim to be acquired.",
+        },
+        { summarizer: hangingModel, translator: hangingModel },
+      );
+      assert.ok(updated != null);
+
+      const after = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.equal(after?.summaryUnnecessary, false);
+      assert.equal(after?.summary, null);
+      assert.ok(after?.summaryStarted != null);
+    });
+  },
+);
+
+test(
+  "updateArticleSource() does not queue summarization when content is " +
+    "unchanged",
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "summarynorequeue",
+        name: "Summary No Requeue",
+        email: "summarynorequeue@example.com",
+      });
+      const sourceId = generateUuidV7();
+      const published = new Date("2026-04-15T00:00:00.000Z");
+
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug: "summary-no-requeue",
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Title only edit",
+        content: "Original body",
+        summary: "Cached summary.",
+        published,
+        updated: published,
+      });
+
+      // Title-only edits must not enqueue a fresh summarization.
+      const updated = await updateArticleSource(
+        tx,
+        sourceId,
+        { title: "Renamed" },
+        { summarizer: {} as never, translator: {} as never },
+      );
+      assert.ok(updated != null);
+
+      const after = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.equal(after?.summary, "Cached summary.");
+      assert.equal(after?.summaryStarted, null);
+    });
+  },
+);
+
+test(
   "applyArticleContentSummary() refuses to update when a newer claim " +
     "has taken over the row",
   async () => {
