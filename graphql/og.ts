@@ -135,10 +135,19 @@ export async function loadImageDataUri(
   options: ImageDataUriOptions = {},
 ): Promise<string> {
   if (imageUrl.startsWith("data:")) return imageUrl;
+  let url: URL;
+  try {
+    url = new URL(imageUrl);
+  } catch {
+    return FALLBACK_IMAGE_DATA_URI;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return FALLBACK_IMAGE_DATA_URI;
+  }
   const maxBytes = options.maxBytes ?? MAX_REMOTE_IMAGE_BYTES;
   const timeoutMs = options.timeoutMs ?? REMOTE_IMAGE_TIMEOUT_MS;
   try {
-    const response = await fetch(imageUrl, {
+    const response = await fetch(url, {
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!response.ok) return FALLBACK_IMAGE_DATA_URI;
@@ -151,6 +160,7 @@ export async function loadImageDataUri(
     }
     const contentType = response.headers.get("content-type")?.split(";")[0] ??
       "application/octet-stream";
+    if (!contentType.startsWith("image/")) return FALLBACK_IMAGE_DATA_URI;
     const bytes = await readResponseBytes(response, maxBytes);
     if (bytes == null) return FALLBACK_IMAGE_DATA_URI;
     return `data:${contentType};base64,${encodeBase64(bytes)}`;

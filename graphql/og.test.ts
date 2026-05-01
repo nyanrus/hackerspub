@@ -54,6 +54,30 @@ test("loadImageDataUri embeds remote images", async () => {
   }
 });
 
+test("loadImageDataUri rejects non-image responses", async () => {
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, () =>
+    new Response("not an image", {
+      headers: { "content-type": "text/plain" },
+    }));
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.txt`;
+    assert.equal(await loadImageDataUri(url), smallPngDataUrl);
+  } finally {
+    await server.shutdown();
+  }
+});
+
+test("loadImageDataUri rejects unsupported URL schemes", async () => {
+  assert.equal(
+    await loadImageDataUri("file:///tmp/avatar.png"),
+    smallPngDataUrl,
+  );
+});
+
 test("loadImageDataUri falls back when remote images are too large", async () => {
   const server = Deno.serve({
     hostname: "127.0.0.1",
