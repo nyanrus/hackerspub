@@ -108,6 +108,10 @@ export default function AdminInvitationsPage() {
           // field, so refetch the page query to pick up the new
           // last-regenerated timestamp and recomputed cutoff.
           void revalidate("loadAdminInvitationsPageQuery");
+        } else if (result.__typename === "NotAuthenticatedError") {
+          // Session expired while the page was open; send the user
+          // back through sign-in instead of a misleading toast.
+          location.replace("/sign?next=%2Fadmin%2Finvitations");
         } else {
           showToast({
             title: t`Not authorized to regenerate invitations.`,
