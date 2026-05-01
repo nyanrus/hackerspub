@@ -21,7 +21,7 @@ import { negotiateLocale } from "@hackerspub/models/i18n";
 import { renderMarkup } from "@hackerspub/models/markup";
 import { createNote } from "@hackerspub/models/note";
 import {
-  isPostPinnedBy,
+  arePostsPinnedBy,
   pinPost as pinPostModel,
   unpinPost as unpinPostModel,
 } from "@hackerspub/models/pin";
@@ -199,7 +199,12 @@ export const Post = builder.drizzleInterface("postTable", {
       },
       async resolve(post, _, ctx) {
         if (ctx.account == null) return false;
-        return await isPostPinnedBy(ctx.db, post, ctx.account.actor);
+        const pinned = await arePostsPinnedBy(
+          ctx.db,
+          [post.id],
+          ctx.account.actor,
+        );
+        return pinned.has(post.id);
       },
     }),
   }),

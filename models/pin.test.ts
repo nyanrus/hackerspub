@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { Add, Remove } from "@fedify/vocab";
-import { MAX_PINNED_POSTS, pinPost, unpinPost } from "./pin.ts";
+import {
+  arePostsPinnedBy,
+  MAX_PINNED_POSTS,
+  pinPost,
+  unpinPost,
+} from "./pin.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
@@ -143,6 +148,88 @@ Deno.test({
         where: { actorId: author.actor.id },
       });
       assert.equal(rows.length, MAX_PINNED_POSTS);
+    });
+  },
+});
+
+Deno.test({
+  name: "arePostsPinnedBy() returns the subset of posts the actor has pinned",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const fedCtx = createFedCtx(tx);
+      const author = await insertAccountWithActor(tx, {
+        username: "arepinnedauthor",
+        name: "ArePinned Author",
+        email: "arepinnedauthor@example.com",
+      });
+
+      const { post: postA } = await insertNotePost(tx, {
+        account: author.account,
+        content: "A",
+      });
+      const { post: postB } = await insertNotePost(tx, {
+        account: author.account,
+        content: "B",
+      });
+      const { post: postC } = await insertNotePost(tx, {
+        account: author.account,
+        content: "C",
+      });
+
+      assert.notEqual(await pinPost(fedCtx, author.actor, postA), null);
+      assert.notEqual(await pinPost(fedCtx, author.actor, postC), null);
+
+      const result = await arePostsPinnedBy(
+        tx,
+        [postA.id, postB.id, postC.id],
+        author.actor,
+      );
+
+      assert.deepEqual(result, new Set([postA.id, postC.id]));
+    });
+  },
+});
+
+Deno.test({
+  name: "arePostsPinnedBy() returns an empty set when no pins match",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "arepinnednoneauthor",
+        name: "ArePinned None Author",
+        email: "arepinnednoneauthor@example.com",
+      });
+      const { post } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Untouched",
+      });
+
+      const result = await arePostsPinnedBy(tx, [post.id], author.actor);
+
+      assert.deepEqual(result, new Set());
+    });
+  },
+});
+
+Deno.test({
+  name: "arePostsPinnedBy() returns an empty set for an empty input list",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "arepinnedemptyauthor",
+        name: "ArePinned Empty Author",
+        email: "arepinnedemptyauthor@example.com",
+      });
+
+      const result = await arePostsPinnedBy(tx, [], author.actor);
+
+      assert.deepEqual(result, new Set());
     });
   },
 });

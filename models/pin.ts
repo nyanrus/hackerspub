@@ -1,6 +1,6 @@
 import type { Context } from "@fedify/fedify";
 import * as vocab from "@fedify/vocab";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import type { ContextData } from "./context.ts";
 import type { Database, Transaction } from "./db.ts";
 import {
@@ -10,6 +10,7 @@ import {
   pinTable,
   type Post,
 } from "./schema.ts";
+import type { Uuid } from "./uuid.ts";
 
 export const MAX_PINNED_POSTS = 20;
 
@@ -175,4 +176,22 @@ export async function isPostPinnedBy(
     )
     .limit(1);
   return rows.length > 0;
+}
+
+export async function arePostsPinnedBy(
+  db: Database,
+  postIds: readonly Uuid[],
+  actor: Actor,
+): Promise<Set<Uuid>> {
+  if (postIds.length < 1) return new Set();
+  const rows = await db
+    .select({ postId: pinTable.postId })
+    .from(pinTable)
+    .where(
+      and(
+        eq(pinTable.actorId, actor.id),
+        inArray(pinTable.postId, postIds as Uuid[]),
+      ),
+    );
+  return new Set(rows.map((row) => row.postId));
 }
