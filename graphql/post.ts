@@ -167,6 +167,10 @@ export const Post = builder.drizzleInterface("postTable", {
     link: t.relation("link", { type: PostLink, nullable: true }),
     viewerHasShared: t.loadable({
       type: "Boolean",
+      // cache: false so a mutation that flips share state in the same
+      // request (e.g., share + read viewerHasShared) re-queries instead
+      // of returning the pre-mutation value.
+      loaderOptions: { cache: false },
       load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
         if (ctx.account == null) return postIds.map(() => false);
         const shared = await arePostsSharedBy(ctx.db, postIds, ctx.account);
@@ -176,6 +180,7 @@ export const Post = builder.drizzleInterface("postTable", {
     }),
     viewerHasBookmarked: t.loadable({
       type: "Boolean",
+      loaderOptions: { cache: false },
       load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
         if (ctx.account == null) return postIds.map(() => false);
         const bookmarked = await arePostsBookmarkedBy(
@@ -189,6 +194,7 @@ export const Post = builder.drizzleInterface("postTable", {
     }),
     viewerHasPinned: t.loadable({
       type: "Boolean",
+      loaderOptions: { cache: false },
       load: async (postIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
         if (ctx.account == null) return postIds.map(() => false);
         const pinned = await arePostsPinnedBy(

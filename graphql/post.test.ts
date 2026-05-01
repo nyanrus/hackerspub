@@ -666,3 +666,75 @@ Deno.test({
     });
   },
 });
+
+const bookmarkAndUnbookmarkMutation = parse(`
+  mutation BookmarkRoundTrip($postId: ID!) {
+    first: bookmarkPost(input: { postId: $postId }) {
+      __typename
+      ... on BookmarkPostPayload {
+        post {
+          viewerHasBookmarked
+        }
+      }
+    }
+    second: unbookmarkPost(input: { postId: $postId }) {
+      __typename
+      ... on UnbookmarkPostPayload {
+        post {
+          viewerHasBookmarked
+        }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "viewerHasBookmarked reflects post-mutation state across serial mutations",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "viewerhasinvalauthor",
+        name: "ViewerHas Invalidation Author",
+        email: "viewerhasinvalauthor@example.com",
+      });
+      const viewer = await insertAccountWithActor(tx, {
+        username: "viewerhasinvalviewer",
+        name: "ViewerHas Invalidation Viewer",
+        email: "viewerhasinvalviewer@example.com",
+      });
+      const { post } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Bookmark me, then don't",
+      });
+      const postId = encodeGlobalID("Note", post.id);
+
+      const result = await execute({
+        schema,
+        document: bookmarkAndUnbookmarkMutation,
+        variableValues: { postId },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+
+      const data = result.data as {
+        first: {
+          __typename: string;
+          post?: { viewerHasBookmarked: boolean };
+        };
+        second: {
+          __typename: string;
+          post?: { viewerHasBookmarked: boolean };
+        };
+      };
+      assertEquals(data.first.__typename, "BookmarkPostPayload");
+      assertEquals(data.first.post?.viewerHasBookmarked, true);
+      assertEquals(data.second.__typename, "UnbookmarkPostPayload");
+      assertEquals(data.second.post?.viewerHasBookmarked, false);
+    });
+  },
+});

@@ -132,6 +132,7 @@ export const ReactionGroup = builder.interfaceRef<ReactionGroup>(
         totalCount: t.exposeInt("totalCount"),
         viewerHasReacted: t.loadable({
           type: "Boolean",
+          loaderOptions: { cache: false },
           load: async (
             keys: string[],
             ctx: UserContext,
