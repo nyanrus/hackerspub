@@ -1,5 +1,6 @@
 import type { RouteDefinition } from "@solidjs/router";
 import type { APIEvent } from "@solidjs/start/server";
+import type { IEnvironment } from "relay-runtime";
 import { fetchQuery, graphql } from "relay-runtime";
 import { createEnvironment } from "../../../../../RelayEnvironment.tsx";
 import type { ogimageLanguageQuery } from "./__generated__/ogimageLanguageQuery.graphql.ts";
@@ -18,15 +19,16 @@ export async function GET({ params, request }: APIEvent) {
   }
 
   const requestUrl = new URL(request.url);
+  const environment = createEnvironment();
   const requestedLanguage = requestUrl.searchParams.get("l")?.trim();
   const language = requestedLanguage ||
-    await getDefaultLanguage(handle, idOrYear, slug);
+    await getDefaultLanguage(environment, handle, idOrYear, slug);
   if (language == null) {
     return new Response("Not Found", { status: 404 });
   }
 
   const response = await fetchQuery<ogimageQuery>(
-    createEnvironment(),
+    environment,
     graphql`
       query ogimageQuery(
         $handle: String!
@@ -57,12 +59,13 @@ export async function GET({ params, request }: APIEvent) {
 }
 
 async function getDefaultLanguage(
+  environment: IEnvironment,
   handle: string,
   idOrYear: string,
   slug: string,
 ) {
   const response = await fetchQuery<ogimageLanguageQuery>(
-    createEnvironment(),
+    environment,
     graphql`
       query ogimageLanguageQuery(
         $handle: String!
