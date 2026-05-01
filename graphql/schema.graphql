@@ -12,6 +12,11 @@ type Account implements Node {
   invitationsLeft: Int!
   invitees(after: String, before: String, first: Int, last: Int): AccountInviteesConnection!
   inviter: Account
+
+  """
+  The latest `published` timestamp across all posts authored by this account, or null when there are no posts.  Visible only to moderators.
+  """
+  lastPostPublished: DateTime
   links: [AccountLink!]!
   locales: [Locale!]
   moderator: Boolean!
@@ -19,6 +24,11 @@ type Account implements Node {
   notifications(after: String, before: String, first: Int, last: Int): AccountNotificationsConnection!
   ogImageUrl: URL!
   passkeys(after: String, before: String, first: Int, last: Int): AccountPasskeysConnection!
+
+  """
+  The total number of posts authored by this account.  Visible only to moderators.
+  """
+  postCount: Int!
   preferAiSummary: Boolean!
   updated: DateTime!
   username: String!
@@ -280,6 +290,26 @@ type AddReactionToPostPayload {
 }
 
 union AddReactionToPostResult = AddReactionToPostPayload | InvalidInputError | NotAuthenticatedError
+
+type AdminAccountConnection {
+  edges: [AdminAccountEdge!]!
+  pageInfo: AdminAccountPageInfo!
+  totalCount: Int!
+}
+
+type AdminAccountEdge {
+  cursor: String!
+  node: Account!
+}
+
+type AdminAccountPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+union AdminAccountsResult = AdminAccountConnection | NotAuthenticatedError | NotAuthorizedError
 
 type Article implements Node & Post & Reactable {
   account: Account!
@@ -1041,6 +1071,7 @@ type Query {
     handle: String!
   ): Actor
   actorByUuid(uuid: UUID!): Actor
+  adminAccounts(after: String, before: String, first: Int, last: Int): AdminAccountsResult!
   articleByYearAndSlug(handle: String!, idOrYear: String!, slug: String!): Article
   articleDraft(id: ID, uuid: UUID): ArticleDraft
   availableLocales: [Locale!]!
