@@ -9,6 +9,7 @@ import {
 import {
   block,
   getBlockedActorIds,
+  getBlockerActorIds,
   unblock,
 } from "@hackerspub/models/blocking";
 import { renderCustomEmojis } from "@hackerspub/models/emoji";
@@ -411,20 +412,22 @@ builder.drizzleObjectFields(Actor, (t) => ({
     },
     resolve: (actor) => actor.id,
   }),
-  blocksViewer: t.field({
+  blocksViewer: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.blockingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          blockerId: actor.id,
-          blockeeId: ctx.account.actor.id,
-        },
-      }) != null;
+    // cache: false so a block-state mutation in the same request is
+    // reflected by a subsequent read of the field rather than a
+    // stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: async (actorIds: Uuid[], ctx: UserContext): Promise<boolean[]> => {
+      if (ctx.account?.actor == null) return actorIds.map(() => false);
+      const blockers = await getBlockerActorIds(
+        ctx.db,
+        ctx.account.actor.id,
+        actorIds,
+      );
+      return actorIds.map((id) => blockers.has(id));
     },
+    resolve: (actor) => actor.id,
   }),
   followsViewer: t.loadable({
     type: "Boolean",

@@ -173,3 +173,21 @@ export async function getBlockedActorIds(
     );
   return new Set(rows.map((row) => row.blockeeId));
 }
+
+export async function getBlockerActorIds(
+  db: Database,
+  blockeeId: Uuid,
+  blockerIds: readonly Uuid[],
+): Promise<Set<Uuid>> {
+  if (blockerIds.length < 1) return new Set();
+  const rows = await db
+    .select({ blockerId: blockingTable.blockerId })
+    .from(blockingTable)
+    .where(
+      and(
+        eq(blockingTable.blockeeId, blockeeId),
+        inArray(blockingTable.blockerId, blockerIds as Uuid[]),
+      ),
+    );
+  return new Set(rows.map((row) => row.blockerId));
+}

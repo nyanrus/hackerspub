@@ -543,6 +543,14 @@ const viewerBlocksBatchQuery = parse(`
   }
 `);
 
+const blockRelationshipBatchQuery = parse(`
+  query BlockRelationshipBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerBlocks blocksViewer }
+    b: actorByUuid(uuid: $b) { id viewerBlocks blocksViewer }
+    c: actorByUuid(uuid: $c) { id viewerBlocks blocksViewer }
+  }
+`);
+
 Deno.test({
   name: "Actor.viewerFollows returns the right state per actor when batched",
   sanitizeOps: false,
@@ -803,6 +811,74 @@ Deno.test({
       assertEquals(data.a.viewerBlocks, false);
       assertEquals(data.b.viewerBlocks, false);
       assertEquals(data.c.viewerBlocks, false);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "Actor.viewerBlocks and blocksViewer are batched into independent results",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "brelviewer",
+        name: "BREL Viewer",
+        email: "brelviewer@example.com",
+      });
+      const blocked = await insertAccountWithActor(tx, {
+        username: "brelblocked",
+        name: "BREL Blocked",
+        email: "brelblocked@example.com",
+      });
+      const blocker = await insertAccountWithActor(tx, {
+        username: "brelblocker",
+        name: "BREL Blocker",
+        email: "brelblocker@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "brelstranger",
+        name: "BREL Stranger",
+        email: "brelstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      // Viewer blocks `blocked` (viewerBlocks=true on blocked).
+      await block(fedCtx, viewer.account, blocked.actor);
+      // `blocker` blocks viewer (blocksViewer=true on blocker).
+      await block(fedCtx, blocker.account, viewer.actor);
+
+      const result = await execute({
+        schema,
+        document: blockRelationshipBatchQuery,
+        variableValues: {
+          a: blocked.actor.id,
+          b: blocker.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", blocked.actor.id),
+          viewerBlocks: true,
+          blocksViewer: false,
+        },
+        b: {
+          id: encodeGlobalID("Actor", blocker.actor.id),
+          viewerBlocks: false,
+          blocksViewer: true,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
     });
   },
 });
