@@ -736,6 +736,10 @@ type NotAuthenticatedError {
   notAuthenticated: String!
 }
 
+type NotAuthorizedError {
+  notAuthorized: String!
+}
+
 type Note implements Node & Post & Reactable {
   actor: Actor!
   content: HTML!
