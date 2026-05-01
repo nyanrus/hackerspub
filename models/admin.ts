@@ -1,4 +1,14 @@
-import { and, count, desc, eq, gt, inArray, isNotNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  sql,
+} from "drizzle-orm";
 import type Keyv from "keyv";
 import type { Database, Transaction } from "./db.ts";
 import { accountTable, actorTable, postTable } from "./schema.ts";
@@ -80,7 +90,7 @@ async function selectActiveAccounts(
       ),
     )
     .groupBy(actorTable.accountId)
-    .orderBy(desc(count()));
+    .orderBy(desc(count()), asc(actorTable.accountId));
   return rows
     .filter((row): row is typeof row & { accountId: Uuid } =>
       row.accountId != null && validateUuid(row.accountId)
