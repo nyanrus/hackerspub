@@ -136,10 +136,18 @@ function h(
   };
 }
 
-function truncateText(text: string, maxLength: number): string {
+export function truncateText(text: string, maxLength: number): string {
   const compact = text.replace(/\s+/g, " ").trim();
-  if (compact.length <= maxLength) return compact;
-  return `${compact.slice(0, maxLength - 1).trimEnd()}…`;
+  const graphemes = typeof Intl.Segmenter === "function"
+    ? Array.from(
+      new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
+        compact,
+      ),
+      ({ segment }) => segment,
+    )
+    : Array.from(compact);
+  if (graphemes.length <= maxLength) return compact;
+  return `${graphemes.slice(0, maxLength - 1).join("").trimEnd()}…`;
 }
 
 function brandFooter(logo: string): OgElement {
