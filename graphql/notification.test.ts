@@ -348,3 +348,63 @@ Deno.test({
     });
   },
 });
+
+Deno.test({
+  name:
+    "Notification.actors deduplicates repeated actor ids within a notification",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const recipient = await insertAccountWithActor(tx, {
+        username: "notifydedupeme",
+        name: "Notify Dedupe Me",
+        email: "notifydedupeme@example.com",
+      });
+      const actor = await insertAccountWithActor(tx, {
+        username: "notifydedupeactor",
+        name: "Notify Dedupe Actor",
+        email: "notifydedupeactor@example.com",
+      });
+
+      // Bypass the createNotification merge logic and write a row with
+      // a duplicated actorId directly, so we can verify the resolver
+      // dedupes on read.  In production this is prevented at write
+      // time, but the resolver still defends the parity.
+      await tx.insert(notificationTable).values({
+        id: generateUuidV7(),
+        accountId: recipient.account.id,
+        type: "follow",
+        actorIds: [actor.actor.id, actor.actor.id],
+        created: new Date("2026-04-15T00:00:00.000Z"),
+      });
+
+      const result = await execute({
+        schema,
+        document: notificationActorsQuery,
+        contextValue: makeUserContext(tx, recipient.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        viewer: {
+          notifications: {
+            edges: {
+              node: { actors: { edges: { node: { id: string } }[] } };
+            }[];
+          };
+        } | null;
+      };
+
+      const edges = data.viewer?.notifications.edges;
+      assert(edges != null && edges.length === 1);
+      // Duplicate id in actorIds yields a single edge in the
+      // connection, matching the prior findMany IN (…) semantics.
+      assertEquals(
+        edges[0].node.actors.edges.map((edge) => edge.node.id),
+        [encodeGlobalID("Actor", actor.actor.id)],
+      );
+    });
+  },
+});

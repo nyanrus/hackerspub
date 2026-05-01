@@ -55,8 +55,14 @@ export const Notification = builder.drizzleInterface("notificationTable", {
             toCursor: (actor) => actor.id,
           },
           async (_args: ResolveCursorConnectionArgs) => {
+            // Dedupe actorIds before loading so the resolver matches the
+            // prior `findMany({ id: { in: actorIds } })` behavior, which
+            // implicitly returned each row at most once.  The notification
+            // write path in models/notification.ts already prevents
+            // duplicates, but the dedupe here defends the parity.
+            const uniqueActorIds = [...new Set(notification.actorIds)];
             const loaded = await Promise.all(
-              notification.actorIds.map((id) => getActorById(ctx, id)),
+              uniqueActorIds.map((id) => getActorById(ctx, id)),
             );
             const actors = loaded.filter(
               (actor): actor is ActorRow => actor != null,
