@@ -72,8 +72,12 @@ export function getAdminAccountStats(
         map.get(id) ?? { postCount: 0, lastPostPublished: null }
       );
     },
-    // Disable cross-request memoisation: a regen mutation in the same
-    // request can change post counts for another account.
+    // Per-request memoisation is on (the loader instance lives on
+    // UserContext, so its cache only spans one request).  None of the
+    // mutations exposed by this stack mutate postTable, so two reads
+    // of the same account.id within one request never observe a
+    // changed value; if a post-mutating mutation is added later this
+    // loader will need its cache cleared after the mutation runs.
     { cache: true },
   );
   return ctx.adminAccountStatsLoader.load(accountId);
