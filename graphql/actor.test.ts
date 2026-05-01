@@ -882,3 +882,75 @@ Deno.test({
     });
   },
 });
+
+// GraphQL spec: top-level mutation fields execute serially.  With
+// `cache: false` on the loader, the second read sees the post-unblock
+// state.  If someone removes `cache: false` (default DataLoader cache
+// is `true`), the second `viewerBlocks` would return the cached `true`
+// from the first read and this test would fail.
+const blockUnblockMutation = parse(`
+  mutation BlockThenUnblock($actorId: ID!) {
+    block: blockActor(input: { actorId: $actorId }) {
+      __typename
+      ... on BlockActorPayload {
+        blockee { id viewerBlocks }
+      }
+    }
+    unblock: unblockActor(input: { actorId: $actorId }) {
+      __typename
+      ... on UnblockActorPayload {
+        blockee { id viewerBlocks }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "Actor.viewerBlocks loader does not cache stale state across serial mutations",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const blocker = await insertAccountWithActor(tx, {
+        username: "vbcacheblocker",
+        name: "VB Cache Blocker",
+        email: "vbcacheblocker@example.com",
+      });
+      const blockee = await insertAccountWithActor(tx, {
+        username: "vbcacheblockee",
+        name: "VB Cache Blockee",
+        email: "vbcacheblockee@example.com",
+      });
+
+      const actorId = encodeGlobalID("Actor", blockee.actor.id);
+      const result = await execute({
+        schema,
+        document: blockUnblockMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        block: {
+          __typename: string;
+          blockee?: { id: string; viewerBlocks: boolean };
+        };
+        unblock: {
+          __typename: string;
+          blockee?: { id: string; viewerBlocks: boolean };
+        };
+      };
+
+      assertEquals(data.block.__typename, "BlockActorPayload");
+      assertEquals(data.unblock.__typename, "UnblockActorPayload");
+      assertEquals(data.block.blockee?.viewerBlocks, true);
+      // Crucial: this asserts the loader re-queried after the unblock
+      // mutation flipped state.  A `cache: true` regression would
+      // surface here as `viewerBlocks: true` (the stale cached value).
+      assertEquals(data.unblock.blockee?.viewerBlocks, false);
+    });
+  },
+});
