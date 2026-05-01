@@ -305,13 +305,29 @@ export async function updateArticleSource(
         content: source.content,
       });
     } else {
+      const newContent = source.content ?? originalContent.content;
+      const newLanguage = source.language ?? originalContent.language;
+      const contentChanged = newContent !== originalContent.content;
+      const languageChanged = newLanguage !== originalContent.language;
       try {
         await tx.update(articleContentTable)
           .set({
-            language: source.language ?? originalContent.language,
+            language: newLanguage,
             title: source.title ?? originalContent.title,
-            content: source.content ?? originalContent.content,
+            content: newContent,
             updated: sql`CURRENT_TIMESTAMP`,
+            // When the body or language actually changes, clear the
+            // previous summary state so a fresh attempt can run with
+            // the new content/language, including unsticking any
+            // earlier `summaryUnnecessary` mark and discarding any
+            // summary that would now be in the wrong language.
+            ...(contentChanged || languageChanged
+              ? {
+                summary: null,
+                summaryStarted: null,
+                summaryUnnecessary: false,
+              }
+              : {}),
           })
           .where(
             and(
@@ -451,13 +467,19 @@ export async function startArticleContentSummary(
   model: LanguageModel,
   content: ArticleContent,
 ): Promise<void> {
+  // Use a JS-side Date so the value round-trips through the driver
+  // with millisecond precision.  This is later used as a CAS stamp.
+  const claim = new Date();
   const updated = await db.update(articleContentTable)
-    .set({ summaryStarted: sql`CURRENT_TIMESTAMP` })
+    .set({ summaryStarted: claim })
     .where(
       and(
         eq(articleContentTable.sourceId, content.sourceId),
         eq(articleContentTable.language, content.language),
         eq(articleContentTable.summaryUnnecessary, false),
+        // Don't summarize translation placeholders whose content has
+        // not yet been replaced by the translated text.
+        eq(articleContentTable.beingTranslated, false),
         or(
           isNull(articleContentTable.summaryStarted),
           lt(
@@ -472,27 +494,33 @@ export async function startArticleContentSummary(
     logger.debug("Summary already started or not needed.");
     return;
   }
-  logger.debug("Starting summary for content: {sourceId} {language}", content);
+  // Use the row state captured at claim time (with the latest body and
+  // metadata) instead of the caller's potentially stale `content`
+  // argument.  This guards against a concurrent edit that committed
+  // between the caller's fetch and our claim.
+  const claimed = updated[0];
+  logger.debug("Starting summary for content: {sourceId} {language}", claimed);
   summarize({
     model,
-    sourceLanguage: content.beingTranslated
-      ? content.originalLanguage ?? content.language
-      : content.language,
-    targetLanguage: content.language,
-    text: content.content,
+    sourceLanguage: claimed.beingTranslated
+      ? claimed.originalLanguage ?? claimed.language
+      : claimed.language,
+    targetLanguage: claimed.language,
+    text: claimed.content,
   }).then(async (summary) => {
-    await applyArticleContentSummary(db, content, summary);
+    await applyArticleContentSummary(db, claimed, summary, claim);
   }).catch(async (error) => {
     logger.error("Summary failed ({sourceId} {language}): {error}", {
-      ...content,
+      ...claimed,
       error,
     });
     await db.update(articleContentTable)
       .set({ summaryStarted: null })
       .where(
         and(
-          eq(articleContentTable.sourceId, content.sourceId),
-          eq(articleContentTable.language, content.language),
+          eq(articleContentTable.sourceId, claimed.sourceId),
+          eq(articleContentTable.language, claimed.language),
+          eq(articleContentTable.summaryStarted, claim),
         ),
       );
   });
@@ -501,35 +529,112 @@ export async function startArticleContentSummary(
 /**
  * Persists the result of summarizing an article content row.
  *
- * If the generated `summary` is not strictly shorter than the original
- * content, the summary is discarded and the row is marked as
+ * If the generated `summary` is not strictly shorter than the row's
+ * current content (re-fetched to avoid acting on stale data after a
+ * concurrent edit), the summary is discarded and the row is marked as
  * `summaryUnnecessary` so that subsequent calls to
  * {@link startArticleContentSummary} skip it.  Otherwise, the summary is
  * saved on both the `article_content` row and the corresponding `post`
  * row (when the content is in the article's original language).
+ *
+ * When `claim` is given, the function only writes if `summaryStarted`
+ * still matches the claim — that is, no newer summarization has
+ * re-acquired the lock in the meantime.  This prevents an older
+ * summarization that exceeded the 30-minute timeout from clobbering a
+ * newer attempt's state.
+ *
+ * If the row no longer exists, this is a no-op.
  */
 export async function applyArticleContentSummary(
   db: Database,
   content: ArticleContent,
   summary: string,
+  claim?: Date,
 ): Promise<void> {
-  if (summary.trim().length >= content.content.trim().length) {
-    logger.debug(
-      "Summary is not shorter than the original content; discarding " +
-        "({sourceId} {language}).",
-      content,
+  // Wrap the article_content and the mirrored post update in a single
+  // transaction so they are observed atomically, and so a concurrent
+  // edit cannot land between the two writes and let the older
+  // summarization clobber `post.summary` after the CAS-guarded
+  // `article_content` update.
+  await db.transaction(async (tx) => {
+    // Re-fetch the row so that we don't act on stale state after a
+    // concurrent edit happened between the LLM call and now.
+    const current = await tx.query.articleContentTable.findFirst({
+      where: {
+        sourceId: content.sourceId,
+        language: content.language,
+      },
+    });
+    if (current == null) return;
+    if (current.content !== content.content) {
+      // The body changed while the summarizer was running, so the
+      // summary we just produced is for an outdated text.  Drop the
+      // result and do not touch `summaryStarted`, which
+      // `updateArticleSource()` already cleared (and a newer
+      // summarization may have re-claimed in the meantime).
+      logger.debug(
+        "Article content changed during summarization; dropping stale " +
+          "summary ({sourceId} {language}).",
+        content,
+      );
+      return;
+    }
+    // Build a CAS-style condition that only matches if the
+    // summarization claim is still ours.
+    const claimWhere = claim == null ? undefined : eq(
+      articleContentTable.summaryStarted,
+      claim,
     );
-    await db.update(articleContentTable)
-      .set({ summary: null, summaryUnnecessary: true, summaryStarted: null })
+    if (summary.trim().length >= current.content.trim().length) {
+      logger.debug(
+        "Summary is not shorter than the original content; discarding " +
+          "({sourceId} {language}).",
+        content,
+      );
+      const updated = await tx.update(articleContentTable)
+        .set({ summary: null, summaryUnnecessary: true, summaryStarted: null })
+        .where(
+          and(
+            eq(articleContentTable.sourceId, content.sourceId),
+            eq(articleContentTable.language, content.language),
+            claimWhere,
+          ),
+        )
+        .returning({ sourceId: articleContentTable.sourceId });
+      if (updated.length < 1) {
+        // Lost the race to a newer claim; leave it alone.
+        return;
+      }
+      if (content.originalLanguage == null) {
+        await tx.update(postTable)
+          .set({ summary: null })
+          .where(
+            and(
+              eq(postTable.articleSourceId, content.sourceId),
+              eq(postTable.language, content.language),
+            ),
+          );
+      }
+      return;
+    }
+    const updated = await tx.update(articleContentTable)
+      .set({ summary })
       .where(
         and(
           eq(articleContentTable.sourceId, content.sourceId),
           eq(articleContentTable.language, content.language),
+          claimWhere,
         ),
-      );
+      )
+      .returning({ sourceId: articleContentTable.sourceId });
+    if (updated.length < 1) {
+      // Lost the race to a newer claim; leave the saved state to that
+      // newer summarization.
+      return;
+    }
     if (content.originalLanguage == null) {
-      await db.update(postTable)
-        .set({ summary: null })
+      await tx.update(postTable)
+        .set({ summary })
         .where(
           and(
             eq(postTable.articleSourceId, content.sourceId),
@@ -537,26 +642,7 @@ export async function applyArticleContentSummary(
           ),
         );
     }
-    return;
-  }
-  await db.update(articleContentTable)
-    .set({ summary })
-    .where(
-      and(
-        eq(articleContentTable.sourceId, content.sourceId),
-        eq(articleContentTable.language, content.language),
-      ),
-    );
-  if (content.originalLanguage == null) {
-    await db.update(postTable)
-      .set({ summary })
-      .where(
-        and(
-          eq(postTable.articleSourceId, content.sourceId),
-          eq(postTable.language, content.language),
-        ),
-      );
-  }
+  });
 }
 
 export interface ArticleContentTranslationOptions {
@@ -569,7 +655,7 @@ export async function startArticleContentTranslation(
   fedCtx: Context<ContextData>,
   { content, targetLanguage, requester }: ArticleContentTranslationOptions,
 ): Promise<ArticleContent> {
-  const { db, models: { translator: model } } = fedCtx.data;
+  const { db, models: { translator: model, summarizer } } = fedCtx.data;
   const inserted = await db.insert(articleContentTable).values({
     sourceId: content.sourceId,
     language: targetLanguage,
@@ -641,6 +727,13 @@ export async function startArticleContentTranslation(
         content,
         beingTranslated: false,
         updated: sql`CURRENT_TIMESTAMP`,
+        // The translation has just replaced the placeholder content,
+        // so any existing summary state from the original-language
+        // body no longer applies.  Clear it so a fresh summary can be
+        // generated for the translated text below.
+        summary: null,
+        summaryStarted: null,
+        summaryUnnecessary: false,
       })
       .where(
         and(
@@ -708,7 +801,7 @@ export async function startArticleContentTranslation(
     // TODO: send Update(Article) to the mentioned actors too
     await startArticleContentSummary(
       db,
-      model,
+      summarizer,
       updated[0],
     );
   }).catch(async (error) => {
