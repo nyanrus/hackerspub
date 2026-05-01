@@ -1,9 +1,12 @@
 import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
+import { createBookmark } from "@hackerspub/models/bookmark";
+import { sharePost } from "@hackerspub/models/post";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
 import { schema } from "./mod.ts";
 import {
+  createFedCtx,
   insertAccountWithActor,
   insertNotePost,
   makeGuestContext,
@@ -502,6 +505,164 @@ Deno.test({
         },
       });
       assertEquals(sharesAfterUnshare, []);
+    });
+  },
+});
+
+const viewerHasMultiQuery = parse(`
+  query ViewerHasMulti($a: ID!, $b: ID!, $c: ID!) {
+    a: node(id: $a) {
+      ... on Post {
+        id
+        viewerHasShared
+        viewerHasBookmarked
+      }
+    }
+    b: node(id: $b) {
+      ... on Post {
+        id
+        viewerHasShared
+        viewerHasBookmarked
+      }
+    }
+    c: node(id: $c) {
+      ... on Post {
+        id
+        viewerHasShared
+        viewerHasBookmarked
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name: "viewerHasShared and viewerHasBookmarked reflect viewer state per post",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "viewerhasauthor",
+        name: "ViewerHas Author",
+        email: "viewerhasauthor@example.com",
+      });
+      const viewer = await insertAccountWithActor(tx, {
+        username: "viewerhasviewer",
+        name: "ViewerHas Viewer",
+        email: "viewerhasviewer@example.com",
+      });
+
+      const { post: sharedPost } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Will be shared",
+      });
+      const { post: bookmarkedPost } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Will be bookmarked",
+      });
+      const { post: untouchedPost } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Untouched",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      await sharePost(fedCtx, viewer.account, {
+        ...sharedPost,
+        actor: author.actor,
+      });
+      await createBookmark(tx, viewer.account, bookmarkedPost);
+
+      const sharedId = encodeGlobalID("Note", sharedPost.id);
+      const bookmarkedId = encodeGlobalID("Note", bookmarkedPost.id);
+      const untouchedId = encodeGlobalID("Note", untouchedPost.id);
+
+      const result = await execute({
+        schema,
+        document: viewerHasMultiQuery,
+        variableValues: {
+          a: sharedId,
+          b: bookmarkedId,
+          c: untouchedId,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+
+      const data = result.data as {
+        a: {
+          id: string;
+          viewerHasShared: boolean;
+          viewerHasBookmarked: boolean;
+        };
+        b: {
+          id: string;
+          viewerHasShared: boolean;
+          viewerHasBookmarked: boolean;
+        };
+        c: {
+          id: string;
+          viewerHasShared: boolean;
+          viewerHasBookmarked: boolean;
+        };
+      };
+
+      assertEquals(data.a, {
+        id: sharedId,
+        viewerHasShared: true,
+        viewerHasBookmarked: false,
+      });
+      assertEquals(data.b, {
+        id: bookmarkedId,
+        viewerHasShared: false,
+        viewerHasBookmarked: true,
+      });
+      assertEquals(data.c, {
+        id: untouchedId,
+        viewerHasShared: false,
+        viewerHasBookmarked: false,
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "viewerHasShared and viewerHasBookmarked are false for guest viewers",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "viewerhasguestauthor",
+        name: "ViewerHas Guest Author",
+        email: "viewerhasguestauthor@example.com",
+      });
+      const { post } = await insertNotePost(tx, {
+        account: author.account,
+        content: "Guest can read but has no state",
+      });
+      const postId = encodeGlobalID("Note", post.id);
+
+      const result = await execute({
+        schema,
+        document: viewerHasMultiQuery,
+        variableValues: {
+          a: postId,
+          b: postId,
+          c: postId,
+        },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+
+      const data = result.data as {
+        a: { viewerHasShared: boolean; viewerHasBookmarked: boolean };
+      };
+      assertEquals(data.a.viewerHasShared, false);
+      assertEquals(data.a.viewerHasBookmarked, false);
     });
   },
 });
