@@ -54,7 +54,7 @@ async function makeModerator(
 }
 
 Deno.test({
-  name: "adminAccounts errors with NotAuthenticatedError for guest",
+  name: "adminAccounts returns null for guest",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -66,17 +66,17 @@ Deno.test({
         contextValue: makeGuestContext(tx),
         onError: "NO_PROPAGATE",
       });
-      assert(result.errors != null && result.errors.length >= 1);
+      assertEquals(result.errors, undefined);
       assertEquals(
-        result.errors[0].originalError?.constructor.name,
-        "NotAuthenticatedError",
+        (result.data as { adminAccounts: unknown }).adminAccounts,
+        null,
       );
     });
   },
 });
 
 Deno.test({
-  name: "adminAccounts errors with NotAuthorizedError for non-moderator",
+  name: "adminAccounts returns null for non-moderator",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -93,10 +93,10 @@ Deno.test({
         contextValue: makeUserContext(tx, normal.account),
         onError: "NO_PROPAGATE",
       });
-      assert(result.errors != null && result.errors.length >= 1);
+      assertEquals(result.errors, undefined);
       assertEquals(
-        result.errors[0].originalError?.constructor.name,
-        "NotAuthorizedError",
+        (result.data as { adminAccounts: unknown }).adminAccounts,
+        null,
       );
     });
   },
@@ -411,21 +411,16 @@ Deno.test({
 const invitationRegenStatusQuery = parse(`
   query InvitationRegenerationStatus {
     invitationRegenerationStatus {
-      __typename
-      ... on InvitationRegenerationStatus {
-        lastRegeneratedAt
-        cutoffDate
-        eligibleAccountsCount
-        topThirdCount
-      }
-      ... on NotAuthenticatedError { notAuthenticated }
-      ... on NotAuthorizedError { notAuthorized }
+      lastRegeneratedAt
+      cutoffDate
+      eligibleAccountsCount
+      topThirdCount
     }
   }
 `);
 
 Deno.test({
-  name: "invitationRegenerationStatus returns NotAuthenticatedError for guest",
+  name: "invitationRegenerationStatus returns null for guest",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -437,20 +432,18 @@ Deno.test({
         onError: "NO_PROPAGATE",
       });
       assertEquals(result.errors, undefined);
-      const data = result.data as {
-        invitationRegenerationStatus: { __typename: string };
-      };
       assertEquals(
-        data.invitationRegenerationStatus.__typename,
-        "NotAuthenticatedError",
+        (result.data as {
+          invitationRegenerationStatus: unknown;
+        }).invitationRegenerationStatus,
+        null,
       );
     });
   },
 });
 
 Deno.test({
-  name:
-    "invitationRegenerationStatus returns NotAuthorizedError for non-moderator",
+  name: "invitationRegenerationStatus returns null for non-moderator",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -467,12 +460,11 @@ Deno.test({
         onError: "NO_PROPAGATE",
       });
       assertEquals(result.errors, undefined);
-      const data = result.data as {
-        invitationRegenerationStatus: { __typename: string };
-      };
       assertEquals(
-        data.invitationRegenerationStatus.__typename,
-        "NotAuthorizedError",
+        (result.data as {
+          invitationRegenerationStatus: unknown;
+        }).invitationRegenerationStatus,
+        null,
       );
     });
   },
@@ -496,11 +488,10 @@ Deno.test({
       assertEquals(result.errors, undefined);
       const status = (result.data as {
         invitationRegenerationStatus: {
-          __typename: string;
           lastRegeneratedAt: unknown;
-        };
+        } | null;
       }).invitationRegenerationStatus;
-      assertEquals(status.__typename, "InvitationRegenerationStatus");
+      assert(status != null);
       assertEquals(status.lastRegeneratedAt, null);
     });
   },
@@ -527,8 +518,9 @@ Deno.test({
         invitationRegenerationStatus: {
           lastRegeneratedAt: Date | string | null;
           cutoffDate: Date | string;
-        };
+        } | null;
       }).invitationRegenerationStatus;
+      assert(status != null);
       assert(status.lastRegeneratedAt != null);
       const lastIso = status.lastRegeneratedAt instanceof Date
         ? status.lastRegeneratedAt.toISOString()
@@ -590,8 +582,9 @@ Deno.test({
         invitationRegenerationStatus: {
           eligibleAccountsCount: number;
           topThirdCount: number;
-        };
+        } | null;
       }).invitationRegenerationStatus;
+      assert(status != null);
       assertEquals(status.eligibleAccountsCount, 2);
       assertEquals(status.topThirdCount, 1);
     });

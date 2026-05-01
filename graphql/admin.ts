@@ -72,21 +72,25 @@ const AdminAccountConnection = builder.simpleObject("AdminAccountConnection", {
 builder.queryField("adminAccounts", (t) =>
   t.field({
     type: AdminAccountConnection,
+    nullable: true,
     description:
       "Moderator-only connection of every account, ordered by latest " +
-      "post `published` falling back to `account.updated`.  Throws " +
-      "NotAuthenticatedError or NotAuthorizedError if the viewer is " +
-      "not a moderator; routes should guard with `viewer.moderator` " +
-      "before issuing the query.",
+      "post `published` falling back to `account.updated`.  Returns " +
+      "null when the viewer is not a moderator; routes should guard " +
+      "with `viewer.moderator` and redirect non-moderators.",
     args: {
       first: t.arg.int(),
       after: t.arg.string(),
       last: t.arg.int(),
       before: t.arg.string(),
     },
-    async resolve(_root, args, ctx): Promise<AdminAccountConnectionShape> {
-      if (ctx.session == null) throw new NotAuthenticatedError();
-      if (!ctx.account?.moderator) throw new NotAuthorizedError();
+    async resolve(
+      _root,
+      args,
+      ctx,
+    ): Promise<AdminAccountConnectionShape | null> {
+      if (ctx.session == null) return null;
+      if (!ctx.account?.moderator) return null;
 
       // Aggregate the latest published timestamp per account so the
       // outer query can sort by COALESCE(MAX(published), updated).
@@ -236,12 +240,14 @@ const InvitationRegenerationStatus = builder.simpleObject(
 builder.queryField("invitationRegenerationStatus", (t) =>
   t.field({
     type: InvitationRegenerationStatus,
-    errors: {
-      types: [NotAuthenticatedError, NotAuthorizedError],
-    },
+    nullable: true,
+    description:
+      "Moderator-only invitation-regeneration preview.  Returns null " +
+      "when the viewer is not a moderator; the route guards with " +
+      "`viewer.moderator` to redirect non-moderators.",
     async resolve(_root, _args, ctx) {
-      if (ctx.session == null) throw new NotAuthenticatedError();
-      if (!ctx.account?.moderator) throw new NotAuthorizedError();
+      if (ctx.session == null) return null;
+      if (!ctx.account?.moderator) return null;
       return await getInvitationRegenerationStatus(ctx.db, ctx.kv);
     },
   }));

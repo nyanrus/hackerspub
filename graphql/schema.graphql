@@ -601,8 +601,6 @@ type InvitationRegenerationStatus {
   topThirdCount: Int!
 }
 
-union InvitationRegenerationStatusResult = InvitationRegenerationStatus | NotAuthenticatedError | NotAuthorizedError
-
 """A node in the invitation tree."""
 type InvitationTreeNode {
   avatarUrl: URL!
@@ -1101,9 +1099,9 @@ type Query {
   actorByUuid(uuid: UUID!): Actor
 
   """
-  Moderator-only connection of every account, ordered by latest post `published` falling back to `account.updated`.  Throws NotAuthenticatedError or NotAuthorizedError if the viewer is not a moderator; routes should guard with `viewer.moderator` before issuing the query.
+  Moderator-only connection of every account, ordered by latest post `published` falling back to `account.updated`.  Returns null when the viewer is not a moderator; routes should guard with `viewer.moderator` and redirect non-moderators.
   """
-  adminAccounts(after: String, before: String, first: Int, last: Int): AdminAccountConnection!
+  adminAccounts(after: String, before: String, first: Int, last: Int): AdminAccountConnection
   articleByYearAndSlug(handle: String!, idOrYear: String!, slug: String!): Article
   articleDraft(id: ID, uuid: UUID): ArticleDraft
   availableLocales: [Locale!]!
@@ -1114,7 +1112,11 @@ type Query {
   ): Document!
   instanceByHost(host: String!): Instance
   invitationLink(id: UUID!, username: String!): InvitationLink
-  invitationRegenerationStatus: InvitationRegenerationStatusResult!
+
+  """
+  Moderator-only invitation-regeneration preview.  Returns null when the viewer is not a moderator; the route guards with `viewer.moderator` to redirect non-moderators.
+  """
+  invitationRegenerationStatus: InvitationRegenerationStatus
 
   """Returns all accounts as a flat array for building the invitation tree."""
   invitationTree: [InvitationTreeNode!]!
