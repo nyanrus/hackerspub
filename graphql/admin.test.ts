@@ -15,8 +15,13 @@ import {
 } from "../test/postgres.ts";
 
 const adminAccountsQuery = parse(`
-  query AdminAccounts($first: Int, $after: String) {
-    adminAccounts(first: $first, after: $after) {
+  query AdminAccounts(
+    $first: Int
+    $after: String
+    $last: Int
+    $before: String
+  ) {
+    adminAccounts(first: $first, after: $after, last: $last, before: $before) {
       totalCount
       edges {
         cursor
@@ -282,6 +287,65 @@ Deno.test({
           `cursor leak: ${u} appears in both pages`,
         );
       }
+    });
+  },
+});
+
+Deno.test({
+  name: "adminAccounts last+before traverses backwards consistently",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "backwardmod");
+      // Distinct updated timestamps so ordering is stable and there is
+      // no cursor ambiguity from equal timestamps.
+      for (let i = 0; i < 5; i++) {
+        const acc = await insertAccountWithActor(tx, {
+          username: `backwarduser${i}`,
+          name: `Backward User ${i}`,
+          email: `backwarduser${i}@example.com`,
+        });
+        await tx.update(accountTable).set({
+          updated: new Date(`2026-04-${10 + i}T00:00:00.000Z`),
+        }).where(eq(accountTable.id, acc.account.id));
+      }
+
+      // Take the full natural order (first: 100) as the source of truth.
+      const all = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: { first: 100 },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(all.errors, undefined);
+      const allEdges = (all.data as {
+        adminAccounts: {
+          edges: { cursor: string; node: { username: string } }[];
+        };
+      }).adminAccounts.edges;
+      assert(allEdges.length >= 4);
+
+      // Traverse backwards starting from the cursor of the THIRD edge:
+      // last:2 + before:edges[2].cursor should return edges[0] and
+      // edges[1] in natural order.
+      const beforeCursor = allEdges[2].cursor;
+      const back = await execute({
+        schema,
+        document: adminAccountsQuery,
+        variableValues: { last: 2, before: beforeCursor },
+        contextValue: makeUserContext(tx, mod.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(back.errors, undefined);
+      const backUsernames = (back.data as {
+        adminAccounts: { edges: { node: { username: string } }[] };
+      }).adminAccounts.edges.map((e) => e.node.username);
+      assertEquals(backUsernames, [
+        allEdges[0].node.username,
+        allEdges[1].node.username,
+      ]);
     });
   },
 });

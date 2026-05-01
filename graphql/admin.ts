@@ -3,6 +3,7 @@ import {
   regenerateInvitations,
 } from "@hackerspub/models/admin";
 import { accountTable, actorTable, postTable } from "@hackerspub/models/schema";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import {
   resolveCursorConnection,
   type ResolveCursorConnectionArgs,
@@ -24,14 +25,15 @@ function encodeAdminCursor(row: AdminAccountRow): string {
 
 function decodeAdminCursor(
   cursor: string,
-): { lastActivity: Date; accountId: string } | null {
+): { lastActivity: Date; accountId: Uuid } | null {
   const sep = cursor.indexOf("|");
   if (sep < 0) return null;
   const ts = cursor.slice(0, sep);
-  const accountId = cursor.slice(sep + 1);
+  const rawId = cursor.slice(sep + 1);
   const lastActivity = new Date(ts);
   if (Number.isNaN(lastActivity.getTime())) return null;
-  return { lastActivity, accountId };
+  if (!validateUuid(rawId)) return null;
+  return { lastActivity, accountId: rawId };
 }
 
 const AdminAccountEdge = builder.simpleObject("AdminAccountEdge", {
@@ -113,12 +115,15 @@ builder.queryField("adminAccounts", (t) =>
 
       const totalCount = await ctx.db.$count(accountTable);
 
-      // For natural ordering `lastActivity DESC, accountId DESC`, an
-      // `after` cursor selects rows with smaller (lastActivity, id) and
-      // a `before` cursor selects rows with larger (lastActivity, id).
-      // The `inverted` flag swaps these for backwards traversal.
-      // The cursor timestamp is bound as text and cast inside the SQL so
-      // postgres-js can serialise it (it does not know the parameter
+      // For the natural ordering `lastActivity DESC, accountId DESC`,
+      // the cursor filters depend only on the cursor side, never on
+      // `inverted`: rows BEFORE the cursor in natural order have a
+      // strictly larger (lastActivity, id) tuple, and rows AFTER have a
+      // strictly smaller one.  The `inverted` flag only flips the
+      // ORDER BY direction so the framework can take the LAST N nodes
+      // closest to the cursor and reverse them back into natural order.
+      // The cursor timestamp and id are bound as text and cast inside
+      // the SQL so postgres-js can serialise them (it has no parameter
       // type for the COALESCE expression).
       function tupleLessThan(ts: Date, id: string): SQL {
         const tsLit = sql`${ts.toISOString()}::timestamptz`;
@@ -147,17 +152,14 @@ builder.queryField("adminAccounts", (t) =>
 
           const beforeFilter = beforeCursor == null
             ? undefined
-            : inverted
-            ? tupleLessThan(beforeCursor.lastActivity, beforeCursor.accountId)
             : tupleGreaterThan(
               beforeCursor.lastActivity,
               beforeCursor.accountId,
             );
-          const afterFilter = afterCursor == null
-            ? undefined
-            : inverted
-            ? tupleGreaterThan(afterCursor.lastActivity, afterCursor.accountId)
-            : tupleLessThan(afterCursor.lastActivity, afterCursor.accountId);
+          const afterFilter = afterCursor == null ? undefined : tupleLessThan(
+            afterCursor.lastActivity,
+            afterCursor.accountId,
+          );
 
           const rows = await ctx.db
             .select({
