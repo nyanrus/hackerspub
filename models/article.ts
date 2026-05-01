@@ -457,6 +457,7 @@ export async function startArticleContentSummary(
       and(
         eq(articleContentTable.sourceId, content.sourceId),
         eq(articleContentTable.language, content.language),
+        eq(articleContentTable.summaryUnnecessary, false),
         or(
           isNull(articleContentTable.summaryStarted),
           lt(
@@ -480,24 +481,7 @@ export async function startArticleContentSummary(
     targetLanguage: content.language,
     text: content.content,
   }).then(async (summary) => {
-    await db.update(articleContentTable)
-      .set({ summary })
-      .where(
-        and(
-          eq(articleContentTable.sourceId, content.sourceId),
-          eq(articleContentTable.language, content.language),
-        ),
-      );
-    if (content.originalLanguage == null) {
-      await db.update(postTable)
-        .set({ summary })
-        .where(
-          and(
-            eq(postTable.articleSourceId, content.sourceId),
-            eq(postTable.language, content.language),
-          ),
-        );
-    }
+    await applyArticleContentSummary(db, content, summary);
   }).catch(async (error) => {
     logger.error("Summary failed ({sourceId} {language}): {error}", {
       ...content,
@@ -512,6 +496,67 @@ export async function startArticleContentSummary(
         ),
       );
   });
+}
+
+/**
+ * Persists the result of summarizing an article content row.
+ *
+ * If the generated `summary` is not strictly shorter than the original
+ * content, the summary is discarded and the row is marked as
+ * `summaryUnnecessary` so that subsequent calls to
+ * {@link startArticleContentSummary} skip it.  Otherwise, the summary is
+ * saved on both the `article_content` row and the corresponding `post`
+ * row (when the content is in the article's original language).
+ */
+export async function applyArticleContentSummary(
+  db: Database,
+  content: ArticleContent,
+  summary: string,
+): Promise<void> {
+  if (summary.trim().length >= content.content.trim().length) {
+    logger.debug(
+      "Summary is not shorter than the original content; discarding " +
+        "({sourceId} {language}).",
+      content,
+    );
+    await db.update(articleContentTable)
+      .set({ summary: null, summaryUnnecessary: true, summaryStarted: null })
+      .where(
+        and(
+          eq(articleContentTable.sourceId, content.sourceId),
+          eq(articleContentTable.language, content.language),
+        ),
+      );
+    if (content.originalLanguage == null) {
+      await db.update(postTable)
+        .set({ summary: null })
+        .where(
+          and(
+            eq(postTable.articleSourceId, content.sourceId),
+            eq(postTable.language, content.language),
+          ),
+        );
+    }
+    return;
+  }
+  await db.update(articleContentTable)
+    .set({ summary })
+    .where(
+      and(
+        eq(articleContentTable.sourceId, content.sourceId),
+        eq(articleContentTable.language, content.language),
+      ),
+    );
+  if (content.originalLanguage == null) {
+    await db.update(postTable)
+      .set({ summary })
+      .where(
+        and(
+          eq(postTable.articleSourceId, content.sourceId),
+          eq(postTable.language, content.language),
+        ),
+      );
+  }
 }
 
 export interface ArticleContentTranslationOptions {
