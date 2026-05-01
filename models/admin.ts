@@ -11,9 +11,18 @@ import {
 } from "drizzle-orm";
 import type Keyv from "keyv";
 import type { Database, Transaction } from "./db.ts";
-import { accountTable, actorTable, postTable } from "./schema.ts";
+import {
+  accountTable,
+  actorTable,
+  adminStateTable,
+  postTable,
+} from "./schema.ts";
 import { type Uuid, validateUuid } from "./uuid.ts";
 
+// Key under which the last-regen timestamp is stored, both in the
+// `admin_state` DB table (current) and historically in KV (still
+// honoured as a read-side fallback for deployments that haven't run
+// the regen mutation since the migration).
 export const INVITATIONS_LAST_REGEN_KEY = "invitations_last_regen";
 
 // Postgres advisory-lock key for serialising invitation regeneration
@@ -46,8 +55,21 @@ export interface RegenerateOptions {
 }
 
 export async function getInvitationsLastRegen(
-  kv: Keyv,
+  db: Database,
+  kv?: Keyv,
 ): Promise<Date | null> {
+  const row = await db.query.adminStateTable.findFirst({
+    where: { key: INVITATIONS_LAST_REGEN_KEY },
+  });
+  if (row != null) {
+    const parsed = new Date(row.value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  // Fallback: a deployment that previously stored the cutoff in KV
+  // still gets the right value here on its first regen call after the
+  // upgrade.  The next regen writes to DB, after which this branch is
+  // never taken again.
+  if (kv == null) return null;
   const raw = await kv.get(INVITATIONS_LAST_REGEN_KEY);
   if (raw == null) return null;
   if (raw instanceof Date) return raw;
@@ -103,10 +125,10 @@ async function selectActiveAccounts(
 
 export async function getInvitationRegenerationStatus(
   db: Database,
-  kv: Keyv,
+  kv?: Keyv,
   options: RegenerateOptions = {},
 ): Promise<InvitationRegenerationStatus> {
-  const lastRegeneratedAt = await getInvitationsLastRegen(kv);
+  const lastRegeneratedAt = await getInvitationsLastRegen(db, kv);
   const { cutoffDate } = resolveCutoff(lastRegeneratedAt, options);
   const active = await selectActiveAccounts(db, cutoffDate);
   return {
@@ -119,25 +141,23 @@ export async function getInvitationRegenerationStatus(
 
 export async function regenerateInvitations(
   db: Database,
-  kv: Keyv,
+  kv?: Keyv,
   options: RegenerateOptions = {},
 ): Promise<RegenerateInvitationsResult> {
-  // Serialise regeneration across concurrent calls.  The DB work runs
-  // inside a transaction with an xact-level advisory lock; the KV
-  // cutoff write happens AFTER the transaction commits, so a commit
-  // failure (deadlock, connection drop) leaves KV at the old value
-  // and the next run picks up the same activity window.  Doing the
-  // KV write inside the transaction callback would make the kv.set
-  // durable even when Drizzle's commit later failed, leaving KV
-  // advanced while leftInvitations rolled back and silently
-  // under-granting invitations forever after.
+  // Serialise regeneration across concurrent calls and keep all
+  // mutations atomic with the cutoff write.  The advisory lock holds
+  // for the whole transaction; the cutoff is upserted into
+  // admin_state inside the same transaction as the leftInvitations
+  // updates, so commit either persists everything (rows + cutoff) or
+  // nothing at all.  No race window exists between commit and a
+  // separate cutoff write because there is no separate write.
   const runDbWork = async (
     tx: Transaction,
   ): Promise<RegenerateInvitationsResult> => {
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(${INVITATIONS_REGEN_LOCK_KEY})`,
     );
-    const lastRegen = await getInvitationsLastRegen(kv);
+    const lastRegen = await getInvitationsLastRegen(tx, kv);
     const { now, cutoffDate } = resolveCutoff(lastRegen, options);
     const active = await selectActiveAccounts(tx, cutoffDate);
     const topThirdCount = Math.ceil(active.length / 3);
@@ -155,20 +175,20 @@ export async function regenerateInvitations(
         .returning({ id: accountTable.id });
       accountsAffected = updated.length;
     }
+    await tx
+      .insert(adminStateTable)
+      .values({
+        key: INVITATIONS_LAST_REGEN_KEY,
+        value: now.toISOString(),
+        updated: now,
+      })
+      .onConflictDoUpdate({
+        target: adminStateTable.key,
+        set: { value: now.toISOString(), updated: now },
+      });
     return { regeneratedAt: now, accountsAffected, cutoffDate };
   };
-  const result = isTransaction(db)
+  return isTransaction(db)
     ? await runDbWork(db)
     : await db.transaction(runDbWork);
-  // KV write is sequenced after commit so a commit failure cannot
-  // advance the cutoff without the matching DB rows being durable.
-  // The trade-off is the opposite failure mode: if the process
-  // crashes between commit and this kv.set, the next regen run uses
-  // the stale cutoff and re-grants the same window.  Re-granting is
-  // recoverable; permanently skipping a window is not.
-  await kv.set(
-    INVITATIONS_LAST_REGEN_KEY,
-    result.regeneratedAt.toISOString(),
-  );
-  return result;
 }

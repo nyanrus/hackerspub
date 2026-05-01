@@ -1279,3 +1279,14 @@ export const articleMediumTable = pgTable(
 
 export type ArticleMedium = typeof articleMediumTable.$inferSelect;
 export type NewArticleMedium = typeof articleMediumTable.$inferInsert;
+
+export const adminStateTable = pgTable("admin_state", {
+  key: text().primaryKey(),
+  value: text().notNull(),
+  updated: timestamp({ withTimezone: true })
+    .notNull()
+    .default(currentTimestamp),
+});
+
+export type AdminState = typeof adminStateTable.$inferSelect;
+export type NewAdminState = typeof adminStateTable.$inferInsert;

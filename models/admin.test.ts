@@ -13,29 +13,54 @@ import {
   INVITATIONS_LAST_REGEN_KEY,
   regenerateInvitations,
 } from "./admin.ts";
-import { accountTable } from "./schema.ts";
+import { accountTable, adminStateTable } from "./schema.ts";
 
 Deno.test({
-  name: "getInvitationsLastRegen returns null when KV key absent",
+  name: "getInvitationsLastRegen returns null when DB and KV are empty",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
-    const { kv } = createTestKv();
-    assertEquals(await getInvitationsLastRegen(kv), null);
+    await withRollback(async (tx) => {
+      const { kv } = createTestKv();
+      assertEquals(await getInvitationsLastRegen(tx, kv), null);
+    });
   },
 });
 
 Deno.test({
-  name: "getInvitationsLastRegen parses the stored ISO string into a Date",
+  name: "getInvitationsLastRegen falls back to KV when DB row is absent",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
-    const { kv, store } = createTestKv();
-    const ts = new Date("2026-04-15T10:30:00.000Z");
-    store.set(INVITATIONS_LAST_REGEN_KEY, ts.toISOString());
-    const out = await getInvitationsLastRegen(kv);
-    assert(out != null);
-    assertEquals(out.toISOString(), ts.toISOString());
+    await withRollback(async (tx) => {
+      const { kv, store } = createTestKv();
+      const ts = new Date("2026-04-15T10:30:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, ts.toISOString());
+      const out = await getInvitationsLastRegen(tx, kv);
+      assert(out != null);
+      assertEquals(out.toISOString(), ts.toISOString());
+    });
+  },
+});
+
+Deno.test({
+  name: "getInvitationsLastRegen prefers the DB row over the KV fallback",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const { kv, store } = createTestKv();
+      const dbTs = new Date("2026-04-15T10:30:00.000Z");
+      const kvTs = new Date("2026-04-10T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, kvTs.toISOString());
+      await tx.insert(adminStateTable).values({
+        key: INVITATIONS_LAST_REGEN_KEY,
+        value: dbTs.toISOString(),
+      });
+      const out = await getInvitationsLastRegen(tx, kv);
+      assert(out != null);
+      assertEquals(out.toISOString(), dbTs.toISOString());
+    });
   },
 });
 
@@ -201,18 +226,20 @@ Deno.test({
 });
 
 Deno.test({
-  name: "regenerateInvitations stores now.toISOString() back to KV",
+  name:
+    "regenerateInvitations writes the cutoff into admin_state inside the same transaction",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
     await withRollback(async (tx) => {
-      const { kv, store } = createTestKv();
+      const { kv } = createTestKv();
       const now = new Date("2026-04-15T00:00:00.000Z");
       await regenerateInvitations(tx, kv, { now });
-      assertEquals(
-        store.get(INVITATIONS_LAST_REGEN_KEY),
-        now.toISOString(),
-      );
+      const row = await tx.query.adminStateTable.findFirst({
+        where: { key: INVITATIONS_LAST_REGEN_KEY },
+      });
+      assert(row != null);
+      assertEquals(row.value, now.toISOString());
     });
   },
 });
@@ -260,7 +287,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withRollback(async (tx) => {
-      const { kv, store } = createTestKv();
+      const { kv } = createTestKv();
       const now = new Date("2026-04-15T00:00:00.000Z");
 
       // Account exists but has no posts since cutoff.
@@ -273,10 +300,10 @@ Deno.test({
       const result = await regenerateInvitations(tx, kv, { now });
       assertEquals(result.accountsAffected, 0);
       // Timestamp is still updated.
-      assertEquals(
-        store.get(INVITATIONS_LAST_REGEN_KEY),
-        now.toISOString(),
-      );
+      const stateRow = await tx.query.adminStateTable.findFirst({
+        where: { key: INVITATIONS_LAST_REGEN_KEY },
+      });
+      assertEquals(stateRow?.value, now.toISOString());
       const aRow = await tx.query.accountTable.findFirst({
         where: { id: a.account.id },
       });
