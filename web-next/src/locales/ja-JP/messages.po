@@ -498,7 +498,7 @@ msgstr "新しいアイコンを切り抜く"
 
 #: src/routes/(root)/admin/invitations.tsx:166
 msgid "Cutoff:"
-msgstr "カットオフ:"
+msgstr "カットオフ："
 
 #: src/routes/(root)/[handle]/settings/preferences.tsx:169
 msgid "Default note privacy"
@@ -922,11 +922,11 @@ msgstr "Hackers' Pubは、ソフトウェアエンジニアが知識と経験を
 
 #: src/routes/(root)/admin/index.tsx:48
 msgid "Hackers' Pub: Admin · Accounts"
-msgstr "Hackers' Pub: 管理 · アカウント"
+msgstr "Hackers' Pub：管理 · アカウント"
 
 #: src/routes/(root)/admin/invitations.tsx:127
 msgid "Hackers' Pub: Admin · Invitations"
-msgstr "Hackers' Pub: 管理 · 招待"
+msgstr "Hackers' Pub：管理 · 招待"
 
 #: src/routes/(root)/notifications.tsx:41
 msgid "Hackers' Pub: Notifications"
@@ -1084,7 +1084,7 @@ msgstr "最終アクティビティ"
 
 #: src/routes/(root)/admin/invitations.tsx:151
 msgid "Last regenerated:"
-msgstr "最終再付与:"
+msgstr "最終再付与："
 
 #. placeholder {0}: "RELATIVE_DATE"
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:435
