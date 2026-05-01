@@ -1,4 +1,7 @@
-import { getInvitationRegenerationStatus } from "@hackerspub/models/admin";
+import {
+  getInvitationRegenerationStatus,
+  regenerateInvitations,
+} from "@hackerspub/models/admin";
 import { accountTable, actorTable, postTable } from "@hackerspub/models/schema";
 import {
   resolveCursorConnection,
@@ -237,5 +240,50 @@ builder.queryField("invitationRegenerationStatus", (t) =>
       if (ctx.session == null) throw new NotAuthenticatedError();
       if (!ctx.account?.moderator) throw new NotAuthorizedError();
       return await getInvitationRegenerationStatus(ctx.db, ctx.kv);
+    },
+  }));
+
+const RegenerateInvitationsPayload = builder.simpleObject(
+  "RegenerateInvitationsPayload",
+  {
+    description: "The result of a successful invitations regeneration.",
+    fields: (t) => ({
+      regeneratedAt: t.field({
+        type: "DateTime",
+        description: "When the regeneration ran.",
+      }),
+      accountsAffected: t.int({
+        description:
+          "Number of accounts whose `leftInvitations` was incremented.",
+      }),
+      status: t.field({
+        type: InvitationRegenerationStatus,
+        description:
+          "The updated regeneration status reflecting the just-recorded run.",
+      }),
+    }),
+  },
+);
+
+builder.mutationField("regenerateInvitations", (t) =>
+  t.field({
+    type: RegenerateInvitationsPayload,
+    description:
+      "Grant +1 invitation to the top third of accounts with at least " +
+      "one post since the last regeneration cutoff, and persist the new " +
+      "last-regen timestamp.",
+    errors: {
+      types: [NotAuthenticatedError, NotAuthorizedError],
+    },
+    async resolve(_root, _args, ctx) {
+      if (ctx.session == null) throw new NotAuthenticatedError();
+      if (!ctx.account?.moderator) throw new NotAuthorizedError();
+      const result = await regenerateInvitations(ctx.db, ctx.kv);
+      const status = await getInvitationRegenerationStatus(ctx.db, ctx.kv);
+      return {
+        regeneratedAt: result.regeneratedAt,
+        accountsAffected: result.accountsAffected,
+        status,
+      };
     },
   }));

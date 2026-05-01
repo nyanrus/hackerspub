@@ -604,3 +604,248 @@ Deno.test({
     });
   },
 });
+
+const regenerateMutation = parse(`
+  mutation Regenerate {
+    regenerateInvitations {
+      __typename
+      ... on RegenerateInvitationsPayload {
+        accountsAffected
+        regeneratedAt
+        status {
+          lastRegeneratedAt
+          cutoffDate
+          eligibleAccountsCount
+          topThirdCount
+        }
+      }
+      ... on NotAuthenticatedError { notAuthenticated }
+      ... on NotAuthorizedError { notAuthorized }
+    }
+  }
+`);
+
+Deno.test({
+  name: "regenerateInvitations returns NotAuthenticatedError for guest",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      assertEquals(
+        (result.data as {
+          regenerateInvitations: { __typename: string };
+        }).regenerateInvitations.__typename,
+        "NotAuthenticatedError",
+      );
+    });
+  },
+});
+
+Deno.test({
+  name: "regenerateInvitations returns NotAuthorizedError for non-moderator",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const normal = await insertAccountWithActor(tx, {
+        username: "regenmutnonmod",
+        name: "Non Mod",
+        email: "regenmutnonmod@example.com",
+      });
+      const result = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, normal.account),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      assertEquals(
+        (result.data as {
+          regenerateInvitations: { __typename: string };
+        }).regenerateInvitations.__typename,
+        "NotAuthorizedError",
+      );
+    });
+  },
+});
+
+Deno.test({
+  name: "regenerateInvitations grants +1 to top third and updates KV",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenmutmod1");
+      const { kv, store } = createTestKv();
+      // Pin a cutoff in the past so the seeded posts count as eligible.
+      const cutoff = new Date("2026-04-01T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, cutoff.toISOString());
+
+      // Three eligible accounts; top third = 1.
+      const winner = await insertAccountWithActor(tx, {
+        username: "regenmutwinner",
+        name: "Winner",
+        email: "regenmutwinner@example.com",
+      });
+      const loser1 = await insertAccountWithActor(tx, {
+        username: "regenmutloser1",
+        name: "Loser 1",
+        email: "regenmutloser1@example.com",
+      });
+      const loser2 = await insertAccountWithActor(tx, {
+        username: "regenmutloser2",
+        name: "Loser 2",
+        email: "regenmutloser2@example.com",
+      });
+      // Winner: 5 posts, losers: 1 each.
+      for (let i = 0; i < 5; i++) {
+        await insertNotePost(tx, {
+          account: winner.account,
+          published: new Date(`2026-04-${10 + i}T00:00:00.000Z`),
+        });
+      }
+      await insertNotePost(tx, {
+        account: loser1.account,
+        published: new Date("2026-04-12T00:00:00.000Z"),
+      });
+      await insertNotePost(tx, {
+        account: loser2.account,
+        published: new Date("2026-04-13T00:00:00.000Z"),
+      });
+
+      const result = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const payload = (result.data as {
+        regenerateInvitations: {
+          __typename: string;
+          accountsAffected: number;
+          regeneratedAt: Date | string;
+          status: {
+            lastRegeneratedAt: Date | string | null;
+          };
+        };
+      }).regenerateInvitations;
+      assertEquals(payload.__typename, "RegenerateInvitationsPayload");
+      assertEquals(payload.accountsAffected, 1);
+      assert(payload.status.lastRegeneratedAt != null);
+
+      // KV is updated.
+      assert(typeof store.get(INVITATIONS_LAST_REGEN_KEY) === "string");
+
+      // Only the winner gains.
+      const w = await tx.query.accountTable.findFirst({
+        where: { id: winner.account.id },
+      });
+      const l1 = await tx.query.accountTable.findFirst({
+        where: { id: loser1.account.id },
+      });
+      const l2 = await tx.query.accountTable.findFirst({
+        where: { id: loser2.account.id },
+      });
+      assertEquals(w?.leftInvitations, 1);
+      assertEquals(l1?.leftInvitations, 0);
+      assertEquals(l2?.leftInvitations, 0);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "regenerateInvitations payload.status reflects the new last-regen timestamp",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenmutmod2");
+      const { kv } = createTestKv();
+      const result = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(result.errors, undefined);
+      const payload = (result.data as {
+        regenerateInvitations: {
+          regeneratedAt: Date | string;
+          status: {
+            lastRegeneratedAt: Date | string | null;
+          };
+        };
+      }).regenerateInvitations;
+      const regenIso = payload.regeneratedAt instanceof Date
+        ? payload.regeneratedAt.toISOString()
+        : payload.regeneratedAt;
+      const lastIso = payload.status.lastRegeneratedAt instanceof Date
+        ? payload.status.lastRegeneratedAt.toISOString()
+        : payload.status.lastRegeneratedAt;
+      assertEquals(regenIso, lastIso);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "regenerateInvitations called twice in immediate succession returns 0 affected on second",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const mod = await makeModerator(tx, "regenmutmod3");
+      const { kv, store } = createTestKv();
+      // Pin a cutoff in the past so the seeded post counts as eligible.
+      const cutoff = new Date("2026-04-01T00:00:00.000Z");
+      store.set(INVITATIONS_LAST_REGEN_KEY, cutoff.toISOString());
+
+      const a = await insertAccountWithActor(tx, {
+        username: "regenmuttwicea",
+        name: "Twice A",
+        email: "regenmuttwicea@example.com",
+      });
+      await insertNotePost(tx, {
+        account: a.account,
+        published: new Date("2026-04-14T00:00:00.000Z"),
+      });
+
+      const first = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(first.errors, undefined);
+      assertEquals(
+        (first.data as {
+          regenerateInvitations: { accountsAffected: number };
+        }).regenerateInvitations.accountsAffected,
+        1,
+      );
+
+      const second = await execute({
+        schema,
+        document: regenerateMutation,
+        contextValue: makeUserContext(tx, mod.account, { kv }),
+        onError: "NO_PROPAGATE",
+      });
+      assertEquals(second.errors, undefined);
+      assertEquals(
+        (second.data as {
+          regenerateInvitations: { accountsAffected: number };
+        }).regenerateInvitations.accountsAffected,
+        0,
+      );
+    });
+  },
+});

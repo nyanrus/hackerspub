@@ -756,6 +756,11 @@ type Mutation {
   pinPost(input: PinPostInput!): PinPostResult!
   publishArticleDraft(input: PublishArticleDraftInput!): PublishArticleDraftResult!
   redeemInvitationLink(email: Email!, id: UUID!, locale: Locale!, verifyUrl: URITemplate!): RedeemInvitationLinkResult!
+
+  """
+  Grant +1 invitation to the top third of accounts with at least one post since the last regeneration cutoff, and persist the new last-regen timestamp.
+  """
+  regenerateInvitations: RegenerateInvitationsResult!
   registerApnsDeviceToken(input: RegisterApnsDeviceTokenInput!): RegisterApnsDeviceTokenResult!
   registerFcmDeviceToken(input: RegisterFcmDeviceTokenInput!): RegisterFcmDeviceTokenResult!
   removeFollower(input: RemoveFollowerInput!): RemoveFollowerResult!
@@ -1319,6 +1324,20 @@ enum RedeemVerifyUrlError {
   VERIFY_URL_NO_CODE
   VERIFY_URL_NO_TOKEN
 }
+
+"""The result of a successful invitations regeneration."""
+type RegenerateInvitationsPayload {
+  """Number of accounts whose `leftInvitations` was incremented."""
+  accountsAffected: Int!
+
+  """When the regeneration ran."""
+  regeneratedAt: DateTime!
+
+  """The updated regeneration status reflecting the just-recorded run."""
+  status: InvitationRegenerationStatus!
+}
+
+union RegenerateInvitationsResult = NotAuthenticatedError | NotAuthorizedError | RegenerateInvitationsPayload
 
 type RegisterApnsDeviceTokenFailedError {
   limit: Int!
