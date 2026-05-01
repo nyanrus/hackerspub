@@ -173,7 +173,7 @@ async function readResponseBytes(
   response: Response,
   maxBytes: number,
 ): Promise<Uint8Array | null> {
-  if (response.body == null) return new Uint8Array();
+  if (response.body == null) return null;
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -191,6 +191,7 @@ async function readResponseBytes(
   } finally {
     reader.releaseLock();
   }
+  if (total === 0) return null;
   const bytes = new Uint8Array(total);
   let offset = 0;
   for (const chunk of chunks) {

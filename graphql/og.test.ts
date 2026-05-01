@@ -71,6 +71,23 @@ test("loadImageDataUri rejects non-image responses", async () => {
   }
 });
 
+test("loadImageDataUri falls back when image responses have no body", async () => {
+  const server = Deno.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    onListen() {},
+  }, () =>
+    new Response(null, {
+      headers: { "content-type": "image/png" },
+    }));
+  try {
+    const url = `http://${server.addr.hostname}:${server.addr.port}/avatar.png`;
+    assert.equal(await loadImageDataUri(url), smallPngDataUrl);
+  } finally {
+    await server.shutdown();
+  }
+});
+
 test("loadImageDataUri rejects unsupported URL schemes", async () => {
   assert.equal(
     await loadImageDataUri("file:///tmp/avatar.png"),
