@@ -20,7 +20,7 @@ msgstr "{0, plural, other {#コメント}}"
 
 #. placeholder {0}: status()?.eligibleAccountsCount ?? 0
 #. placeholder {1}: status()?.topThirdCount ?? 0
-#: src/routes/(root)/admin/invitations.tsx:188
+#: src/routes/(root)/admin/invitations.tsx:189
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, other {対象アカウント#件}}中、{1, plural, other {現在再付与した場合は#件}}に招待状が付与されます。"
 
@@ -62,7 +62,7 @@ msgid "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up t
 msgstr "{0, plural, one {友達をHackers' Pubに招待しましょう。最大#人まで招待できます。} other {友達をHackers' Pubに招待しましょう。最大#人まで招待できます。}}"
 
 #. placeholder {0}: result.accountsAffected!
-#: src/routes/(root)/admin/invitations.tsx:103
+#: src/routes/(root)/admin/invitations.tsx:104
 msgid "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
 msgstr "{0, plural, other {#件のアカウントに招待状を再付与しました。}}"
 
@@ -505,7 +505,7 @@ msgstr "切り抜き"
 msgid "Crop your new avatar"
 msgstr "新しいアイコンを切り抜く"
 
-#: src/routes/(root)/admin/invitations.tsx:180
+#: src/routes/(root)/admin/invitations.tsx:181
 msgid "Cutoff:"
 msgstr "カットオフ："
 
@@ -696,7 +696,7 @@ msgstr "コンテンツの削除に失敗しました"
 msgid "Failed to follow"
 msgstr "フォローに失敗しました"
 
-#: src/components/admin/AdminAccountsTable.tsx:233
+#: src/components/admin/AdminAccountsTable.tsx:231
 msgid "Failed to load more accounts; click to retry"
 msgstr "アカウントの追加読み込みに失敗しました。クリックで再試行"
 
@@ -764,7 +764,7 @@ msgstr "コンテンツを固定できませんでした"
 msgid "Failed to react"
 msgstr "リアクションに失敗しました"
 
-#: src/routes/(root)/admin/invitations.tsx:131
+#: src/routes/(root)/admin/invitations.tsx:132
 msgid "Failed to regenerate invitations."
 msgstr "招待状の再付与に失敗しました。"
 
@@ -902,13 +902,17 @@ msgstr "戻る"
 msgid "Go to Drafts"
 msgstr "下書きへ"
 
+#: src/routes/[...404].tsx:44
+msgid "Go to home"
+msgstr "ホームに戻る"
+
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
 #: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
 msgid "Go to my drafts"
 msgstr "マイ下書きへ"
 
-#: src/routes/(root)/admin/invitations.tsx:159
+#: src/routes/(root)/admin/invitations.tsx:160
 msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 msgstr "前回の再付与カットオフ以降、最も活発なアカウント（投稿数上位3分の1）に招待状を1通追加で付与します。"
 
@@ -918,10 +922,12 @@ msgstr "前回の再付与カットオフ以降、最も活発なアカウント
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
+#: src/routes/[...404].tsx:22
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
 #: src/routes/(root).tsx:83
+#: src/routes/[...404].tsx:14
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pubホーム"
 
@@ -933,7 +939,7 @@ msgstr "Hackers' Pubは、ソフトウェアエンジニアが知識と経験を
 msgid "Hackers' Pub: Admin · Accounts"
 msgstr "Hackers' Pub：管理 · アカウント"
 
-#: src/routes/(root)/admin/invitations.tsx:141
+#: src/routes/(root)/admin/invitations.tsx:142
 msgid "Hackers' Pub: Admin · Invitations"
 msgstr "Hackers' Pub：管理 · 招待"
 
@@ -1035,7 +1041,7 @@ msgstr "招待状を送信しました"
 
 #: src/components/admin/AdminAccountsTable.tsx:115
 #: src/components/AppSidebar.tsx:494
-#: src/routes/(root)/admin/invitations.tsx:153
+#: src/routes/(root)/admin/invitations.tsx:154
 msgid "Invitations"
 msgstr "招待"
 
@@ -1091,7 +1097,7 @@ msgstr "言語設定"
 msgid "Last activity"
 msgstr "最終アクティビティ"
 
-#: src/routes/(root)/admin/invitations.tsx:165
+#: src/routes/(root)/admin/invitations.tsx:166
 msgid "Last regenerated:"
 msgstr "最終再付与："
 
@@ -1128,7 +1134,7 @@ msgstr "リスト"
 msgid "Load more"
 msgstr "さらに読み込む"
 
-#: src/components/admin/AdminAccountsTable.tsx:236
+#: src/components/admin/AdminAccountsTable.tsx:234
 msgid "Load more accounts"
 msgstr "さらにアカウントを読み込む"
 
@@ -1176,7 +1182,7 @@ msgstr "コンテンツをもっと読み込む"
 msgid "Loading draft…"
 msgstr "下書きを読み込み中…"
 
-#: src/components/admin/AdminAccountsTable.tsx:230
+#: src/components/admin/AdminAccountsTable.tsx:228
 msgid "Loading more accounts…"
 msgstr "アカウントを追加で読み込み中…"
 
@@ -1288,7 +1294,7 @@ msgstr "名前が長すぎます。最大50文字です。"
 msgid "Native name"
 msgstr "現地名"
 
-#: src/routes/(root)/admin/invitations.tsx:171
+#: src/routes/(root)/admin/invitations.tsx:172
 msgid "Never"
 msgstr "なし"
 
@@ -1360,7 +1366,7 @@ msgstr "Hackers' Pubにそのようなアカウントはありません。もう
 msgid "No user URI provided."
 msgstr "ユーザーURIが提供されていません。"
 
-#: src/routes/(root)/admin/invitations.tsx:122
+#: src/routes/(root)/admin/invitations.tsx:123
 msgid "Not authorized to regenerate invitations."
 msgstr "招待状を再付与する権限がありません。"
 
@@ -1422,7 +1428,7 @@ msgstr "またはメールのコードを入力してください"
 msgid "Other languages"
 msgstr "他の言語"
 
-#: src/routes/[...404].tsx:11
+#: src/routes/[...404].tsx:37
 msgid "Page not found"
 msgstr "ページが見つかりません"
 
@@ -1613,11 +1619,11 @@ msgstr "行動規範の全文を読む"
 msgid "Recent drafts"
 msgstr "最近の下書き"
 
-#: src/routes/(root)/admin/invitations.tsx:207
+#: src/routes/(root)/admin/invitations.tsx:208
 msgid "Regenerate"
 msgstr "再付与"
 
-#: src/routes/(root)/admin/invitations.tsx:157
+#: src/routes/(root)/admin/invitations.tsx:158
 msgid "Regenerate invitations"
 msgstr "招待状を再付与"
 
@@ -1625,7 +1631,7 @@ msgstr "招待状を再付与"
 #~ msgid "Regenerated invitations for {0} accounts."
 #~ msgstr "{0}件のアカウントに招待状を再付与しました。"
 
-#: src/routes/(root)/admin/invitations.tsx:207
+#: src/routes/(root)/admin/invitations.tsx:208
 msgid "Regenerating…"
 msgstr "再付与中…"
 
@@ -1920,6 +1926,10 @@ msgstr "招待リンクが正常に作成されました。"
 #: src/routes/(root)/[handle]/settings/invite.tsx:568
 msgid "The invitation link has been deleted successfully."
 msgstr "招待リンクが正常に削除されました。"
+
+#: src/routes/[...404].tsx:40
+msgid "The page you're looking for doesn't exist or has been moved."
+msgstr "お探しのページは存在しないか、移動された可能性があります。"
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:313
 msgid "The passkey has been successfully revoked."

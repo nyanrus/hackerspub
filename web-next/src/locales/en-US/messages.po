@@ -20,7 +20,7 @@ msgstr "{0, plural, one {# comment} other {# comments}}"
 
 #. placeholder {0}: status()?.eligibleAccountsCount ?? 0
 #. placeholder {1}: status()?.topThirdCount ?? 0
-#: src/routes/(root)/admin/invitations.tsx:188
+#: src/routes/(root)/admin/invitations.tsx:189
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 
@@ -62,7 +62,7 @@ msgid "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up t
 msgstr "{0, plural, one {Invite your friends to Hackers' Pub. You can invite up to # person.} other {Invite your friends to Hackers' Pub. You can invite up to # people.}}"
 
 #. placeholder {0}: result.accountsAffected!
-#: src/routes/(root)/admin/invitations.tsx:103
+#: src/routes/(root)/admin/invitations.tsx:104
 msgid "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
 msgstr "{0, plural, one {Regenerated invitations for # account.} other {Regenerated invitations for # accounts.}}"
 
@@ -505,7 +505,7 @@ msgstr "Crop"
 msgid "Crop your new avatar"
 msgstr "Crop your new avatar"
 
-#: src/routes/(root)/admin/invitations.tsx:180
+#: src/routes/(root)/admin/invitations.tsx:181
 msgid "Cutoff:"
 msgstr "Cutoff:"
 
@@ -700,7 +700,7 @@ msgstr "Failed to delete post"
 msgid "Failed to follow"
 msgstr "Failed to follow"
 
-#: src/components/admin/AdminAccountsTable.tsx:233
+#: src/components/admin/AdminAccountsTable.tsx:231
 msgid "Failed to load more accounts; click to retry"
 msgstr "Failed to load more accounts; click to retry"
 
@@ -768,7 +768,7 @@ msgstr "Failed to pin post"
 msgid "Failed to react"
 msgstr "Failed to react"
 
-#: src/routes/(root)/admin/invitations.tsx:131
+#: src/routes/(root)/admin/invitations.tsx:132
 msgid "Failed to regenerate invitations."
 msgstr "Failed to regenerate invitations."
 
@@ -906,13 +906,17 @@ msgstr "Go back"
 msgid "Go to Drafts"
 msgstr "Go to Drafts"
 
+#: src/routes/[...404].tsx:44
+msgid "Go to home"
+msgstr "Go to home"
+
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
 #: src/routes/(root)/[handle]/drafts/index.tsx:233
 #: src/routes/(root)/[handle]/drafts/new.tsx:86
 msgid "Go to my drafts"
 msgstr "Go to my drafts"
 
-#: src/routes/(root)/admin/invitations.tsx:159
+#: src/routes/(root)/admin/invitations.tsx:160
 msgid "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 msgstr "Grants one extra invitation to the most active accounts (the top third by post count) since the last regeneration cutoff."
 
@@ -922,10 +926,12 @@ msgstr "Grants one extra invitation to the most active accounts (the top third b
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
+#: src/routes/[...404].tsx:22
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
 #: src/routes/(root).tsx:83
+#: src/routes/[...404].tsx:14
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub home"
 
@@ -937,7 +943,7 @@ msgstr "Hackers' Pub is a place for software engineers to share their knowledge 
 msgid "Hackers' Pub: Admin · Accounts"
 msgstr "Hackers' Pub: Admin · Accounts"
 
-#: src/routes/(root)/admin/invitations.tsx:141
+#: src/routes/(root)/admin/invitations.tsx:142
 msgid "Hackers' Pub: Admin · Invitations"
 msgstr "Hackers' Pub: Admin · Invitations"
 
@@ -1039,7 +1045,7 @@ msgstr "Invitation sent"
 
 #: src/components/admin/AdminAccountsTable.tsx:115
 #: src/components/AppSidebar.tsx:494
-#: src/routes/(root)/admin/invitations.tsx:153
+#: src/routes/(root)/admin/invitations.tsx:154
 msgid "Invitations"
 msgstr "Invitations"
 
@@ -1095,7 +1101,7 @@ msgstr "Language settings"
 msgid "Last activity"
 msgstr "Last activity"
 
-#: src/routes/(root)/admin/invitations.tsx:165
+#: src/routes/(root)/admin/invitations.tsx:166
 msgid "Last regenerated:"
 msgstr "Last regenerated:"
 
@@ -1132,7 +1138,7 @@ msgstr "List"
 msgid "Load more"
 msgstr "Load more"
 
-#: src/components/admin/AdminAccountsTable.tsx:236
+#: src/components/admin/AdminAccountsTable.tsx:234
 msgid "Load more accounts"
 msgstr "Load more accounts"
 
@@ -1180,7 +1186,7 @@ msgstr "Load more posts"
 msgid "Loading draft…"
 msgstr "Loading draft…"
 
-#: src/components/admin/AdminAccountsTable.tsx:230
+#: src/components/admin/AdminAccountsTable.tsx:228
 msgid "Loading more accounts…"
 msgstr "Loading more accounts…"
 
@@ -1292,7 +1298,7 @@ msgstr "Name is too long. Maximum length is 50 characters."
 msgid "Native name"
 msgstr "Native name"
 
-#: src/routes/(root)/admin/invitations.tsx:171
+#: src/routes/(root)/admin/invitations.tsx:172
 msgid "Never"
 msgstr "Never"
 
@@ -1364,7 +1370,7 @@ msgstr "No such account in Hackers' Pub—please try again."
 msgid "No user URI provided."
 msgstr "No user URI provided."
 
-#: src/routes/(root)/admin/invitations.tsx:122
+#: src/routes/(root)/admin/invitations.tsx:123
 msgid "Not authorized to regenerate invitations."
 msgstr "Not authorized to regenerate invitations."
 
@@ -1427,7 +1433,7 @@ msgstr "Or enter the code from the email"
 msgid "Other languages"
 msgstr "Other languages"
 
-#: src/routes/[...404].tsx:11
+#: src/routes/[...404].tsx:37
 msgid "Page not found"
 msgstr "Page not found"
 
@@ -1618,11 +1624,11 @@ msgstr "Read the full Code of conduct"
 msgid "Recent drafts"
 msgstr "Recent drafts"
 
-#: src/routes/(root)/admin/invitations.tsx:207
+#: src/routes/(root)/admin/invitations.tsx:208
 msgid "Regenerate"
 msgstr "Regenerate"
 
-#: src/routes/(root)/admin/invitations.tsx:157
+#: src/routes/(root)/admin/invitations.tsx:158
 msgid "Regenerate invitations"
 msgstr "Regenerate invitations"
 
@@ -1630,7 +1636,7 @@ msgstr "Regenerate invitations"
 #~ msgid "Regenerated invitations for {0} accounts."
 #~ msgstr "Regenerated invitations for {0} accounts."
 
-#: src/routes/(root)/admin/invitations.tsx:207
+#: src/routes/(root)/admin/invitations.tsx:208
 msgid "Regenerating…"
 msgstr "Regenerating…"
 
@@ -1925,6 +1931,10 @@ msgstr "The invitation link has been created successfully."
 #: src/routes/(root)/[handle]/settings/invite.tsx:568
 msgid "The invitation link has been deleted successfully."
 msgstr "The invitation link has been deleted successfully."
+
+#: src/routes/[...404].tsx:40
+msgid "The page you're looking for doesn't exist or has been moved."
+msgstr "The page you're looking for doesn't exist or has been moved."
 
 #: src/routes/(root)/[handle]/settings/passkeys.tsx:313
 msgid "The passkey has been successfully revoked."
