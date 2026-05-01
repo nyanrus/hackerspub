@@ -1,13 +1,21 @@
 import { and, count, desc, eq, gt, inArray, isNotNull, sql } from "drizzle-orm";
 import type Keyv from "keyv";
-import type { Database } from "./db.ts";
+import type { Database, Transaction } from "./db.ts";
 import { accountTable, actorTable, postTable } from "./schema.ts";
 import { type Uuid, validateUuid } from "./uuid.ts";
 
 export const INVITATIONS_LAST_REGEN_KEY = "invitations_last_regen";
 
+// Postgres advisory-lock key for serialising invitation regeneration
+// across processes; stays distinct from other lock keys in the codebase.
+const INVITATIONS_REGEN_LOCK_KEY = 0x69_6e_76_72;
+
 export const DEFAULT_REGEN_CUTOFF_DURATION: Temporal.Duration = Temporal
   .Duration.from({ days: 7 });
+
+function isTransaction(db: Database): db is Transaction {
+  return "rollback" in db;
+}
 
 export interface RegenerateInvitationsResult {
   regeneratedAt: Date;
@@ -103,22 +111,37 @@ export async function regenerateInvitations(
   kv: Keyv,
   options: RegenerateOptions = {},
 ): Promise<RegenerateInvitationsResult> {
-  const lastRegen = await getInvitationsLastRegen(kv);
-  const { now, cutoffDate } = resolveCutoff(lastRegen, options);
-  const active = await selectActiveAccounts(db, cutoffDate);
-  const topThirdCount = Math.ceil(active.length / 3);
-  const topAccountIds = active.slice(0, topThirdCount).map((a) => a.accountId);
-  let accountsAffected = 0;
-  if (topAccountIds.length > 0) {
-    const updated = await db
-      .update(accountTable)
-      .set({
-        leftInvitations: sql`${accountTable.leftInvitations} + 1`,
-      })
-      .where(inArray(accountTable.id, topAccountIds))
-      .returning({ id: accountTable.id });
-    accountsAffected = updated.length;
-  }
-  await kv.set(INVITATIONS_LAST_REGEN_KEY, now.toISOString());
-  return { regeneratedAt: now, accountsAffected, cutoffDate };
+  // Serialise regeneration across concurrent calls: take a transaction
+  // advisory lock first, re-read the KV cutoff inside the lock, do all
+  // updates, and write the new last-regen timestamp before releasing.
+  // Two callers racing the button cannot both grant invitations from
+  // the same eligibility window.
+  const run = async (
+    tx: Transaction,
+  ): Promise<RegenerateInvitationsResult> => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(${INVITATIONS_REGEN_LOCK_KEY})`,
+    );
+    const lastRegen = await getInvitationsLastRegen(kv);
+    const { now, cutoffDate } = resolveCutoff(lastRegen, options);
+    const active = await selectActiveAccounts(tx, cutoffDate);
+    const topThirdCount = Math.ceil(active.length / 3);
+    const topAccountIds = active.slice(0, topThirdCount).map((a) =>
+      a.accountId
+    );
+    let accountsAffected = 0;
+    if (topAccountIds.length > 0) {
+      const updated = await tx
+        .update(accountTable)
+        .set({
+          leftInvitations: sql`${accountTable.leftInvitations} + 1`,
+        })
+        .where(inArray(accountTable.id, topAccountIds))
+        .returning({ id: accountTable.id });
+      accountsAffected = updated.length;
+    }
+    await kv.set(INVITATIONS_LAST_REGEN_KEY, now.toISOString());
+    return { regeneratedAt: now, accountsAffected, cutoffDate };
+  };
+  return isTransaction(db) ? await run(db) : await db.transaction(run);
 }
