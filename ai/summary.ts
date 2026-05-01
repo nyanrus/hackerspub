@@ -60,17 +60,27 @@ interface TextRange {
   start: number;
 }
 
-function stripMarkdownContainerPrefix(line: string): string {
-  let rest = line.replace(/^ {0,3}/, "");
+function stripMarkdownBlockQuoteMarkers(line: string): string {
+  let rest = line;
   while (true) {
-    const quoted = rest.match(/^> ?(.*)$/);
+    const quoted = rest.match(/^ {0,3}> ?(.*)$/);
     if (quoted != null) {
-      rest = quoted[1].replace(/^ {0,3}/, "");
+      rest = quoted[1];
       continue;
     }
+    return rest;
+  }
+}
+
+function stripMarkdownContainerPrefix(line: string): string {
+  let rest = stripMarkdownBlockQuoteMarkers(line).replace(/^ {0,3}/, "");
+  while (true) {
     const listed = rest.match(/^(?:[-+*]|\d{1,9}[.)]) {1,4}(.*)$/);
     if (listed != null) {
-      rest = listed[1].replace(/^ {0,3}/, "");
+      rest = stripMarkdownBlockQuoteMarkers(listed[1]).replace(
+        /^ {0,3}/,
+        "",
+      );
       continue;
     }
     return rest;
@@ -133,6 +143,7 @@ function findIndentedCodeRanges(
   const ranges: TextRange[] = [];
   let fencedCodeRangeIndex = 0;
   let openedStart: number | undefined;
+  let canStartIndentedCode = true;
   let offset = 0;
   while (offset < text.length) {
     fencedCodeRangeIndex = advanceRangeIndex(
@@ -153,12 +164,19 @@ function findIndentedCodeRanges(
     const newline = text.indexOf("\n", offset);
     const lineEnd = newline < 0 ? text.length : newline + 1;
     const line = text.slice(offset, lineEnd).replace(/\r?\n$/, "");
-    if (/^(?: {4}|\t)/.test(line)) {
+    const contentLine = stripMarkdownBlockQuoteMarkers(line);
+    const blankLine = contentLine.trim().length === 0;
+    const indentedCodeLine = /^(?: {4}|\t)/.test(contentLine);
+    if (
+      indentedCodeLine &&
+      (openedStart != null || canStartIndentedCode)
+    ) {
       openedStart ??= offset;
     } else if (openedStart != null) {
       ranges.push({ start: openedStart, end: offset });
       openedStart = undefined;
     }
+    canStartIndentedCode = blankLine || openedStart != null;
     offset = lineEnd;
   }
   if (openedStart != null) {
@@ -236,8 +254,8 @@ function readHtmlTagAt(text: string, start: number): HtmlTagScan {
         end: index + 1,
         tag: { closing, end: index + 1, name, start },
       };
-    } else if (quote == null && (char === "\n" || char === "\r")) {
-      return { end: index + 1 };
+    } else if (quote == null && char === "<") {
+      return { end: index };
     }
   }
   return { end: text.length };

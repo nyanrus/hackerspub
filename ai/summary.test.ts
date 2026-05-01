@@ -200,6 +200,75 @@ test("removeDetailsFromSummaryInput() preserves indented code blocks", () => {
   assert.equal(output.includes("Hidden answer."), false);
 });
 
+test("removeDetailsFromSummaryInput() preserves indented code blocks in block quotes", () => {
+  const input = [
+    "Visible before.",
+    "",
+    ">     <details>",
+    ">     <summary>Example</summary>",
+    ">     Example body.",
+    ">     </details>",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("<summary>Example</summary>"), true);
+  assert.equal(output.includes("Example body."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
+test("removeDetailsFromSummaryInput() removes details blocks nested in lists", () => {
+  const input = [
+    "Visible before.",
+    "",
+    "- Visible list item.",
+    "    <details>",
+    "    <summary>Answer</summary>",
+    "    Hidden answer.",
+    "    </details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Visible before."), true);
+  assert.equal(output.includes("Visible list item."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
+test("removeDetailsFromSummaryInput() removes multiline details tags", () => {
+  const input = [
+    "Visible before.",
+    "<details",
+    '  class="spoiler"',
+    "  open",
+    ">",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Visible before."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
 test("removeDetailsFromSummaryInput() preserves fenced code blocks in block quotes", () => {
   const input = [
     "Visible before.",
