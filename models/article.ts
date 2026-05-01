@@ -616,7 +616,12 @@ export async function applyArticleContentSummary(
         content,
       );
       const updated = await tx.update(articleContentTable)
-        .set({ summary: null, summaryUnnecessary: true, summaryStarted: null })
+        .set({
+          summary: null,
+          summaryUnnecessary: true,
+          summaryStarted: null,
+          updated: sql`CURRENT_TIMESTAMP`,
+        })
         .where(
           and(
             eq(articleContentTable.sourceId, content.sourceId),
@@ -642,7 +647,14 @@ export async function applyArticleContentSummary(
       return;
     }
     const updated = await tx.update(articleContentTable)
-      .set({ summary })
+      .set({
+        summary,
+        // Release the summarization claim now that we've persisted the
+        // result, and bump `updated` so observers see the row's new
+        // state.
+        summaryStarted: null,
+        updated: sql`CURRENT_TIMESTAMP`,
+      })
       .where(
         and(
           eq(articleContentTable.sourceId, content.sourceId),

@@ -61,6 +61,11 @@ test(
       });
       assert.equal(after?.summary, "Short summary.");
       assert.equal(after?.summaryUnnecessary, false);
+      // The summarization claim must be released after a successful save.
+      assert.equal(after?.summaryStarted, null);
+      // The row's updated timestamp must reflect the new summary.
+      assert.ok(after != null);
+      assert.ok(after.updated.getTime() > published.getTime());
     });
   },
 );
@@ -114,6 +119,9 @@ test(
       assert.equal(after?.summary, null);
       assert.equal(after?.summaryUnnecessary, true);
       assert.equal(after?.summaryStarted, null);
+      // The row's updated timestamp must reflect the discard decision.
+      assert.ok(after != null);
+      assert.ok(after.updated.getTime() > published.getTime());
     });
   },
 );
