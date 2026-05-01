@@ -1,6 +1,9 @@
 import type { Context } from "@fedify/fedify";
 import * as vocab from "@fedify/vocab";
-import { summarize } from "@hackerspub/ai/summary";
+import {
+  removeDetailsFromSummaryInput,
+  summarize,
+} from "@hackerspub/ai/summary";
 import { translate } from "@hackerspub/ai/translate";
 import { getArticle } from "@hackerspub/federation/objects";
 import { sendTagsPubRelayActivity } from "@hackerspub/federation/tags-pub";
@@ -631,9 +634,12 @@ export async function applyArticleContentSummary(
       claim,
     );
     const trimmedSummary = summary.trim();
+    const summaryComparisonContent = removeDetailsFromSummaryInput(
+      current.content,
+    ).trim();
     if (
       trimmedSummary.length === 0 ||
-      graphemeCount(trimmedSummary) >= graphemeCount(current.content.trim())
+      graphemeCount(trimmedSummary) >= graphemeCount(summaryComparisonContent)
     ) {
       logger.debug(
         "Summary is not shorter than the original content (or is empty); " +

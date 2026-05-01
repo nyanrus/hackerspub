@@ -879,3 +879,64 @@ test(
     });
   },
 );
+
+test(
+  "applyArticleContentSummary() compares summaries against visible content " +
+    "outside details blocks",
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await insertAccountWithActor(tx, {
+        username: "summarydetails",
+        name: "Summary Details",
+        email: "summarydetails@example.com",
+      });
+      const sourceId = generateUuidV7();
+      const published = new Date("2026-04-15T00:00:00.000Z");
+      const content = [
+        "Visible.",
+        "",
+        "<details>",
+        "<summary>Answer</summary>",
+        "This hidden answer is intentionally much longer than the visible " +
+        "question text and must not make an otherwise too-long summary look " +
+        "acceptable.",
+        "</details>",
+      ].join("\n");
+      const summary = "Visible plus extra.";
+
+      await tx.insert(articleSourceTable).values({
+        id: sourceId,
+        accountId: author.account.id,
+        publishedYear: 2026,
+        slug: "summary-details",
+        tags: [],
+        allowLlmTranslation: false,
+        published,
+        updated: published,
+      });
+      await tx.insert(articleContentTable).values({
+        sourceId,
+        language: "en",
+        title: "Details",
+        content,
+        summaryStarted: published,
+        published,
+        updated: published,
+      });
+
+      const row = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.ok(row != null);
+
+      await applyArticleContentSummary(tx, row, summary);
+
+      const after = await tx.query.articleContentTable.findFirst({
+        where: { sourceId, language: "en" },
+      });
+      assert.equal(after?.summary, null);
+      assert.equal(after?.summaryUnnecessary, true);
+      assert.equal(after?.summaryStarted, null);
+    });
+  },
+);
