@@ -99,6 +99,53 @@ test("removeDetailsFromSummaryInput() preserves fenced code blocks", () => {
   assert.equal(output.includes("Hidden answer."), false);
 });
 
+test("removeDetailsFromSummaryInput() ignores details tags inside hidden fenced code", () => {
+  const input = [
+    "Visible before.",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden before.",
+    "```html",
+    "</details>",
+    "```",
+    "Hidden after.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Visible before."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Hidden before."), false);
+  assert.equal(output.includes("Hidden after."), false);
+});
+
+test("removeDetailsFromSummaryInput() preserves inline code literals", () => {
+  const input = [
+    "Use `<details>` for spoilers.",
+    "",
+    "This line should remain visible.",
+    "",
+    "<details>",
+    "<summary>Answer</summary>",
+    "Hidden answer.",
+    "</details>",
+    "",
+    "Visible after.",
+  ].join("\n");
+
+  const output = removeDetailsFromSummaryInput(input);
+
+  assert.equal(output.includes("Use `<details>` for spoilers."), true);
+  assert.equal(output.includes("This line should remain visible."), true);
+  assert.equal(output.includes("Visible after."), true);
+  assert.equal(output.includes("Answer"), false);
+  assert.equal(output.includes("Hidden answer."), false);
+});
+
 test("summarize() sends text without details blocks to the model", async () => {
   let promptText: string | undefined;
   const model = new MockLanguageModelV3({

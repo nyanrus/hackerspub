@@ -92,6 +92,81 @@ function findFencedCodeRanges(text: string): TextRange[] {
   return ranges;
 }
 
+function advanceRangeIndex(
+  ranges: readonly TextRange[],
+  rangeIndex: number,
+  offset: number,
+): number {
+  while (rangeIndex < ranges.length && offset >= ranges[rangeIndex].end) {
+    rangeIndex++;
+  }
+  return rangeIndex;
+}
+
+function findInlineCodeRanges(
+  text: string,
+  fencedCodeRanges: readonly TextRange[],
+): TextRange[] {
+  const ranges: TextRange[] = [];
+  let fencedCodeRangeIndex = 0;
+  for (let index = 0; index < text.length; index++) {
+    fencedCodeRangeIndex = advanceRangeIndex(
+      fencedCodeRanges,
+      fencedCodeRangeIndex,
+      index,
+    );
+    const fencedCodeRange = fencedCodeRanges[fencedCodeRangeIndex];
+    if (fencedCodeRange != null && index >= fencedCodeRange.start) {
+      index = fencedCodeRange.end - 1;
+      continue;
+    }
+    if (text[index] !== "`") continue;
+    const start = index;
+    let length = 1;
+    while (text[start + length] === "`") length++;
+
+    let searchIndex = start + length;
+    let searchFencedCodeRangeIndex = fencedCodeRangeIndex;
+    while (searchIndex < text.length) {
+      searchFencedCodeRangeIndex = advanceRangeIndex(
+        fencedCodeRanges,
+        searchFencedCodeRangeIndex,
+        searchIndex,
+      );
+      const searchFencedCodeRange =
+        fencedCodeRanges[searchFencedCodeRangeIndex];
+      if (
+        searchFencedCodeRange != null &&
+        searchIndex >= searchFencedCodeRange.start
+      ) {
+        searchIndex = searchFencedCodeRange.end;
+        continue;
+      }
+
+      const closeStart = text.indexOf("`", searchIndex);
+      if (closeStart < 0) break;
+      searchIndex = closeStart;
+      let closeLength = 1;
+      while (text[closeStart + closeLength] === "`") closeLength++;
+      if (closeLength === length) {
+        ranges.push({ start, end: closeStart + closeLength });
+        index = closeStart + closeLength - 1;
+        break;
+      }
+      searchIndex = closeStart + closeLength;
+    }
+  }
+  return ranges;
+}
+
+function findMarkdownCodeRanges(text: string): TextRange[] {
+  const fencedCodeRanges = findFencedCodeRanges(text);
+  return [
+    ...fencedCodeRanges,
+    ...findInlineCodeRanges(text, fencedCodeRanges),
+  ].sort((a, b) => a.start - b.start);
+}
+
 function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
   if (text[start] !== "<") return undefined;
   let index = start + 1;
@@ -120,25 +195,20 @@ function readHtmlTagAt(text: string, start: number): HtmlTag | undefined {
 }
 
 export function removeDetailsFromSummaryInput(text: string): string {
-  const fencedCodeRanges = findFencedCodeRanges(text);
-  let fencedCodeRangeIndex = 0;
+  const markdownCodeRanges = findMarkdownCodeRanges(text);
+  let markdownCodeRangeIndex = 0;
   let result = "";
   let keepStart = 0;
   let depth = 0;
   for (let index = 0; index < text.length; index++) {
-    while (
-      fencedCodeRangeIndex < fencedCodeRanges.length &&
-      index >= fencedCodeRanges[fencedCodeRangeIndex].end
-    ) {
-      fencedCodeRangeIndex++;
-    }
-    const fencedCodeRange = fencedCodeRanges[fencedCodeRangeIndex];
-    if (
-      depth === 0 &&
-      fencedCodeRange != null &&
-      index >= fencedCodeRange.start
-    ) {
-      index = fencedCodeRange.end - 1;
+    markdownCodeRangeIndex = advanceRangeIndex(
+      markdownCodeRanges,
+      markdownCodeRangeIndex,
+      index,
+    );
+    const markdownCodeRange = markdownCodeRanges[markdownCodeRangeIndex];
+    if (markdownCodeRange != null && index >= markdownCodeRange.start) {
+      index = markdownCodeRange.end - 1;
       continue;
     }
     if (text[index] !== "<") continue;
