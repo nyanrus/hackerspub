@@ -1,13 +1,20 @@
 import { assert } from "@std/assert/assert";
 import { assertEquals } from "@std/assert/equals";
 import { and, eq } from "drizzle-orm";
-import { block, unblock } from "./blocking.ts";
+import {
+  block,
+  getBlockedActorIds,
+  getBlockerActorIds,
+  unblock,
+} from "./blocking.ts";
 import { follow } from "./following.ts";
 import { blockingTable, followingTable } from "./schema.ts";
+import { generateUuidV7, type Uuid } from "./uuid.ts";
 import {
   createFedCtx,
   insertAccountWithActor,
   insertRemoteActor,
+  seedLocalInstance,
   withRollback,
 } from "../test/postgres.ts";
 
@@ -146,6 +153,118 @@ Deno.test({
         ),
       );
       assertEquals(reverseFollow, []);
+    });
+  },
+});
+
+Deno.test({
+  name: "getBlockedActorIds returns the subset that the blocker has blocked",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      await seedLocalInstance(tx);
+      const fedCtx = createFedCtx(tx);
+      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+      const blocker = await insertAccountWithActor(tx, {
+        username: `gbaiblocker${suffix}`,
+        name: "GBAI Blocker",
+        email: `gbaiblocker-${suffix}@example.com`,
+      });
+      const blocked = await insertAccountWithActor(tx, {
+        username: `gbaiblocked${suffix}`,
+        name: "GBAI Blocked",
+        email: `gbaiblocked-${suffix}@example.com`,
+      });
+      const notBlocked = await insertAccountWithActor(tx, {
+        username: `gbainotblocked${suffix}`,
+        name: "GBAI Not Blocked",
+        email: `gbainotblocked-${suffix}@example.com`,
+      });
+
+      await block(fedCtx, blocker.account, blocked.actor);
+
+      const result = await getBlockedActorIds(tx, blocker.actor.id, [
+        blocked.actor.id,
+        notBlocked.actor.id,
+        generateUuidV7() as Uuid,
+      ]);
+
+      assertEquals(result.has(blocked.actor.id), true);
+      assertEquals(result.has(notBlocked.actor.id), false);
+      assertEquals(result.size, 1);
+    });
+  },
+});
+
+Deno.test({
+  name: "getBlockedActorIds returns empty for empty input",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await getBlockedActorIds(
+        tx,
+        generateUuidV7() as Uuid,
+        [],
+      );
+      assertEquals(result.size, 0);
+    });
+  },
+});
+
+Deno.test({
+  name: "getBlockerActorIds returns the subset that has blocked the blockee",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      await seedLocalInstance(tx);
+      const fedCtx = createFedCtx(tx);
+      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+      const target = await insertAccountWithActor(tx, {
+        username: `gbraitarget${suffix}`,
+        name: "GBRAI Target",
+        email: `gbraitarget-${suffix}@example.com`,
+      });
+      const blocker = await insertAccountWithActor(tx, {
+        username: `gbraiblocker${suffix}`,
+        name: "GBRAI Blocker",
+        email: `gbraiblocker-${suffix}@example.com`,
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: `gbraistranger${suffix}`,
+        name: "GBRAI Stranger",
+        email: `gbraistranger-${suffix}@example.com`,
+      });
+
+      await block(fedCtx, blocker.account, target.actor);
+
+      const result = await getBlockerActorIds(tx, target.actor.id, [
+        blocker.actor.id,
+        stranger.actor.id,
+        generateUuidV7() as Uuid,
+      ]);
+
+      assertEquals(result.has(blocker.actor.id), true);
+      assertEquals(result.has(stranger.actor.id), false);
+      assertEquals(result.size, 1);
+    });
+  },
+});
+
+Deno.test({
+  name: "getBlockerActorIds returns empty for empty input",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const result = await getBlockerActorIds(
+        tx,
+        generateUuidV7() as Uuid,
+        [],
+      );
+      assertEquals(result.size, 0);
     });
   },
 });

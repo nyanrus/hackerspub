@@ -1,10 +1,13 @@
-import { accountTable } from "@hackerspub/models/schema";
+import {
+  accountTable,
+  type Actor as ActorRow,
+} from "@hackerspub/models/schema";
 import {
   resolveCursorConnection,
   type ResolveCursorConnectionArgs,
 } from "@pothos/plugin-relay";
 import { eq, sql } from "drizzle-orm";
-import { Actor } from "./actor.ts";
+import { Actor, getActorById } from "./actor.ts";
 import { builder, Node } from "./builder.ts";
 import { Post } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
@@ -52,11 +55,18 @@ export const Notification = builder.drizzleInterface("notificationTable", {
             toCursor: (actor) => actor.id,
           },
           async (_args: ResolveCursorConnectionArgs) => {
-            const actors = await ctx.db.query.actorTable.findMany({
-              where: {
-                id: { in: notification.actorIds },
-              },
-            });
+            // Dedupe actorIds before loading so the resolver matches the
+            // prior `findMany({ id: { in: actorIds } })` behavior, which
+            // implicitly returned each row at most once.  The notification
+            // write path in models/notification.ts already prevents
+            // duplicates, but the dedupe here defends the parity.
+            const uniqueActorIds = [...new Set(notification.actorIds)];
+            const loaded = await Promise.all(
+              uniqueActorIds.map((id) => getActorById(ctx, id)),
+            );
+            const actors = loaded.filter(
+              (actor): actor is ActorRow => actor != null,
+            );
             const positionMap = new Map(
               notification.actorIds.map((id, index) => [id, index]),
             );

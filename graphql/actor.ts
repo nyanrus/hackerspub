@@ -1,29 +1,89 @@
 import { assert } from "@std/assert";
 import { isActor } from "@fedify/vocab";
-import { desc, eq } from "drizzle-orm";
+import DataLoader from "dataloader";
+import { desc, eq, inArray } from "drizzle-orm";
 import {
   getAvatarUrl,
   persistActor,
   recommendActors,
 } from "@hackerspub/models/actor";
-import { block, unblock } from "@hackerspub/models/blocking";
+import {
+  block,
+  getBlockedActorIds,
+  getBlockerActorIds,
+  unblock,
+} from "@hackerspub/models/blocking";
 import { renderCustomEmojis } from "@hackerspub/models/emoji";
 import {
   follow,
+  getFollowedActorIds,
+  getFollowerActorIds,
   removeFollower as removeFollowerModel,
   unfollow,
 } from "@hackerspub/models/following";
 import { getPostVisibilityFilter } from "@hackerspub/models/post";
-import type { Actor as ActorModel } from "@hackerspub/models/schema";
-import { validateUuid } from "@hackerspub/models/uuid";
+import { type Actor as ActorRow, actorTable } from "@hackerspub/models/schema";
+import { type Uuid, validateUuid } from "@hackerspub/models/uuid";
 import { drizzleConnectionHelpers } from "@pothos/plugin-drizzle";
 import { assertNever } from "@std/assert/unstable-never";
 import { escape } from "@std/html/entities";
 import xss from "xss";
-import { builder } from "./builder.ts";
+import { builder, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
 import { Article, Note, Post, Question } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
+
+// Per-request loader keyed by actor id.  Several resolvers (e.g.,
+// `Notification.actors`) need to fetch actor rows by id one-by-one
+// while iterating a list; without batching, that fans out to one
+// `SELECT` per actor.  This helper collapses every actor id requested
+// across the active GraphQL execution into a single
+// `SELECT … WHERE id = ANY($1)` and dedupes overlapping ids via
+// DataLoader's per-request cache.
+export function getActorById(
+  ctx: UserContext,
+  actorId: Uuid,
+): Promise<ActorRow | null> {
+  ctx.actorByIdLoader ??= new DataLoader<Uuid, ActorRow | null>(
+    async (ids) => {
+      const idList = ids as Uuid[];
+      const rows = await ctx.db
+        .select()
+        .from(actorTable)
+        .where(inArray(actorTable.id, idList));
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      return idList.map((id) => byId.get(id) ?? null);
+    },
+  );
+  return ctx.actorByIdLoader.load(actorId);
+}
+
+// Builds a Pothos `t.loadable` `load` function for boolean relationship
+// fields like `viewerFollows`/`viewerBlocks`/`blocksViewer`/`followsViewer`.
+// Each of those fields asks "for these N actor ids, which ones are in the
+// directional relationship with the viewer?" and only differs by which
+// model helper produces the matched-id Set.  Hoisting the shared shape
+// here keeps the field declarations to one line of `load:` each.
+function createRelationshipBooleanLoader(
+  getMatchedIds: (
+    db: UserContext["db"],
+    viewerId: Uuid,
+    targetIds: readonly Uuid[],
+  ) => Promise<Set<Uuid>>,
+) {
+  return async (
+    actorIds: Uuid[],
+    ctx: UserContext,
+  ): Promise<boolean[]> => {
+    if (ctx.account?.actor == null) return actorIds.map(() => false);
+    const matched = await getMatchedIds(
+      ctx.db,
+      ctx.account.actor.id,
+      actorIds,
+    );
+    return actorIds.map((id) => matched.has(id));
+  };
+}
 
 export const ActorType = builder.enumType("ActorType", {
   values: [
@@ -371,65 +431,41 @@ builder.drizzleObjectFields(Actor, (t) => ({
       return ctx.account?.actor?.id === actor.id;
     },
   }),
-  viewerFollows: t.field({
+  viewerFollows: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.followingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          followerId: ctx.account.actor.id,
-          followeeId: actor.id,
-        },
-      }) != null;
-    },
+    // cache: false so a mutation that changes follow state in the same
+    // request (e.g., followActor + read viewerFollows in the payload)
+    // re-queries instead of returning the pre-mutation value.
+    loaderOptions: { cache: false },
+    load: createRelationshipBooleanLoader(getFollowedActorIds),
+    resolve: (actor) => actor.id,
   }),
-  viewerBlocks: t.field({
+  viewerBlocks: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.blockingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          blockerId: ctx.account.actor.id,
-          blockeeId: actor.id,
-        },
-      }) != null;
-    },
+    // cache: false so blockActor and unblockActor mutations are
+    // reflected by subsequent reads of the field within the same
+    // request rather than a stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: createRelationshipBooleanLoader(getBlockedActorIds),
+    resolve: (actor) => actor.id,
   }),
-  blocksViewer: t.field({
+  blocksViewer: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.blockingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          blockerId: actor.id,
-          blockeeId: ctx.account.actor.id,
-        },
-      }) != null;
-    },
+    // cache: false so a block-state mutation in the same request is
+    // reflected by a subsequent read of the field rather than a
+    // stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: createRelationshipBooleanLoader(getBlockerActorIds),
+    resolve: (actor) => actor.id,
   }),
-  followsViewer: t.field({
+  followsViewer: t.loadable({
     type: "Boolean",
-    async resolve(actor, _, ctx) {
-      if (ctx.account == null || ctx.account.actor == null) {
-        return false;
-      }
-      return await ctx.db.query.followingTable.findFirst({
-        columns: { iri: true },
-        where: {
-          followerId: actor.id,
-          followeeId: ctx.account.actor.id,
-        },
-      }) != null;
-    },
+    // cache: false so a follow-state mutation in the same request
+    // (e.g., removeFollower) is reflected by a subsequent read of
+    // the field rather than a stale per-request cached value.
+    loaderOptions: { cache: false },
+    load: createRelationshipBooleanLoader(getFollowerActorIds),
+    resolve: (actor) => actor.id,
   }),
   followees: t.connection(
     {
@@ -589,7 +625,7 @@ builder.queryFields((t) => ({
     async resolve(query, _, { handle, allowLocalHandle }, ctx) {
       if (handle.startsWith("@")) handle = handle.substring(1);
       const split = handle.split("@");
-      let actor: ActorModel | undefined = undefined;
+      let actor: ActorRow | undefined = undefined;
       if (split.length === 2) {
         const [username, host] = split;
         actor = await ctx.db.query.actorTable.findFirst(

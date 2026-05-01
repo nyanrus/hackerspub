@@ -2,6 +2,7 @@ import { assertEquals } from "@std/assert/equals";
 import { and, eq, or } from "drizzle-orm";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { execute, parse } from "graphql";
+import { block } from "@hackerspub/models/blocking";
 import { follow } from "@hackerspub/models/following";
 import { blockingTable, followingTable } from "@hackerspub/models/schema";
 import { schema } from "./mod.ts";
@@ -514,6 +515,555 @@ Deno.test({
           blocksViewer: true,
         },
       });
+    });
+  },
+});
+
+const viewerFollowsBatchQuery = parse(`
+  query ViewerFollowsBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerFollows }
+    b: actorByUuid(uuid: $b) { id viewerFollows }
+    c: actorByUuid(uuid: $c) { id viewerFollows }
+  }
+`);
+
+const followRelationshipBatchQuery = parse(`
+  query FollowRelationshipBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerFollows followsViewer }
+    b: actorByUuid(uuid: $b) { id viewerFollows followsViewer }
+    c: actorByUuid(uuid: $c) { id viewerFollows followsViewer }
+  }
+`);
+
+const viewerBlocksBatchQuery = parse(`
+  query ViewerBlocksBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerBlocks }
+    b: actorByUuid(uuid: $b) { id viewerBlocks }
+    c: actorByUuid(uuid: $c) { id viewerBlocks }
+  }
+`);
+
+const blockRelationshipBatchQuery = parse(`
+  query BlockRelationshipBatch($a: UUID!, $b: UUID!, $c: UUID!) {
+    a: actorByUuid(uuid: $a) { id viewerBlocks blocksViewer }
+    b: actorByUuid(uuid: $b) { id viewerBlocks blocksViewer }
+    c: actorByUuid(uuid: $c) { id viewerBlocks blocksViewer }
+  }
+`);
+
+Deno.test({
+  name: "Actor.viewerFollows returns the right state per actor when batched",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "vfviewer",
+        name: "VF Viewer",
+        email: "vfviewer@example.com",
+      });
+      const followed = await insertAccountWithActor(tx, {
+        username: "vffollowed",
+        name: "VF Followed",
+        email: "vffollowed@example.com",
+      });
+      const notFollowed = await insertAccountWithActor(tx, {
+        username: "vfnotfollowed",
+        name: "VF Not Followed",
+        email: "vfnotfollowed@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "vfstranger",
+        name: "VF Stranger",
+        email: "vfstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      await follow(fedCtx, viewer.account, followed.actor);
+
+      const result = await execute({
+        schema,
+        document: viewerFollowsBatchQuery,
+        variableValues: {
+          a: followed.actor.id,
+          b: notFollowed.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", followed.actor.id),
+          viewerFollows: true,
+        },
+        b: {
+          id: encodeGlobalID("Actor", notFollowed.actor.id),
+          viewerFollows: false,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerFollows: false,
+        },
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerFollows returns false for a guest viewer",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const someone = await insertAccountWithActor(tx, {
+        username: "vfguesttarget",
+        name: "VF Guest Target",
+        email: "vfguesttarget@example.com",
+      });
+
+      const result = await execute({
+        schema,
+        document: viewerFollowsBatchQuery,
+        variableValues: {
+          a: someone.actor.id,
+          b: someone.actor.id,
+          c: someone.actor.id,
+        },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        a: { viewerFollows: boolean };
+        b: { viewerFollows: boolean };
+        c: { viewerFollows: boolean };
+      };
+      assertEquals(data.a.viewerFollows, false);
+      assertEquals(data.b.viewerFollows, false);
+      assertEquals(data.c.viewerFollows, false);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "Actor.viewerFollows and followsViewer are batched into independent results",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "frelviewer",
+        name: "FREL Viewer",
+        email: "frelviewer@example.com",
+      });
+      const followed = await insertAccountWithActor(tx, {
+        username: "frelfollowed",
+        name: "FREL Followed",
+        email: "frelfollowed@example.com",
+      });
+      const fan = await insertAccountWithActor(tx, {
+        username: "frelfan",
+        name: "FREL Fan",
+        email: "frelfan@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "frelstranger",
+        name: "FREL Stranger",
+        email: "frelstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      // Viewer follows `followed` (viewerFollows=true on followed).
+      await follow(fedCtx, viewer.account, followed.actor);
+      // `fan` follows viewer (followsViewer=true on fan).
+      await follow(fedCtx, fan.account, viewer.actor);
+
+      const result = await execute({
+        schema,
+        document: followRelationshipBatchQuery,
+        variableValues: {
+          a: followed.actor.id,
+          b: fan.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", followed.actor.id),
+          viewerFollows: true,
+          followsViewer: false,
+        },
+        b: {
+          id: encodeGlobalID("Actor", fan.actor.id),
+          viewerFollows: false,
+          followsViewer: true,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerFollows: false,
+          followsViewer: false,
+        },
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerBlocks returns the right state per actor when batched",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "vbviewer",
+        name: "VB Viewer",
+        email: "vbviewer@example.com",
+      });
+      const blocked = await insertAccountWithActor(tx, {
+        username: "vbblocked",
+        name: "VB Blocked",
+        email: "vbblocked@example.com",
+      });
+      const notBlocked = await insertAccountWithActor(tx, {
+        username: "vbnotblocked",
+        name: "VB Not Blocked",
+        email: "vbnotblocked@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "vbstranger",
+        name: "VB Stranger",
+        email: "vbstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      await block(fedCtx, viewer.account, blocked.actor);
+
+      const result = await execute({
+        schema,
+        document: viewerBlocksBatchQuery,
+        variableValues: {
+          a: blocked.actor.id,
+          b: notBlocked.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", blocked.actor.id),
+          viewerBlocks: true,
+        },
+        b: {
+          id: encodeGlobalID("Actor", notBlocked.actor.id),
+          viewerBlocks: false,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerBlocks: false,
+        },
+      });
+    });
+  },
+});
+
+Deno.test({
+  name: "Actor.viewerBlocks returns false for a guest viewer",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const someone = await insertAccountWithActor(tx, {
+        username: "vbguesttarget",
+        name: "VB Guest Target",
+        email: "vbguesttarget@example.com",
+      });
+
+      const result = await execute({
+        schema,
+        document: viewerBlocksBatchQuery,
+        variableValues: {
+          a: someone.actor.id,
+          b: someone.actor.id,
+          c: someone.actor.id,
+        },
+        contextValue: makeGuestContext(tx),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        a: { viewerBlocks: boolean };
+        b: { viewerBlocks: boolean };
+        c: { viewerBlocks: boolean };
+      };
+      assertEquals(data.a.viewerBlocks, false);
+      assertEquals(data.b.viewerBlocks, false);
+      assertEquals(data.c.viewerBlocks, false);
+    });
+  },
+});
+
+Deno.test({
+  name:
+    "Actor.viewerBlocks and blocksViewer are batched into independent results",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const viewer = await insertAccountWithActor(tx, {
+        username: "brelviewer",
+        name: "BREL Viewer",
+        email: "brelviewer@example.com",
+      });
+      const blocked = await insertAccountWithActor(tx, {
+        username: "brelblocked",
+        name: "BREL Blocked",
+        email: "brelblocked@example.com",
+      });
+      const blocker = await insertAccountWithActor(tx, {
+        username: "brelblocker",
+        name: "BREL Blocker",
+        email: "brelblocker@example.com",
+      });
+      const stranger = await insertAccountWithActor(tx, {
+        username: "brelstranger",
+        name: "BREL Stranger",
+        email: "brelstranger@example.com",
+      });
+
+      const fedCtx = createFedCtx(tx);
+      // Viewer blocks `blocked` (viewerBlocks=true on blocked).
+      await block(fedCtx, viewer.account, blocked.actor);
+      // `blocker` blocks viewer (blocksViewer=true on blocker).
+      await block(fedCtx, blocker.account, viewer.actor);
+
+      const result = await execute({
+        schema,
+        document: blockRelationshipBatchQuery,
+        variableValues: {
+          a: blocked.actor.id,
+          b: blocker.actor.id,
+          c: stranger.actor.id,
+        },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      assertEquals(result.data, {
+        a: {
+          id: encodeGlobalID("Actor", blocked.actor.id),
+          viewerBlocks: true,
+          blocksViewer: false,
+        },
+        b: {
+          id: encodeGlobalID("Actor", blocker.actor.id),
+          viewerBlocks: false,
+          blocksViewer: true,
+        },
+        c: {
+          id: encodeGlobalID("Actor", stranger.actor.id),
+          viewerBlocks: false,
+          blocksViewer: false,
+        },
+      });
+    });
+  },
+});
+
+// GraphQL spec: top-level mutation fields execute serially.  With
+// `cache: false` on the loader, the second read sees the post-unblock
+// state.  If someone removes `cache: false` (default DataLoader cache
+// is `true`), the second `viewerBlocks` would return the cached `true`
+// from the first read and this test would fail.
+//
+// All four follow/block loaders are selected on the mutation payload
+// to smoke-test their plumbing.  Of the four, only `viewerBlocks`
+// actually flips between the two reads in this scenario; the others
+// stay at `false` because the viewer can't flip them in a single
+// authenticated mutation document.  A companion follow/unfollow test
+// below locks `cache: false` in for `viewerFollows`.
+const blockUnblockMutation = parse(`
+  mutation BlockThenUnblock($actorId: ID!) {
+    block: blockActor(input: { actorId: $actorId }) {
+      __typename
+      ... on BlockActorPayload {
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+        }
+      }
+    }
+    unblock: unblockActor(input: { actorId: $actorId }) {
+      __typename
+      ... on UnblockActorPayload {
+        blockee {
+          id
+          viewerBlocks
+          blocksViewer
+          viewerFollows
+          followsViewer
+        }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "Actor.viewerBlocks loader does not cache stale state across serial mutations",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const blocker = await insertAccountWithActor(tx, {
+        username: "vbcacheblocker",
+        name: "VB Cache Blocker",
+        email: "vbcacheblocker@example.com",
+      });
+      const blockee = await insertAccountWithActor(tx, {
+        username: "vbcacheblockee",
+        name: "VB Cache Blockee",
+        email: "vbcacheblockee@example.com",
+      });
+
+      const actorId = encodeGlobalID("Actor", blockee.actor.id);
+      const result = await execute({
+        schema,
+        document: blockUnblockMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, blocker.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        block: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+          };
+        };
+        unblock: {
+          __typename: string;
+          blockee?: {
+            id: string;
+            viewerBlocks: boolean;
+            blocksViewer: boolean;
+            viewerFollows: boolean;
+            followsViewer: boolean;
+          };
+        };
+      };
+
+      assertEquals(data.block.__typename, "BlockActorPayload");
+      assertEquals(data.unblock.__typename, "UnblockActorPayload");
+
+      // Crucial: this asserts the `viewerBlocks` loader re-queried after
+      // the unblock mutation flipped state.  A `cache: true` regression
+      // on `viewerBlocks` would surface here as the stale cached `true`.
+      assertEquals(data.block.blockee?.viewerBlocks, true);
+      assertEquals(data.unblock.blockee?.viewerBlocks, false);
+
+      // Smoke-test the other three loaders on the mutation payload.
+      // Their values don't flip between the two reads in this scenario,
+      // so cache: true vs cache: false isn't differentiated here — but
+      // a regression that breaks the field plumbing or returns
+      // undefined/null would surface.
+      assertEquals(data.block.blockee?.blocksViewer, false);
+      assertEquals(data.unblock.blockee?.blocksViewer, false);
+      assertEquals(data.block.blockee?.viewerFollows, false);
+      assertEquals(data.unblock.blockee?.viewerFollows, false);
+      assertEquals(data.block.blockee?.followsViewer, false);
+      assertEquals(data.unblock.blockee?.followsViewer, false);
+    });
+  },
+});
+
+// Companion test that genuinely locks `cache: false` in for
+// `viewerFollows`.  followActor creates the follow row and unfollowActor
+// removes it, so the loader's value flips between the two payload reads.
+const followUnfollowMutation = parse(`
+  mutation FollowThenUnfollow($actorId: ID!) {
+    follow: followActor(input: { actorId: $actorId }) {
+      __typename
+      ... on FollowActorPayload {
+        followee { id viewerFollows }
+      }
+    }
+    unfollow: unfollowActor(input: { actorId: $actorId }) {
+      __typename
+      ... on UnfollowActorPayload {
+        followee { id viewerFollows }
+      }
+    }
+  }
+`);
+
+Deno.test({
+  name:
+    "Actor.viewerFollows loader does not cache stale state across serial mutations",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await withRollback(async (tx) => {
+      const follower = await insertAccountWithActor(tx, {
+        username: "vfcachefollower",
+        name: "VF Cache Follower",
+        email: "vfcachefollower@example.com",
+      });
+      const followee = await insertAccountWithActor(tx, {
+        username: "vfcachefollowee",
+        name: "VF Cache Followee",
+        email: "vfcachefollowee@example.com",
+      });
+
+      const actorId = encodeGlobalID("Actor", followee.actor.id);
+      const result = await execute({
+        schema,
+        document: followUnfollowMutation,
+        variableValues: { actorId },
+        contextValue: makeUserContext(tx, follower.account),
+        onError: "NO_PROPAGATE",
+      });
+
+      assertEquals(result.errors, undefined);
+      const data = result.data as {
+        follow: {
+          __typename: string;
+          followee?: { id: string; viewerFollows: boolean };
+        };
+        unfollow: {
+          __typename: string;
+          followee?: { id: string; viewerFollows: boolean };
+        };
+      };
+
+      assertEquals(data.follow.__typename, "FollowActorPayload");
+      assertEquals(data.unfollow.__typename, "UnfollowActorPayload");
+      assertEquals(data.follow.followee?.viewerFollows, true);
+      // A `cache: true` regression on `viewerFollows` would surface
+      // here as a stale cached `true`.
+      assertEquals(data.unfollow.followee?.viewerFollows, false);
     });
   },
 });
