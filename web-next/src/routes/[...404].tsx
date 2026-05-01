@@ -44,7 +44,7 @@ export default function NotFound() {
           </p>
         </div>
         <Button as={A} href="/" size="lg">
-          {t`Go to home`}
+          {t`Go home`}
         </Button>
       </div>
     </main>

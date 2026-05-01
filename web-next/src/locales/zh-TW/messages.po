@@ -898,13 +898,13 @@ msgstr "GitHub 儲存庫"
 msgid "Go back"
 msgstr "返回"
 
+#: src/routes/[...404].tsx:47
+msgid "Go home"
+msgstr "返回首頁"
+
 #: src/components/FloatingComposeButton.tsx:148
 msgid "Go to Drafts"
 msgstr "前往草稿"
-
-#: src/routes/[...404].tsx:44
-msgid "Go to home"
-msgstr "返回首頁"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
 #: src/routes/(root)/[handle]/drafts/index.tsx:233
@@ -922,12 +922,11 @@ msgstr "向自上次重新發放截止時間以來最活躍的帳號（按內容
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
-#: src/routes/[...404].tsx:22
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
 #: src/routes/(root).tsx:83
-#: src/routes/[...404].tsx:14
+#: src/routes/[...404].tsx:17
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub 首頁"
 
@@ -1428,7 +1427,7 @@ msgstr "或輸入郵件中的驗證碼"
 msgid "Other languages"
 msgstr "其他語言"
 
-#: src/routes/[...404].tsx:37
+#: src/routes/[...404].tsx:40
 msgid "Page not found"
 msgstr "頁面未找到"
 
@@ -1927,7 +1926,7 @@ msgstr "邀請連結已成功建立。"
 msgid "The invitation link has been deleted successfully."
 msgstr "邀請連結已成功刪除。"
 
-#: src/routes/[...404].tsx:40
+#: src/routes/[...404].tsx:43
 msgid "The page you're looking for doesn't exist or has been moved."
 msgstr "您要找的頁面不存在或已移動。"
 

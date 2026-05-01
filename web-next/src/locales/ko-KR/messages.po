@@ -898,13 +898,13 @@ msgstr "GitHub 저장소"
 msgid "Go back"
 msgstr "돌아가기"
 
+#: src/routes/[...404].tsx:47
+msgid "Go home"
+msgstr "홈으로 가기"
+
 #: src/components/FloatingComposeButton.tsx:148
 msgid "Go to Drafts"
 msgstr "임시 보관으로"
-
-#: src/routes/[...404].tsx:44
-msgid "Go to home"
-msgstr "홈으로 가기"
 
 #: src/routes/(root)/[handle]/drafts/[id].tsx:70
 #: src/routes/(root)/[handle]/drafts/index.tsx:233
@@ -922,12 +922,11 @@ msgstr "마지막 재발급 시점 이후 가장 활발한 계정(콘텐츠 수 
 #: src/routes/(root)/coc.tsx:48
 #: src/routes/(root)/markdown.tsx:48
 #: src/routes/(root)/privacy.tsx:48
-#: src/routes/[...404].tsx:22
 msgid "Hackers' Pub"
 msgstr "Hackers' Pub"
 
 #: src/routes/(root).tsx:83
-#: src/routes/[...404].tsx:14
+#: src/routes/[...404].tsx:17
 msgid "Hackers' Pub home"
 msgstr "Hackers' Pub 홈"
 
@@ -1428,7 +1427,7 @@ msgstr "또는 이메일의 코드를 입력하세요"
 msgid "Other languages"
 msgstr "다른 언어"
 
-#: src/routes/[...404].tsx:37
+#: src/routes/[...404].tsx:40
 msgid "Page not found"
 msgstr "페이지를 찾을 수 없습니다"
 
@@ -1927,7 +1926,7 @@ msgstr "초대 링크가 성공적으로 생성되었습니다."
 msgid "The invitation link has been deleted successfully."
 msgstr "초대 링크가 성공적으로 삭제되었습니다."
 
-#: src/routes/[...404].tsx:40
+#: src/routes/[...404].tsx:43
 msgid "The page you're looking for doesn't exist or has been moved."
 msgstr "찾으시는 페이지가 존재하지 않거나 이동되었습니다."
 
