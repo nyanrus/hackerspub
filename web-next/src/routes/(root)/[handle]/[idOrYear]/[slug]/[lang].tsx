@@ -109,6 +109,10 @@ const requestArticleTranslationMutation = graphql`
       ... on RequestArticleTranslationPayload {
         article {
           id
+          contents(language: $language, includeBeingTranslated: true) {
+            language
+            beingTranslated
+          }
           ...Slug_head
             @arguments(language: $language, includeBeingTranslated: true)
           ...Slug_body
@@ -302,6 +306,29 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
         if (payload.__typename !== "RequestArticleTranslationPayload") {
           console.error(
             "Translation request returned an error payload:",
+            payload,
+          );
+          showToast({
+            title: t`Translation request failed`,
+            variant: "destructive",
+          });
+          setRequestFailed(true);
+          return;
+        }
+        // Quick-failure case: the server inserted the placeholder
+        // and the background `translate(...)` call rejected
+        // synchronously, so by the time Pothos serialized
+        // `article.contents` the failure-cleanup branch had
+        // already deleted the row.  The payload reports success
+        // but there's no in-progress row to render or poll, and
+        // the polling effect (gated on
+        // `content().beingTranslated`) never gets a chance to
+        // recover.  Surface this as a retryable failure so the
+        // user sees the retry UI instead of an indefinite
+        // placeholder.
+        if (payload.article.contents.length === 0) {
+          console.error(
+            "Translation request returned without a queued row:",
             payload,
           );
           showToast({
