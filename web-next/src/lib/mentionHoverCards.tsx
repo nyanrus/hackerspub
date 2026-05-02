@@ -1,6 +1,7 @@
 import * as PopoverPrimitive from "@kobalte/core/popover";
 import {
   type Accessor,
+  batch,
   createEffect,
   createSignal,
   onCleanup,
@@ -129,11 +130,14 @@ export function useMentionHoverCards(
     if (anchor() === m.el && open()) return;
     cancelOpen();
     openTimer = setTimeout(() => {
-      // Update the anchor first so Popper recomputes against the new rect
-      // when open flips to true.
-      setAnchor(m.el);
-      setLookup(m.lookup);
-      setOpen(true);
+      // Apply anchor + lookup + open in one reactive cycle so the
+      // Popover never sees a transitional combination of new anchor
+      // with stale lookup data.
+      batch(() => {
+        setAnchor(m.el);
+        setLookup(m.lookup);
+        setOpen(true);
+      });
       openTimer = undefined;
     }, OPEN_DELAY_MS);
   };
@@ -170,9 +174,11 @@ export function useMentionHoverCards(
       cancelClose();
       const a = anchor();
       if (a && el.contains(a)) {
-        setOpen(false);
-        setAnchor(undefined);
-        setLookup(undefined);
+        batch(() => {
+          setOpen(false);
+          setAnchor(undefined);
+          setLookup(undefined);
+        });
       }
     });
   });
