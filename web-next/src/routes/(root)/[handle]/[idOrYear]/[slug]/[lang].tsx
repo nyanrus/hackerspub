@@ -77,6 +77,7 @@ const LangPageQueryDef = graphql`
     }
     viewer {
       id
+      locales
       ...Slug_viewer
     }
   }
@@ -228,6 +229,7 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
           <ArticleBody
             $article={article()!}
             $viewer={data()?.viewer ?? undefined}
+            viewerLocales={data()?.viewer?.locales}
           />
         </Match>
       </Switch>

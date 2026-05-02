@@ -71,6 +71,7 @@ const SlugPageQueryDef = graphql`
       ...Slug_body @arguments(language: $language)
     }
     viewer {
+      locales
       ...Slug_viewer
     }
   }
@@ -110,6 +111,7 @@ export default function ArticlePage() {
               <ArticleBody
                 $article={article()}
                 $viewer={data().viewer ?? undefined}
+                viewerLocales={data().viewer?.locales}
               />
             </>
           )}
@@ -294,6 +296,7 @@ function articleOgImageUrls(
 interface ArticleBodyProps {
   $article: Slug_body$key;
   $viewer?: Slug_viewer$key;
+  viewerLocales?: readonly string[] | null;
 }
 
 function ArticleBody(props: ArticleBodyProps) {
@@ -352,6 +355,7 @@ function ArticleBody(props: ArticleBodyProps) {
                   $article={article()}
                   currentLanguage={content()?.language ?? undefined}
                   currentOriginalLanguage={content()?.originalLanguage}
+                  viewerLocales={props.viewerLocales}
                 />
 
                 <Show when={!content()?.beingTranslated && content()?.content}>
@@ -546,6 +550,7 @@ interface ArticleLanguageSwitcherProps {
   $article: Slug_languageSwitcher$key;
   currentLanguage?: string;
   currentOriginalLanguage?: string | null;
+  viewerLocales?: readonly string[] | null;
 }
 
 function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
@@ -558,6 +563,8 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         }
         publishedYear
         slug
+        language
+        allowLlmTranslation
         allContents: contents {
           language
           url
@@ -572,9 +579,34 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
       {(article) => {
         const postUrl = () =>
           `/@${article().actor.username}/${article().publishedYear}/${article().slug}`;
+        // Extra links for the viewer's preferred locales that aren't
+        // already represented in the existing translations and aren't
+        // the article's original language.  Clicking one navigates to
+        // `/lang`, which auto-fires `requestArticleTranslation` from
+        // `[lang].tsx` and renders the in-progress placeholder.
+        const extraLocales = () => {
+          if (!article().allowLlmTranslation) return [];
+          const locales = props.viewerLocales;
+          if (locales == null || locales.length === 0) return [];
+          const existing = new Set(
+            article().allContents.map((c) => c.language),
+          );
+          const seen = new Set<string>();
+          return locales.filter((locale) => {
+            if (locale === article().language) return false;
+            if (locale === props.currentLanguage) return false;
+            if (existing.has(locale)) return false;
+            if (seen.has(locale)) return false;
+            seen.add(locale);
+            return true;
+          });
+        };
 
         return (
-          <Show when={article().allContents.length > 1}>
+          <Show
+            when={article().allContents.length > 1 ||
+              extraLocales().length > 0}
+          >
             <aside class="mt-8 p-4 max-w-[80ch] border border-stone-200 dark:border-stone-700 flex flex-row gap-3 rounded-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -620,23 +652,32 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                 <nav class="text-stone-600 dark:text-stone-400">
                   <strong>{t`Other languages`}</strong> &rarr;{" "}
                   <For
-                    each={article().allContents.filter(
-                      (c) => c.language !== props.currentLanguage,
-                    )}
+                    each={[
+                      ...article().allContents.filter(
+                        (c) => c.language !== props.currentLanguage,
+                      ).map((c) => ({
+                        language: c.language,
+                        href: c.url,
+                      })),
+                      ...extraLocales().map((language) => ({
+                        language,
+                        href: `${postUrl()}/${language}`,
+                      })),
+                    ]}
                   >
-                    {(otherContent, i) => (
+                    {(other, i) => (
                       <>
                         {i() > 0 && <>{" "}&middot;{" "}</>}
                         <a
-                          href={otherContent.url}
-                          hreflang={otherContent.language}
-                          lang={otherContent.language}
+                          href={other.href}
+                          hreflang={other.language}
+                          lang={other.language}
                           rel="alternate"
                           class="text-stone-900 dark:text-stone-100"
                         >
-                          {new Intl.DisplayNames(otherContent.language, {
+                          {new Intl.DisplayNames(other.language, {
                             type: "language",
-                          }).of(otherContent.language)}
+                          }).of(other.language)}
                         </a>
                       </>
                     )}
