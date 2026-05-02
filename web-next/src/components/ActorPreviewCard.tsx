@@ -48,11 +48,16 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
         const profileHref = () =>
           a().local ? `/@${a().username}` : a().url ?? a().iri;
         const profileTarget = () => (a().local ? undefined : "_blank");
+        const profileRel = () => a().local ? undefined : "noopener noreferrer";
         return (
           <div class="flex flex-col">
             <div class="flex items-start gap-3 p-4">
               <Avatar class="size-12 shrink-0">
-                <a href={profileHref()} target={profileTarget()}>
+                <a
+                  href={profileHref()}
+                  target={profileTarget()}
+                  rel={profileRel()}
+                >
                   <AvatarImage src={a().avatarUrl} class="size-12" />
                   <AvatarFallback class="size-12">
                     {a().avatarInitials}
@@ -63,6 +68,7 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
                 <a
                   href={profileHref()}
                   target={profileTarget()}
+                  rel={profileRel()}
                   innerHTML={a().name || a().username}
                   class="truncate font-semibold"
                 />
