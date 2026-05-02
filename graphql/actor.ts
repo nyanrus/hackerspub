@@ -645,9 +645,13 @@ builder.queryFields((t) => ({
         );
       }
       if (actor) return actor;
-      const documentLoader = ctx.account == null
-        ? ctx.fedCtx.documentLoader
-        : await ctx.fedCtx.getDocumentLoader({ identifier: ctx.account.id });
+      // Guests must not trigger federation lookups: they would let
+      // unauthenticated callers spawn outbound WebFinger / actor fetches
+      // and persist arbitrary remote actors.
+      if (ctx.account == null) return null;
+      const documentLoader = await ctx.fedCtx.getDocumentLoader({
+        identifier: ctx.account.id,
+      });
       const actorObject = await ctx.fedCtx.lookupObject(
         handle,
         { documentLoader },

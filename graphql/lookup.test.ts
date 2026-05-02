@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
+import { lookupActorByUrl, lookupPostByUrl, parseHttpUrl } from "./lookup.ts";
 import {
+  createFedCtx,
   insertAccountWithActor,
   insertNotePost,
+  insertRemoteActor,
   makeGuestContext,
   withRollback,
 } from "../test/postgres.ts";
@@ -72,5 +74,65 @@ test("lookupPostByUrl() ignores local share rows when matching URLs", async () =
     );
 
     assert.equal(ignoredShare, null);
+  });
+});
+
+test("lookupPostByUrl() refuses federation lookup for guests", async () => {
+  await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const fedCtx = createFedCtx(tx, {
+      lookupObject: (uri) => {
+        lookupCalls.push(uri.toString());
+        return Promise.resolve(null);
+      },
+    });
+    const ctx = makeGuestContext(tx, { fedCtx });
+
+    const result = await lookupPostByUrl(
+      ctx,
+      new URL("https://unknown.example/posts/missing"),
+    );
+
+    assert.equal(result, null);
+    assert.deepEqual(lookupCalls, []);
+  });
+});
+
+test("lookupActorByUrl() returns a local actor by IRI", async () => {
+  await withRollback(async (tx) => {
+    const remote = await insertRemoteActor(tx, {
+      username: "lookupactoriri",
+      name: "Lookup Actor IRI",
+      host: "remote.example",
+    });
+
+    const found = await lookupActorByUrl(
+      makeGuestContext(tx),
+      new URL(remote.iri),
+    );
+
+    assert.ok(found != null);
+    assert.equal(found.id, remote.id);
+  });
+});
+
+test("lookupActorByUrl() refuses federation lookup for guests", async () => {
+  await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const fedCtx = createFedCtx(tx, {
+      lookupObject: (uri) => {
+        lookupCalls.push(uri.toString());
+        return Promise.resolve(null);
+      },
+    });
+    const ctx = makeGuestContext(tx, { fedCtx });
+
+    const result = await lookupActorByUrl(
+      ctx,
+      new URL("https://unknown.example/users/missing"),
+    );
+
+    assert.equal(result, null);
+    assert.deepEqual(lookupCalls, []);
   });
 });
