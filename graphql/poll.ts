@@ -293,12 +293,15 @@ builder.drizzleObjectField(Question, "poll", (t) =>
       if (question.poll != null) return question.poll;
       if (question.sharedPostId != null) return null;
 
+      // Guests must not trigger federation lookups: they would let
+      // unauthenticated callers spawn outbound fetches and persist remote
+      // poll subobjects on demand.
+      if (ctx.account == null) return null;
+
       try {
-        const documentLoader = ctx.account == null
-          ? undefined
-          : await ctx.fedCtx.getDocumentLoader({
-            identifier: ctx.account.id,
-          });
+        const documentLoader = await ctx.fedCtx.getDocumentLoader({
+          identifier: ctx.account.id,
+        });
         const postObject = await ctx.fedCtx.lookupObject(question.iri, {
           documentLoader,
         });

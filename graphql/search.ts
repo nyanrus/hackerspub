@@ -108,10 +108,15 @@ async function searchAsHandle(ctx: UserContext, query: string) {
     return { url: redirectUrl };
   }
 
+  // Guests must not trigger federation lookups: they would let unauthenticated
+  // callers spawn outbound WebFinger / actor fetches and persist arbitrary
+  // remote actors.
+  if (ctx.account == null) return null;
+
   // Try to fetch remote actor using federation context
-  const documentLoader = ctx.account == null
-    ? ctx.fedCtx.documentLoader
-    : await ctx.fedCtx.getDocumentLoader({ identifier: ctx.account.id });
+  const documentLoader = await ctx.fedCtx.getDocumentLoader({
+    identifier: ctx.account.id,
+  });
 
   let object;
   try {

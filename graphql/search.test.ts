@@ -3,6 +3,8 @@ import test from "node:test";
 import { execute, parse } from "graphql";
 import { schema } from "./mod.ts";
 import {
+  createFedCtx,
+  type FedCtxLookupObject,
   insertAccountWithActor,
   insertNotePost,
   makeGuestContext,
@@ -99,5 +101,55 @@ test("searchObject resolves local note URLs to canonical note routes", async () 
         url: `/@${account.account.username}/${noteSourceId}`,
       },
     });
+  });
+});
+
+test("searchObject returns null for an unknown URL without federation lookup", async () => {
+  await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const recordingLookup: FedCtxLookupObject = (uri) => {
+      lookupCalls.push(uri.toString());
+      return Promise.resolve(null);
+    };
+    const fedCtx = createFedCtx(tx, { lookupObject: recordingLookup });
+
+    const result = await execute({
+      schema,
+      document: searchObjectQuery,
+      variableValues: { query: "https://unknown.example/posts/missing" },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      searchObject: null,
+    });
+    assert.deepEqual(lookupCalls, []);
+  });
+});
+
+test("searchObject returns null for an unknown remote handle without federation lookup", async () => {
+  await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const recordingLookup: FedCtxLookupObject = (uri) => {
+      lookupCalls.push(uri.toString());
+      return Promise.resolve(null);
+    };
+    const fedCtx = createFedCtx(tx, { lookupObject: recordingLookup });
+
+    const result = await execute({
+      schema,
+      document: searchObjectQuery,
+      variableValues: { query: "@nobody@unknown.example" },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      searchObject: null,
+    });
+    assert.deepEqual(lookupCalls, []);
   });
 });

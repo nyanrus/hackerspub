@@ -8,6 +8,7 @@ import { actorTable, pinTable } from "@hackerspub/models/schema";
 import { schema } from "./mod.ts";
 import {
   createFedCtx,
+  type FedCtxLookupObject,
   insertAccountWithActor,
   insertNotePost,
   insertRemoteActor,
@@ -245,17 +246,50 @@ test("actorByUrl prefers an IRI match over a colliding url match", async () => {
 
 test("actorByUrl returns null for an unknown URL without federation lookup", async () => {
   await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const recordingLookup: FedCtxLookupObject = (uri) => {
+      lookupCalls.push(uri.toString());
+      return Promise.resolve(null);
+    };
+    const fedCtx = createFedCtx(tx, { lookupObject: recordingLookup });
     const result = await execute({
       schema,
       document: actorByUrlQuery,
       variableValues: { url: "https://example.invalid/users/nobody" },
-      contextValue: makeGuestContext(tx),
+      contextValue: makeGuestContext(tx, { fedCtx }),
       onError: "NO_PROPAGATE",
     });
     assert.equal(result.errors, undefined);
     assert.deepEqual(toPlainJson(result.data), {
       actorByUrl: null,
     });
+    assert.deepEqual(lookupCalls, []);
+  });
+});
+
+test("actorByHandle returns null for an unknown remote handle without federation lookup", async () => {
+  await withRollback(async (tx) => {
+    const lookupCalls: string[] = [];
+    const recordingLookup: FedCtxLookupObject = (uri) => {
+      lookupCalls.push(uri.toString());
+      return Promise.resolve(null);
+    };
+    const fedCtx = createFedCtx(tx, { lookupObject: recordingLookup });
+    const result = await execute({
+      schema,
+      document: actorByHandleQuery,
+      variableValues: {
+        handle: "@nobody@unknown.example",
+        allowLocalHandle: false,
+      },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByHandle: null,
+    });
+    assert.deepEqual(lookupCalls, []);
   });
 });
 
