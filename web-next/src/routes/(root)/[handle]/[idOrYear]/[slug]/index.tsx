@@ -718,12 +718,16 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         // `/lang`, which auto-fires `requestArticleTranslation` from
         // `[lang].tsx` and renders the in-progress placeholder.
         //
-        // Comparisons are done on the language subtag only (the
-        // `Intl.Locale.language` of each tag) so a viewer locale of
-        // `zh-TW` is suppressed when the article already has a `zh`
-        // translation; otherwise that link would just round-trip
-        // through `[lang].tsx` and redirect to `/zh` instead of
-        // representing a real new translation target.
+        // Comparisons are done on the language *and* script subtags
+        // (after `Intl.Locale.maximize()`) so two regional variants
+        // that share both (e.g., `en-US` vs `en-GB`) collapse — the
+        // existing translation already covers the viewer's locale —
+        // but two variants that differ in script (e.g., `zh-CN` vs
+        // `zh-TW`, which maximize to `zh-Hans-CN` vs `zh-Hant-TW`)
+        // stay distinct, because Simplified and Traditional Chinese
+        // are meaningfully different translation outputs and the
+        // viewer should be offered a link for each.  This mirrors the
+        // `requestArticleTranslation` mutation's same-language check.
         const extraLocales = () => {
           if (!article().allowLlmTranslation) return [];
           const locales = props.viewerLocales;
@@ -731,7 +735,8 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
           const subtag = (locale: string | null | undefined) => {
             if (locale == null) return null;
             try {
-              return new Intl.Locale(locale).language;
+              const max = new Intl.Locale(locale).maximize();
+              return `${max.language}-${max.script}`;
             } catch {
               return locale;
             }

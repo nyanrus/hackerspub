@@ -45,6 +45,32 @@ import {
 // instead of polling forever.
 const TRANSLATION_STALE_MS = 30 * 60 * 1000;
 
+// Two BCP 47 tags refer to the same translation output when their
+// maximized forms agree on both the `language` and `script` subtags.
+// The same `requestArticleTranslation` rule lives on the backend
+// (`graphql/post.ts`); the route uses it to distinguish "user asked
+// for a regional variant we already have content for, so redirect to
+// the canonical URL" from "user asked for a different script (e.g.,
+// `zh-TW` against a `zh-CN` original), which is a meaningfully
+// different translation we should queue."  Either tag may be null or
+// malformed (the GraphQL `Article.language` is nullable, and a
+// content row's `language` could in principle be a tag the runtime
+// can't parse); in those cases there's nothing to compare so we
+// conservatively report "no match."
+function matchesLanguageScript(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): boolean {
+  if (a == null || b == null) return false;
+  try {
+    const aMax = new Intl.Locale(a).maximize();
+    const bMax = new Intl.Locale(b).maximize();
+    return aMax.language === bMax.language && aMax.script === bMax.script;
+  } catch {
+    return false;
+  }
+}
+
 export const route = {
   matchFilters: {
     handle: /^@/,
@@ -196,7 +222,7 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   const canRequestTranslation = createMemo(() => {
     const a = article();
     return viewer() != null && a != null && a.allowLlmTranslation &&
-      a.language !== props.language;
+      !matchesLanguageScript(a.language, props.language);
   });
   // Mirrors the `30 * 60 * 1000` staleness window inside
   // `startArticleContentTranslation`: if the placeholder row hasn't
@@ -217,9 +243,19 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     const lastUpdate = Number.isNaN(updatedMs) ? 0 : updatedMs;
     return lastUpdate < Date.now() - TRANSLATION_STALE_MS;
   });
-  const shouldAutoRequest = createMemo(() =>
-    canRequestTranslation() && (content() == null || isStaleInProgress())
-  );
+  const shouldAutoRequest = createMemo(() => {
+    if (!canRequestTranslation()) return false;
+    const c = content();
+    if (c == null) return true;
+    if (isStaleInProgress()) return true;
+    // `Article.contents` negotiates among available locales, so a
+    // request for `zh-TW` on a `zh-CN`-only article comes back with
+    // the `zh-CN` row.  Don't render that under the wrong-script URL
+    // and don't redirect away from what the user asked for; queue a
+    // translation in their requested script instead.
+    if (!matchesLanguageScript(c.language, props.language)) return true;
+    return false;
+  });
   // Counter that bumps every time content transitions from existing
   // to null.  The auto-request effect uses it (via `requestKey`) to
   // distinguish "still the same first-time-missing render" from "the
@@ -274,6 +310,18 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     const c = content();
     const base = canonicalBase();
     if (c == null || base == null) return null;
+    // A logged-in viewer who can request translation gets the
+    // auto-request branch when the negotiated content is in a
+    // different script; don't preempt that with a redirect.  Guests
+    // (and viewers on articles where the author disabled LLM
+    // translation) still fall through to the redirect below so they
+    // at least see the content that does exist.
+    if (
+      !matchesLanguageScript(c.language, props.language) &&
+      canRequestTranslation()
+    ) {
+      return null;
+    }
     if (c.originalLanguage == null) return base;
     if (c.language !== props.language) return `${base}/${c.language}`;
     return null;
