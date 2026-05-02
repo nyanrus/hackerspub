@@ -630,20 +630,39 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         // the article's original language.  Clicking one navigates to
         // `/lang`, which auto-fires `requestArticleTranslation` from
         // `[lang].tsx` and renders the in-progress placeholder.
+        //
+        // Comparisons are done on the language subtag only (the
+        // `Intl.Locale.language` of each tag) so a viewer locale of
+        // `zh-TW` is suppressed when the article already has a `zh`
+        // translation; otherwise that link would just round-trip
+        // through `[lang].tsx` and redirect to `/zh` instead of
+        // representing a real new translation target.
         const extraLocales = () => {
           if (!article().allowLlmTranslation) return [];
           const locales = props.viewerLocales;
           if (locales == null || locales.length === 0) return [];
+          const subtag = (locale: string | null | undefined) => {
+            if (locale == null) return null;
+            try {
+              return new Intl.Locale(locale).language;
+            } catch {
+              return locale;
+            }
+          };
           const existing = new Set(
-            article().allContents.map((c) => c.language),
+            article().allContents.map((c) => subtag(c.language)),
           );
+          const articleSubtag = subtag(article().language);
+          const currentSubtag = subtag(props.currentLanguage);
           const seen = new Set<string>();
           return locales.filter((locale) => {
-            if (locale === article().language) return false;
-            if (locale === props.currentLanguage) return false;
-            if (existing.has(locale)) return false;
-            if (seen.has(locale)) return false;
-            seen.add(locale);
+            const s = subtag(locale);
+            if (s == null) return false;
+            if (s === articleSubtag) return false;
+            if (s === currentSubtag) return false;
+            if (existing.has(s)) return false;
+            if (seen.has(s)) return false;
+            seen.add(s);
             return true;
           });
         };
