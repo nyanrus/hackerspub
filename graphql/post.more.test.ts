@@ -1262,6 +1262,48 @@ test("requestArticleTranslation rejects requests where target language equals th
   });
 });
 
+test("requestArticleTranslation rejects regional variants of the source language", async () => {
+  // `Article.contents(language: ...)` negotiates among available
+  // locales rather than requiring an exact tag, so allowing a
+  // same-family target (`en` -> `en-US`, `ko` -> `ko-KR`) would
+  // create a redundant placeholder row whose canonical URL would
+  // negotiate back to the existing source content and leave the
+  // newly inserted row unreachable.
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatesamefamily",
+      slug: "samefamily",
+      language: "en",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatesamefamilyrequester",
+      name: "Same Family Requester",
+      email: "rattranslatesamefamilyrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "en-US",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "LlmTranslationNotAllowedError",
+        reason: "SAME_LANGUAGE",
+      },
+    });
+  });
+});
+
 test("requestArticleTranslation rejects locales not on the project allow-list", async () => {
   // The `Locale` scalar would happily accept any well-formed BCP 47
   // tag, but the `[lang]` route only serves locales that pass

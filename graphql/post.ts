@@ -1862,7 +1862,17 @@ builder.relayMutationField(
       if (targetLanguage == null) {
         throw new InvalidInputError("targetLanguage");
       }
-      if (targetLanguage === original.language) {
+      // Reject not just exact matches (`en` -> `en`) but also any
+      // request whose target shares the source's BCP 47 language
+      // subtag (`en` -> `en-US`, `ko` -> `ko-KR`).  `Article.contents`
+      // negotiates among available locales rather than requiring an
+      // exact tag, so allowing a same-language variant would create
+      // a redundant placeholder row whose canonical URL would
+      // negotiate back to the existing source content and leave the
+      // newly inserted row unreachable.
+      const targetSubtag = new Intl.Locale(targetLanguage).language;
+      const originalSubtag = new Intl.Locale(original.language).language;
+      if (targetSubtag === originalSubtag) {
         throw new LlmTranslationNotAllowedError("SAME_LANGUAGE");
       }
 
