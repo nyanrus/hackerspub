@@ -1883,11 +1883,26 @@ builder.relayMutationField(
         throw new LlmTranslationNotAllowedError("SAME_LANGUAGE");
       }
 
-      await startArticleContentTranslation(ctx.fedCtx, {
-        content: original,
-        targetLanguage,
-        requester: ctx.account,
-      });
+      // Skip enqueueing if a *completed* translation for the target
+      // locale already exists.  `startArticleContentTranslation` is
+      // already idempotent against this case (it returns early without
+      // calling the translator), but checking here against the
+      // already-fetched `articleSource.contents` lets the resolver
+      // avoid the extra DB round-trip and makes the no-op intent
+      // explicit at the resolver layer.  In-progress and stale rows
+      // are intentionally not short-circuited here so the model layer
+      // can re-queue them per its 30-minute staleness window.
+      const alreadyTranslated = post.articleSource.contents.some(
+        (c) =>
+          !c.beingTranslated && normalizeLocale(c.language) === targetLanguage,
+      );
+      if (!alreadyTranslated) {
+        await startArticleContentTranslation(ctx.fedCtx, {
+          content: original,
+          targetLanguage,
+          requester: ctx.account,
+        });
+      }
 
       return post;
     },

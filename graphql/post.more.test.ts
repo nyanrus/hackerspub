@@ -1492,3 +1492,105 @@ test("requestArticleTranslation queues an in-progress translation row", async ()
     assert.equal(stored.translationRequesterId, requester.account.id);
   });
 });
+
+test("requestArticleTranslation skips enqueueing when a completed translation already exists", async () => {
+  // The model layer is already idempotent against this case (it
+  // returns early without invoking the translator), but the resolver
+  // can short-circuit even earlier from the already-fetched
+  // `articleSource.contents`.  Exercise the early return by stubbing
+  // the translator with one that throws if invoked: a successful
+  // mutation response that doesn't disturb the existing row proves
+  // the precheck fired.
+  await withRollback(async (tx) => {
+    const { postId, sourceId, author } = await insertTranslatableArticle(tx, {
+      username: "rattranslatealready",
+      slug: "alreadytranslated",
+    });
+    // Insert a completed `ko` translation alongside the original `en`
+    // row so the resolver's precheck has something to match.
+    const existingPublished = new Date("2026-04-16T00:00:00.000Z");
+    await tx.insert(articleContentTable).values({
+      sourceId,
+      language: "ko",
+      title: "안녕",
+      content: "이미 번역된 본문.",
+      originalLanguage: "en",
+      beingTranslated: false,
+      translationRequesterId: author.account.id,
+      published: existingPublished,
+      updated: existingPublished,
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatealreadyrequester",
+      name: "Already Requester",
+      email: "rattranslatealreadyrequester@example.com",
+    });
+
+    const fedCtx = createFedCtx(tx);
+    let translatorCalled = false;
+    fedCtx.data.models = {
+      summarizer: {} as never,
+      translator: {
+        specificationVersion: "v2",
+        provider: "test",
+        modelId: "throw",
+        supportedUrls: {},
+        doGenerate: () => {
+          translatorCalled = true;
+          throw new Error(
+            "translator should not be invoked when a completed " +
+              "translation already exists",
+          );
+        },
+        doStream: () => {
+          translatorCalled = true;
+          throw new Error(
+            "translator should not be invoked when a completed " +
+              "translation already exists",
+          );
+        },
+      },
+    } as unknown as typeof fedCtx.data.models;
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutationByLanguage,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+        language: "ko",
+      },
+      contextValue: makeUserContext(tx, requester.account, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "RequestArticleTranslationPayload",
+        article: {
+          id: encodeGlobalID("Article", postId),
+          contents: [
+            {
+              language: "ko",
+              originalLanguage: "en",
+              beingTranslated: false,
+            },
+          ],
+        },
+      },
+    });
+    assert.equal(translatorCalled, false);
+
+    // The pre-existing row must be untouched: not flipped back to
+    // `beingTranslated`, not re-stamped with the new requester.
+    const stored = await tx.query.articleContentTable.findFirst({
+      where: { sourceId, language: "ko" },
+    });
+    assert.ok(stored != null);
+    assert.equal(stored.beingTranslated, false);
+    assert.equal(stored.translationRequesterId, author.account.id);
+  });
+});
