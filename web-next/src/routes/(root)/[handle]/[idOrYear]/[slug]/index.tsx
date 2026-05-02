@@ -8,13 +8,14 @@ import {
 } from "@solidjs/router";
 import { HttpHeader, HttpStatusCode } from "@solidjs/start";
 import { graphql } from "relay-runtime";
-import { For, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import {
   createFragment,
   createPreloadedQuery,
   loadQuery,
   useRelayEnvironment,
 } from "solid-relay";
+import { ActorHoverCard } from "~/components/ActorHoverCard.tsx";
 import { NoteCard } from "~/components/NoteCard.tsx";
 import { NoteComposer } from "~/components/NoteComposer.tsx";
 import { PostActionMenu } from "~/components/PostActionMenu.tsx";
@@ -30,6 +31,10 @@ import {
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { SlugPageQuery } from "./__generated__/SlugPageQuery.graphql.ts";
 import type { Slug_articleHeader$key } from "./__generated__/Slug_articleHeader.graphql.ts";
 import type { Slug_body$key } from "./__generated__/Slug_body.graphql.ts";
@@ -231,6 +236,8 @@ interface ArticleBodyProps {
 }
 
 function ArticleBody(props: ArticleBodyProps) {
+  const [proseRef, setProseRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(proseRef);
   const article = createFragment(
     graphql`
       fragment Slug_body on Article {
@@ -276,12 +283,14 @@ function ArticleBody(props: ArticleBodyProps) {
                 <Show when={!content()?.beingTranslated && content()?.content}>
                   {(html) => (
                     <div
+                      ref={setProseRef}
                       lang={content()?.language ?? undefined}
                       class="prose dark:prose-invert mt-4 text-xl leading-8"
                       innerHTML={html()}
                     />
                   )}
                 </Show>
+                <MentionHoverCardLayer state={mentionState} />
 
                 <ArticleTags tags={article().tags} class="2xl:hidden mt-4" />
 
@@ -371,29 +380,36 @@ function ArticleHeader(props: ArticleHeaderProps) {
 
         return (
           <div class="flex gap-4 mt-4 items-center">
-            <Avatar class="size-12">
-              <InternalLink
-                href={actorHref()}
-                internalHref={actorInternalHref()}
-              >
-                <AvatarImage
-                  src={article().actor.avatarUrl}
-                  class="size-12"
-                />
-                <AvatarFallback class="size-12">
-                  {article().actor.avatarInitials}
-                </AvatarFallback>
-              </InternalLink>
-            </Avatar>
+            <ActorHoverCard
+              handle={article().actor.handle}
+              class="shrink-0"
+            >
+              <Avatar class="size-12">
+                <InternalLink
+                  href={actorHref()}
+                  internalHref={actorInternalHref()}
+                >
+                  <AvatarImage
+                    src={article().actor.avatarUrl}
+                    class="size-12"
+                  />
+                  <AvatarFallback class="size-12">
+                    {article().actor.avatarInitials}
+                  </AvatarFallback>
+                </InternalLink>
+              </Avatar>
+            </ActorHoverCard>
             <div class="flex flex-col flex-1">
               <Show when={(article().actor.name ?? "").trim() !== ""}>
                 {/* Actor names are sanitized HTML that may include custom emoji markup. */}
-                <InternalLink
-                  innerHTML={article().actor.name ?? ""}
-                  href={actorHref()}
-                  internalHref={actorInternalHref()}
-                  class="font-semibold"
-                />
+                <ActorHoverCard handle={article().actor.handle}>
+                  <InternalLink
+                    innerHTML={article().actor.name ?? ""}
+                    href={actorHref()}
+                    internalHref={actorInternalHref()}
+                    class="font-semibold"
+                  />
+                </ActorHoverCard>
               </Show>
               <div class="flex flex-row items-center text-muted-foreground gap-1 flex-wrap">
                 <span class="select-all">

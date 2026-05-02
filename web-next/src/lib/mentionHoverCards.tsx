@@ -7,6 +7,8 @@ import {
   Show,
 } from "solid-js";
 import { ActorHoverCardLoader } from "~/components/ActorHoverCardLoader.tsx";
+import { ACTOR_HOVER_SURFACE_CLASS } from "~/components/ui/hover-card.tsx";
+import { cn } from "~/lib/utils.ts";
 
 const OPEN_DELAY_MS = 400;
 const CLOSE_DELAY_MS = 200;
@@ -171,7 +173,10 @@ export function MentionHoverCardLayer(props: MentionHoverCardLayerProps) {
     >
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
-          class="z-50 w-80 max-w-[calc(100vw-2rem)] origin-[var(--kb-popover-content-transform-origin)] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-md outline-none motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95"
+          class={cn(
+            ACTOR_HOVER_SURFACE_CLASS,
+            "origin-[var(--kb-popover-content-transform-origin)]",
+          )}
           onPointerEnter={props.state.onContentEnter}
           onPointerLeave={props.state.onContentLeave}
         >

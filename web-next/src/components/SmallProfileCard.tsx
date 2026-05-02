@@ -1,7 +1,11 @@
 import { graphql } from "relay-runtime";
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { SmallProfileCard_actor$key } from "./__generated__/SmallProfileCard_actor.graphql.ts";
 import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { FollowButton } from "./FollowButton.tsx";
@@ -11,6 +15,8 @@ export interface SmallProfileCardProps {
 }
 
 export function SmallProfileCard(props: SmallProfileCardProps) {
+  const [bioRef, setBioRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(bioRef);
   const actor = createFragment(
     graphql`
       fragment SmallProfileCard_actor on Actor {
@@ -66,12 +72,14 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
           <Show when={actor().bio}>
             {(bio) => (
               <div
+                ref={setBioRef}
                 innerHTML={bio()}
                 class="prose dark:prose-invert break-words"
               >
               </div>
             )}
           </Show>
+          <MentionHoverCardLayer state={mentionState} />
         </div>
       )}
     </Show>
