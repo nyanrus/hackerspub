@@ -1,5 +1,7 @@
+import { isActor } from "@fedify/vocab";
+import { persistActor } from "@hackerspub/models/actor";
 import { isPostObject, persistPost } from "@hackerspub/models/post";
-import type { Post } from "@hackerspub/models/schema";
+import type { Actor, Post } from "@hackerspub/models/schema";
 import type { UserContext } from "./builder.ts";
 
 /**
@@ -53,4 +55,46 @@ export async function lookupPostByUrl(
   });
 
   return persisted ?? null;
+}
+
+/**
+ * Look up an actor by URL. Tries the local database first, matching the URL
+ * against the actor's canonical `iri` and falling back to the human-facing
+ * `url` (the latter is nullable and non-unique on the actor table, so the
+ * `iri` match takes precedence). Falls back to a federation lookup if
+ * nothing matches locally; returns the persisted actor row, or `null` when
+ * the URL doesn't resolve to a fediverse actor.
+ */
+export async function lookupActorByUrl(
+  ctx: UserContext,
+  parsed: URL,
+): Promise<Actor | null> {
+  const url = parsed.href;
+
+  const byIri = await ctx.db.query.actorTable.findFirst({
+    where: { iri: url },
+  });
+  if (byIri != null) return byIri;
+
+  const byUrl = await ctx.db.query.actorTable.findFirst({
+    where: { url },
+  });
+  if (byUrl != null) return byUrl;
+
+  const documentLoader = ctx.account == null
+    ? ctx.fedCtx.documentLoader
+    : await ctx.fedCtx.getDocumentLoader({
+      identifier: ctx.account.id,
+    });
+
+  let object;
+  try {
+    object = await ctx.fedCtx.lookupObject(url, { documentLoader });
+  } catch {
+    return null;
+  }
+
+  if (!isActor(object)) return null;
+
+  return (await persistActor(ctx.fedCtx, object, { documentLoader })) ?? null;
 }

@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { encodeGlobalID } from "@pothos/plugin-relay";
+import { eq } from "drizzle-orm";
 import { execute, parse } from "graphql";
 import { follow } from "@hackerspub/models/following";
-import { pinTable } from "@hackerspub/models/schema";
+import { actorTable, pinTable } from "@hackerspub/models/schema";
 import { schema } from "./mod.ts";
 import {
   createFedCtx,
@@ -29,6 +30,15 @@ const actorByUuidQuery = parse(`
 const actorByHandleQuery = parse(`
   query ActorByHandle($handle: String!, $allowLocalHandle: Boolean!) {
     actorByHandle(handle: $handle, allowLocalHandle: $allowLocalHandle) {
+      id
+      handle
+    }
+  }
+`);
+
+const actorByUrlQuery = parse(`
+  query ActorByUrl($url: URL!) {
+    actorByUrl(url: $url) {
       id
       handle
     }
@@ -113,6 +123,138 @@ test("actorByUuid and actorByHandle resolve local actors", async () => {
         id: encodeGlobalID("Actor", actor.actor.id),
         handle: "@actorlookupgraphql@localhost",
       },
+    });
+  });
+});
+
+test("actorByUrl resolves a local actor by IRI", async () => {
+  await withRollback(async (tx) => {
+    const actor = await insertAccountWithActor(tx, {
+      username: "actorbyurllocal",
+      name: "Actor By URL Local",
+      email: "actorbyurllocal@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: actorByUrlQuery,
+      variableValues: { url: actor.actor.iri },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByUrl: {
+        id: encodeGlobalID("Actor", actor.actor.id),
+        handle: "@actorbyurllocal@localhost",
+      },
+    });
+  });
+});
+
+test("actorByUrl resolves a remote actor by IRI", async () => {
+  await withRollback(async (tx) => {
+    const remote = await insertRemoteActor(tx, {
+      username: "actorbyurlremote",
+      name: "Actor By URL Remote",
+      host: "remote.example",
+    });
+
+    const result = await execute({
+      schema,
+      document: actorByUrlQuery,
+      variableValues: { url: remote.iri },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByUrl: {
+        id: encodeGlobalID("Actor", remote.id),
+        handle: "@actorbyurlremote@remote.example",
+      },
+    });
+  });
+});
+
+test("actorByUrl resolves a remote actor by its human-facing url", async () => {
+  await withRollback(async (tx) => {
+    const remote = await insertRemoteActor(tx, {
+      username: "actorbyurlhuman",
+      name: "Actor By URL Human",
+      host: "remote.example",
+    });
+    const profileUrl = `https://remote.example/@actorbyurlhuman`;
+    await tx.update(actorTable).set({ url: profileUrl }).where(
+      eq(actorTable.id, remote.id),
+    );
+
+    const result = await execute({
+      schema,
+      document: actorByUrlQuery,
+      variableValues: { url: profileUrl },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByUrl: {
+        id: encodeGlobalID("Actor", remote.id),
+        handle: "@actorbyurlhuman@remote.example",
+      },
+    });
+  });
+});
+
+test("actorByUrl prefers an IRI match over a colliding url match", async () => {
+  await withRollback(async (tx) => {
+    const intended = await insertRemoteActor(tx, {
+      username: "actorbyurliri",
+      name: "Actor By URL IRI",
+      host: "iri.example",
+      iri: "https://iri.example/users/intended",
+    });
+    const collider = await insertRemoteActor(tx, {
+      username: "actorbyurlcollider",
+      name: "Actor By URL Collider",
+      host: "collider.example",
+    });
+    // The collider's `url` is set to the intended actor's IRI. A query for
+    // that string must return the actor whose `iri` matches, not the actor
+    // whose `url` matches.
+    await tx.update(actorTable).set({ url: intended.iri }).where(
+      eq(actorTable.id, collider.id),
+    );
+
+    const result = await execute({
+      schema,
+      document: actorByUrlQuery,
+      variableValues: { url: intended.iri },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByUrl: {
+        id: encodeGlobalID("Actor", intended.id),
+        handle: "@actorbyurliri@iri.example",
+      },
+    });
+  });
+});
+
+test("actorByUrl returns null for an unknown URL without federation lookup", async () => {
+  await withRollback(async (tx) => {
+    const result = await execute({
+      schema,
+      document: actorByUrlQuery,
+      variableValues: { url: "https://example.invalid/users/nobody" },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      actorByUrl: null,
     });
   });
 });

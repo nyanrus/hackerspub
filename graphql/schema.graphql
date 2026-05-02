@@ -1101,6 +1101,7 @@ type Query {
     allowLocalHandle: Boolean = false
     handle: String!
   ): Actor
+  actorByUrl(url: URL!): Actor
   actorByUuid(uuid: UUID!): Actor
 
   """
