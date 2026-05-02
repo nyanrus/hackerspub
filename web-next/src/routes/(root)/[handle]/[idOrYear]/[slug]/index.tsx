@@ -136,7 +136,10 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
   const article = createFragment(
     graphql`
       fragment Slug_head on Article
-        @argumentDefinitions(language: { type: "Locale" })
+        @argumentDefinitions(
+          language: { type: "Locale" }
+          includeBeingTranslated: { type: "Boolean", defaultValue: false }
+        )
       {
         actor {
           handle
@@ -144,7 +147,10 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
           rawName
           username
         }
-        contents(language: $language) {
+        contents(
+          language: $language
+          includeBeingTranslated: $includeBeingTranslated
+        ) {
           title
           summary
           language
@@ -296,9 +302,15 @@ function ArticleBody(props: ArticleBodyProps) {
   const article = createFragment(
     graphql`
       fragment Slug_body on Article
-        @argumentDefinitions(language: { type: "Locale" })
+        @argumentDefinitions(
+          language: { type: "Locale" }
+          includeBeingTranslated: { type: "Boolean", defaultValue: false }
+        )
       {
-        contents(language: $language) {
+        contents(
+          language: $language
+          includeBeingTranslated: $includeBeingTranslated
+        ) {
           title
           content
           toc

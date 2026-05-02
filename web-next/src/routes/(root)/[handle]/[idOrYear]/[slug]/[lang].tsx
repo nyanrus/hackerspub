@@ -48,7 +48,7 @@ const LangPageQueryDef = graphql`
       actor {
         username
       }
-      contents(language: $language) {
+      contents(language: $language, includeBeingTranslated: false) {
         language
         originalLanguage
       }
