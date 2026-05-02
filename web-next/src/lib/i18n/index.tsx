@@ -2,18 +2,20 @@ import { loadMessages } from "#i18n";
 import { negotiateLocale } from "@hackerspub/models/i18n";
 import { I18nProvider as KobalteI18nProvider } from "@kobalte/core/i18n";
 import { type I18n as LinguiI18n, setupI18n } from "@lingui/core";
-import { createAsync, query } from "@solidjs/router";
-import { getQuery, getRequestHeader } from "@solidjs/start/http";
+import { createAsync, query, useLocation } from "@solidjs/router";
+import { getRequestHeader } from "@solidjs/start/http";
 import { parseAcceptLanguage } from "intl-parse-accept-language";
 import { graphql, readInlineData } from "relay-runtime";
 import { createContext, type ParentProps, Show, useContext } from "solid-js";
 import linguiConfig from "../../../lingui.config.ts";
 import type { i18nProviderLoadI18n_query$key } from "./__generated__/i18nProviderLoadI18n_query.graphql.ts";
 
-const loadI18n = query(async ($query: i18nProviderLoadI18n_query$key) => {
+const loadI18n = query(async (
+  $query: i18nProviderLoadI18n_query$key,
+  langOverride: string | undefined,
+) => {
   "use server";
 
-  const query = getQuery();
   const accountLocales = readInlineData(
     graphql`
       fragment i18nProviderLoadI18n_query on Query @inline {
@@ -27,8 +29,15 @@ const loadI18n = query(async ($query: i18nProviderLoadI18n_query$key) => {
 
   let loc: Intl.Locale | undefined;
   const locales: string[] = [];
-  if (typeof query.lang === "string") {
-    loc = negotiateLocale(query.lang, linguiConfig.locales);
+  if (langOverride) {
+    try {
+      loc = negotiateLocale(
+        new Intl.Locale(langOverride),
+        linguiConfig.locales,
+      );
+    } catch {
+      // Ignore unparseable locale codes from ?lang=… and fall through.
+    }
   }
   if (loc == null && accountLocales != null && accountLocales.length > 0) {
     loc = negotiateLocale(accountLocales, linguiConfig.locales);
@@ -56,7 +65,13 @@ export interface I18nProviderProps {
 }
 
 export function I18nProvider(props: ParentProps<I18nProviderProps>) {
-  const locale = createAsync(() => loadI18n(props.$query));
+  const location = useLocation();
+  const langOverride = () => {
+    const value = location.query.lang;
+    if (Array.isArray(value)) return value[0] || undefined;
+    return value || undefined;
+  };
+  const locale = createAsync(() => loadI18n(props.$query, langOverride()));
   const i18n = () => {
     const loaded = locale();
     if (!loaded) return;
