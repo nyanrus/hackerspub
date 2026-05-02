@@ -364,11 +364,23 @@ export function createTestEmailTransport(): TestEmailTransport {
   };
 }
 
+export type FedCtxLookupObject = RequestContext<ContextData>["lookupObject"];
+
 export function createFedCtx(
   tx: Transaction,
-  options: { kv?: UserContext["kv"] } = {},
+  options: {
+    kv?: UserContext["kv"];
+    lookupObject?: FedCtxLookupObject;
+  } = {},
 ): RequestContext<ContextData> {
   const kv = options.kv ?? createTestKv().kv;
+  const lookupObject: FedCtxLookupObject = options.lookupObject ?? (() => {
+    throw new Error(
+      "createFedCtx default lookupObject was called; pass " +
+        "options.lookupObject to opt in or override fedCtx.lookupObject " +
+        "explicitly.",
+    );
+  });
 
   return {
     host: "localhost",
@@ -406,6 +418,7 @@ export function createFedCtx(
         "http://localhost/",
       );
     },
+    lookupObject,
     sendActivity() {
       return Promise.resolve(undefined);
     },
