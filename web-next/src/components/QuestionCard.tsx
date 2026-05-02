@@ -241,12 +241,14 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                 </ActorHoverCard>
                 {" "}
               </Show>
-              <span
-                class="min-w-0 grow truncate select-all text-muted-foreground"
-                title={q().actor.handle}
-              >
-                {q().actor.handle}
-              </span>
+              <ActorHoverCard handle={q().actor.handle} class="min-w-0 grow">
+                <span
+                  class="truncate select-all text-muted-foreground"
+                  title={q().actor.handle}
+                >
+                  {q().actor.handle}
+                </span>
+              </ActorHoverCard>
               <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
                 <InternalLink
                   href={q().url ?? q().iri}

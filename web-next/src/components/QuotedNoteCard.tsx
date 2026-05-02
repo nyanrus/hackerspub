@@ -81,12 +81,14 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
                     </ActorHoverCard>
                     {" "}
                   </Show>
-                  <span
-                    class="break-all select-all text-muted-foreground"
-                    title={note().actor.handle}
-                  >
-                    {note().actor.handle}
-                  </span>
+                  <ActorHoverCard handle={note().actor.handle}>
+                    <span
+                      class="break-all select-all text-muted-foreground"
+                      title={note().actor.handle}
+                    >
+                      {note().actor.handle}
+                    </span>
+                  </ActorHoverCard>
                 </div>
                 <div class="flex min-w-0 flex-row flex-wrap gap-1 text-muted-foreground">
                   <InternalLink

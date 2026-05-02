@@ -188,12 +188,17 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                     />
                   </ActorHoverCard>
                 </Show>
-                <span
-                  class="min-w-0 truncate select-all text-muted-foreground"
-                  title={article().actor.handle}
+                <ActorHoverCard
+                  handle={article().actor.handle}
+                  class="min-w-0"
                 >
-                  {article().actor.handle}
-                </span>
+                  <span
+                    class="truncate select-all text-muted-foreground"
+                    title={article().actor.handle}
+                  >
+                    {article().actor.handle}
+                  </span>
+                </ActorHoverCard>
               </div>
               <div class="flex flex-row items-center gap-1 text-sm text-muted-foreground/70">
                 <Timestamp value={article().published} capitalizeFirstLetter />
