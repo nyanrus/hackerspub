@@ -60,14 +60,15 @@ const SlugPageQueryDef = graphql`
     $handle: String!
     $idOrYear: String!
     $slug: String!
+    $language: Locale
   ) {
     articleByYearAndSlug(
       handle: $handle
       idOrYear: $idOrYear
       slug: $slug
     ) {
-      ...Slug_head
-      ...Slug_body
+      ...Slug_head @arguments(language: $language)
+      ...Slug_body @arguments(language: $language)
     }
     viewer {
       ...Slug_viewer
@@ -80,7 +81,7 @@ const loadPageQuery = query(
     loadQuery<SlugPageQuery>(
       useRelayEnvironment()(),
       SlugPageQueryDef,
-      { handle, idOrYear, slug },
+      { handle, idOrYear, slug, language: null },
     ),
   "loadArticlePageQuery",
 );
@@ -118,6 +119,8 @@ export default function ArticlePage() {
   );
 }
 
+export { ArticleBody, ArticleMetaHead };
+
 interface ArticleMetaHeadProps {
   $article: Slug_head$key;
 }
@@ -126,14 +129,16 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
   const { t } = useLingui();
   const article = createFragment(
     graphql`
-      fragment Slug_head on Article {
+      fragment Slug_head on Article
+        @argumentDefinitions(language: { type: "Locale" })
+      {
         actor {
           handle
           name
           rawName
           username
         }
-        contents {
+        contents(language: $language) {
           title
           summary
           language
@@ -240,12 +245,15 @@ function ArticleBody(props: ArticleBodyProps) {
   const mentionState = useMentionHoverCards(proseRef);
   const article = createFragment(
     graphql`
-      fragment Slug_body on Article {
-        contents {
+      fragment Slug_body on Article
+        @argumentDefinitions(language: { type: "Locale" })
+      {
+        contents(language: $language) {
           title
           content
           toc
           language
+          originalLanguage
           beingTranslated
         }
         tags
@@ -278,7 +286,11 @@ function ArticleBody(props: ArticleBodyProps) {
                   items={toc()}
                   hidden={content()?.beingTranslated ?? false}
                 />
-                <ArticleLanguageSwitcher $article={article()} />
+                <ArticleLanguageSwitcher
+                  $article={article()}
+                  currentLanguage={content()?.language ?? undefined}
+                  currentOriginalLanguage={content()?.originalLanguage}
+                />
 
                 <Show when={!content()?.beingTranslated && content()?.content}>
                   {(html) => (
@@ -470,6 +482,8 @@ function ArticleInlineToc(props: ArticleInlineTocProps) {
 
 interface ArticleLanguageSwitcherProps {
   $article: Slug_languageSwitcher$key;
+  currentLanguage?: string;
+  currentOriginalLanguage?: string | null;
 }
 
 function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
@@ -482,9 +496,8 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         }
         publishedYear
         slug
-        contents {
+        allContents: contents {
           language
-          originalLanguage
           url
         }
       }
@@ -495,12 +508,11 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents[0];
         const postUrl = () =>
           `/@${article().actor.username}/${article().publishedYear}/${article().slug}`;
 
         return (
-          <Show when={article().contents.length > 1}>
+          <Show when={article().allContents.length > 1}>
             <aside class="mt-8 p-4 max-w-[80ch] border border-stone-200 dark:border-stone-700 flex flex-row gap-3 rounded-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -517,10 +529,10 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                 />
               </svg>
               <div>
-                <Show when={content()?.originalLanguage}>
+                <Show when={props.currentOriginalLanguage}>
                   {(originalLanguage) => {
                     const sourceUrl = () => {
-                      const entry = article().contents.find(
+                      const entry = article().allContents.find(
                         (c) => c.language === originalLanguage(),
                       );
                       return entry?.url ?? postUrl();
@@ -546,8 +558,8 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                 <nav class="text-stone-600 dark:text-stone-400">
                   <strong>{t`Other languages`}</strong> &rarr;{" "}
                   <For
-                    each={article().contents.filter(
-                      (c) => c.language !== content()?.language,
+                    each={article().allContents.filter(
+                      (c) => c.language !== props.currentLanguage,
                     )}
                   >
                     {(otherContent, i) => (
