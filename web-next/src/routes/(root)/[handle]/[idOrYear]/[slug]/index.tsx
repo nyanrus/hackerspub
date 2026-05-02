@@ -831,7 +831,12 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                         (c) => c.language !== props.currentLanguage,
                       ).map((c) => ({
                         language: c.language,
-                        href: c.url,
+                        // Being-translated placeholder rows have no
+                        // server-assigned `url` yet; fall back to the
+                        // canonical `/lang` segment so the link still
+                        // points at a real route (where the placeholder
+                        // UI renders) instead of an empty href.
+                        href: c.url ?? `${postUrl()}/${c.language}`,
                       })),
                       ...extraLocales().map((language) => ({
                         language,
