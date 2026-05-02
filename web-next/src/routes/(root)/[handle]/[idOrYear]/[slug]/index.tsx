@@ -1,3 +1,4 @@
+import { normalizeLocale } from "@hackerspub/models/i18n";
 import type { Toc } from "@hackerspub/models/markup";
 import { Link, Meta } from "@solidjs/meta";
 import {
@@ -741,16 +742,28 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
           const articleSubtag = subtag(article().language);
           const currentSubtag = subtag(props.currentLanguage);
           const seen = new Set<string>();
-          return locales.filter((locale) => {
-            const s = subtag(locale);
-            if (s == null) return false;
-            if (s === articleSubtag) return false;
-            if (s === currentSubtag) return false;
-            if (existing.has(s)) return false;
-            if (seen.has(s)) return false;
+          // Each entry is the (normalized) locale tag we'll use as
+          // both the link href segment and the display-name lookup.
+          // We normalize through `normalizeLocale` (the same allow-
+          // list the `[lang]` route's `matchFilters` and the
+          // `requestArticleTranslation` mutation enforce) so a
+          // viewer locale like `fr-CH` or `ka-GE` (valid BCP 47 but
+          // outside `POSSIBLE_LOCALES`) is dropped here instead of
+          // rendering a link that lands on 404.
+          const result: string[] = [];
+          for (const locale of locales) {
+            const normalized = normalizeLocale(locale);
+            if (normalized == null) continue;
+            const s = subtag(normalized);
+            if (s == null) continue;
+            if (s === articleSubtag) continue;
+            if (s === currentSubtag) continue;
+            if (existing.has(s)) continue;
+            if (seen.has(s)) continue;
             seen.add(s);
-            return true;
-          });
+            result.push(normalized);
+          }
+          return result;
         };
 
         return (
