@@ -2,12 +2,11 @@ import { normalizeLocale } from "@hackerspub/models/i18n";
 import {
   Navigate,
   query,
-  revalidate,
   type RouteDefinition,
   useParams,
 } from "@solidjs/router";
 import { HttpStatusCode } from "@solidjs/start";
-import { graphql } from "relay-runtime";
+import { fetchQuery, graphql } from "relay-runtime";
 import {
   createEffect,
   createMemo,
@@ -150,6 +149,7 @@ interface ArticleLangPageContentProps {
 }
 
 function ArticleLangPageContent(props: ArticleLangPageContentProps) {
+  const env = useRelayEnvironment();
   const data = createPreloadedQuery<LangPageQuery>(
     LangPageQueryDef,
     () =>
@@ -188,17 +188,20 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // seconds.  When `beingTranslated` flips back to false (translation
   // finished) or the component unmounts, the interval is cleared via
   // `onCleanup` registered inside this effect's tracking scope.
+  // `fetchQuery` is used (instead of revalidating the Solid Router
+  // cache key) because it forces a network round trip and writes the
+  // fresh response into the Relay store, which `createPreloadedQuery`
+  // observes — revalidating the router cache alone would leave the
+  // already-populated Relay store unchanged.
   createEffect(() => {
     if (!content()?.beingTranslated) return;
     const interval = setInterval(() => {
-      void revalidate(
-        loadLangPageQuery.keyFor(
-          props.handle,
-          props.idOrYear,
-          props.slug,
-          props.language,
-        ),
-      );
+      fetchQuery<LangPageQuery>(env(), LangPageQueryDef, {
+        handle: props.handle,
+        idOrYear: props.idOrYear,
+        slug: props.slug,
+        language: props.language,
+      }).subscribe({});
     }, 30_000);
     onCleanup(() => clearInterval(interval));
   });
