@@ -25,7 +25,7 @@ export function ActorHoverCard(props: ActorHoverCardProps) {
     <HoverCard open={open()} onOpenChange={setOpen}>
       <HoverCardTrigger
         as="span"
-        class={cn("inline-flex", props.class)}
+        class={cn("inline-flex self-start", props.class)}
         role="presentation"
         tabIndex={-1}
       >

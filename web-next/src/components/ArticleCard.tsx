@@ -8,6 +8,10 @@ import {
 } from "~/components/ui/avatar.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
+import {
   ArticleCard_article$key,
 } from "./__generated__/ArticleCard_article.graphql.ts";
 import { ArticleCardInternal_article$key } from "./__generated__/ArticleCardInternal_article.graphql.ts";
@@ -44,9 +48,12 @@ export function ArticleCard(props: ArticleCardProps) {
     () => props.$article,
   );
   const [hover, setHover] = createSignal(false);
+  const [articleRef, setArticleRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(articleRef);
 
   return (
     <article
+      ref={setArticleRef}
       class="group flex flex-col border-b transition-colors last:border-none"
       classList={{ "bg-muted/40": hover() }}
     >
@@ -87,6 +94,7 @@ export function ArticleCard(props: ArticleCardProps) {
           </Show>
         )}
       </Show>
+      <MentionHoverCardLayer state={mentionState} />
     </article>
   );
 }

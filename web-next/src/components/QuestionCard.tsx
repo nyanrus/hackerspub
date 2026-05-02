@@ -18,6 +18,10 @@ import { Button } from "~/components/ui/button.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
 import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
@@ -121,6 +125,9 @@ interface QuestionCardContentProps {
 }
 
 function QuestionCardContent(props: QuestionCardContentProps) {
+  const [proseRef, setProseRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(proseRef);
+
   const question = createFragment(
     graphql`
       fragment QuestionCardContent_question on Question {
@@ -262,10 +269,12 @@ function QuestionCardContent(props: QuestionCardContentProps) {
               </span>
             </div>
             <div
+              ref={setProseRef}
               innerHTML={q().content}
               lang={q().language ?? undefined}
               class="prose dark:prose-invert break-words overflow-wrap"
             />
+            <MentionHoverCardLayer state={mentionState} />
             <Show when={q().poll}>
               {(poll) => (
                 <PollPanel

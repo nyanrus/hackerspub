@@ -1,11 +1,15 @@
 import { graphql } from "relay-runtime";
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { ActorHoverCard } from "~/components/ActorHoverCard.tsx";
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
 import { VisibilityTag } from "~/components/VisibilityTag.tsx";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { QuotedNoteCard_note$key } from "./__generated__/QuotedNoteCard_note.graphql.ts";
 
 export interface QuotedNoteCardProps {
@@ -15,6 +19,9 @@ export interface QuotedNoteCardProps {
 }
 
 export function QuotedNoteCard(props: QuotedNoteCardProps) {
+  const [proseRef, setProseRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(proseRef);
+
   const note = createFragment(
     graphql`
       fragment QuotedNoteCard_note on Note {
@@ -95,10 +102,12 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
               </div>
             </div>
             <div
+              ref={setProseRef}
               innerHTML={note().content}
               lang={note().language ?? undefined}
               class="prose dark:prose-invert break-words overflow-wrap px-4 pt-4"
             />
+            <MentionHoverCardLayer state={mentionState} />
           </div>
         </div>
       )}
