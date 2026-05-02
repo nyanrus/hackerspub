@@ -179,7 +179,21 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents?.[0];
+        // The bare slug route doesn't pass a `language` argument to
+        // `Slug_head`, so `contents` returns every completed row in
+        // whatever order the resolver picks; `contents[0]` is then
+        // an arbitrary translation rather than the article's source
+        // text.  Find the row whose language matches the article's
+        // own `language` (the canonical "original") first, and only
+        // fall back to `contents[0]` if the original isn't in the
+        // returned set (e.g., the `[lang]` route filtered to a
+        // specific translation).
+        const content = () => {
+          const c = article().contents;
+          if (c == null) return undefined;
+          return c.find((entry) => entry.language === article().language) ??
+            c[0];
+        };
         const title = () => content()?.title ?? "";
         const description = () => content()?.summary ?? "";
         const currentLanguage = () =>
@@ -190,9 +204,15 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
           if (props.canonicalLanguage == null) return articleUrl;
           try {
             const u = new URL(articleUrl);
-            u.pathname = `${
-              u.pathname.replace(/\/$/, "")
-            }/${props.canonicalLanguage}`;
+            // Strip any trailing slashes (more than one is unlikely
+            // but possible if the upstream URL ever changes), then
+            // append the language as a new path segment.  The
+            // language tag is `encodeURIComponent`-d to be defensive
+            // against future tags that might contain reserved
+            // characters; a normalized BCP 47 tag is a no-op here.
+            u.pathname = `${u.pathname.replace(/\/+$/, "")}/${
+              encodeURIComponent(props.canonicalLanguage)
+            }`;
             return u.toString();
           } catch {
             return null;
@@ -254,7 +274,7 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
               {(language) => (
                 <Meta
                   property="og:locale"
-                  content={language().replace("-", "_")}
+                  content={language().replaceAll("-", "_")}
                 />
               )}
             </Show>
@@ -266,7 +286,7 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
               {(c) => (
                 <Meta
                   property="og:locale:alternate"
-                  content={c.language.replace("-", "_")}
+                  content={c.language.replaceAll("-", "_")}
                 />
               )}
             </For>
@@ -324,6 +344,7 @@ function ArticleBody(props: ArticleBodyProps) {
           originalLanguage
           beingTranslated
         }
+        language
         tags
         ...PostControls_post
         ...Slug_articleHeader
@@ -337,7 +358,18 @@ function ArticleBody(props: ArticleBodyProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents?.[0];
+        // Same deterministic picker as `ArticleMetaHead` uses: prefer
+        // the row whose language matches the article's own
+        // (canonical original) over an arbitrary `contents[0]`,
+        // falling back to the first row if the original isn't in the
+        // returned set (the `[lang]` route filters to one specific
+        // translation).
+        const content = () => {
+          const c = article().contents;
+          if (c == null) return undefined;
+          return c.find((entry) => entry.language === article().language) ??
+            c[0];
+        };
         const toc = () => (content()?.toc ?? []) as Toc[];
 
         return (
@@ -347,7 +379,6 @@ function ArticleBody(props: ArticleBodyProps) {
                 <ArticleTitle
                   title={content()?.title}
                   language={content()?.language ?? undefined}
-                  beingTranslated={content()?.beingTranslated ?? false}
                 />
                 <ArticleHeader $article={article()} />
                 <ArticleInlineToc
@@ -407,15 +438,21 @@ function ArticleBody(props: ArticleBodyProps) {
 interface ArticleTitleProps {
   title?: string | null;
   language?: string;
-  beingTranslated: boolean;
 }
 
 function ArticleTitle(props: ArticleTitleProps) {
+  // Always render the article's `<h1>`, even while a translation is
+  // in progress, so the page keeps a primary heading and screen
+  // readers have a stable navigation landmark.  The translating
+  // placeholder card renders below this title rather than replacing
+  // it.
   return (
-    <Show when={!props.beingTranslated}>
-      <h1 class="text-4xl font-bold" lang={props.language}>
-        {props.title}
-      </h1>
+    <Show when={props.title}>
+      {(title) => (
+        <h1 class="text-4xl font-bold" lang={props.language}>
+          {title()}
+        </h1>
+      )}
     </Show>
   );
 }
