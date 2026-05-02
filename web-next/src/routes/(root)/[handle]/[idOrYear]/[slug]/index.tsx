@@ -163,6 +163,7 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
         }
         allContents: contents(includeBeingTranslated: true) {
           language
+          beingTranslated
         }
         language
         iri
@@ -281,7 +282,11 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
             </Show>
             <For
               each={article().allContents.filter(
-                (c) => c.language !== currentLanguage(),
+                // In-progress placeholder rows aren't readable
+                // translations yet, so listing them as
+                // `og:locale:alternate` would advertise content the
+                // crawler will only see as a "translating…" message.
+                (c) => !c.beingTranslated && c.language !== currentLanguage(),
               )}
             >
               {(c) => (
