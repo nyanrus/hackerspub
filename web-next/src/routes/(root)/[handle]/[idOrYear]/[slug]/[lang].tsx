@@ -333,13 +333,18 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // `updated`), and the row vanishing again after the background
   // translator's failure-cleanup branch deleted it.  `firedKey` keeps
   // a duplicate fire from happening when an unrelated reactive memo
-  // re-evaluates the effect with the same key.
+  // re-evaluates the effect with the same key.  The `requestFailed()`
+  // gate stops a stuck backend (mutation succeeds but the cleanup
+  // branch deletes the placeholder row, which bumps `missingEpoch`
+  // and changes `requestKey`) from re-firing the mutation in a tight
+  // loop; the user's "Try again" button (`handleRetry`) clears
+  // `requestFailed` and bumps `retryAttempt`, so manual recovery
+  // still works.
   let firedRequestKey: string | null = null;
   createEffect(() => {
     const key = requestKey();
-    if (key == null || key === firedRequestKey) return;
+    if (key == null || key === firedRequestKey || requestFailed()) return;
     firedRequestKey = key;
-    setRequestFailed(false);
     pendingRequest?.dispose();
     pendingRequest = requestTranslation({
       variables: {
