@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:633
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:764
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 条评论}}"
 
@@ -26,16 +26,14 @@ msgstr "{0, plural, other {符合条件的账号 # 个}}；若现在重新发放
 
 #. placeholder {0}: a().followersCount.totalCount
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ActorPreviewCard.tsx:106
-#: src/components/ActorPreviewCard.tsx:130
+#: src/components/ActorPreviewCard.tsx:63
 #: src/components/ProfileCard.tsx:257
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人关注}}"
 
 #. placeholder {0}: a().followeesCount.totalCount
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ActorPreviewCard.tsx:95
-#: src/components/ActorPreviewCard.tsx:119
+#: src/components/ActorPreviewCard.tsx:54
 #: src/components/ProfileCard.tsx:242
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {关注 # 人}}"
@@ -48,12 +46,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩余 # 次邀请}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:476
+#: src/components/QuestionCard.tsx:478
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {# 票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:422
+#: src/components/QuestionCard.tsx:424
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
@@ -169,7 +167,7 @@ msgstr "{0} 转发了你的内容"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:158
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:201
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
@@ -408,7 +406,7 @@ msgstr "选择你的朋友使用的语言。这个语言只会用于邀请。"
 msgid "Choose your preferred language for the verification email."
 msgstr "请选择验证邮件的语言。"
 
-#: src/components/QuestionCard.tsx:414
+#: src/components/QuestionCard.tsx:416
 msgid "Closed"
 msgstr "已结束"
 
@@ -461,11 +459,11 @@ msgstr "无法将链接复制到剪贴板。"
 msgid "Could not find a post at this URL"
 msgstr "无法在此URL找到内容"
 
-#: src/components/ActorHoverCardLoader.tsx:36
+#: src/components/ActorHoverCardLoader.tsx:34
 msgid "Could not load profile."
 msgstr "无法加载个人资料。"
 
-#: src/components/QuestionCard.tsx:367
+#: src/components/QuestionCard.tsx:369
 msgid "Could not vote on this poll"
 msgstr "无法提交此投票"
 
@@ -589,7 +587,7 @@ msgstr "拖动选择要保留的区域，然后点击「裁剪」来更新你的
 msgid "e.g., @user@mastodon.social"
 msgstr "例如：@user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:413
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:507
 msgid "Edit"
 msgstr "编辑"
 
@@ -612,11 +610,11 @@ msgstr "电子邮件地址"
 msgid "Email or username"
 msgstr "邮箱或用户名"
 
-#: src/components/QuestionCard.tsx:417
+#: src/components/QuestionCard.tsx:419
 msgid "Ended"
 msgstr "已结束"
 
-#: src/components/QuestionCard.tsx:417
+#: src/components/QuestionCard.tsx:419
 msgid "Ends"
 msgstr "截止"
 
@@ -848,7 +846,7 @@ msgstr "文章更新失败，请重试。"
 msgid "Failed to upload image"
 msgstr "图片上传失败"
 
-#: src/components/QuestionCard.tsx:375
+#: src/components/QuestionCard.tsx:377
 msgid "Failed to vote"
 msgstr "投票失败"
 
@@ -890,7 +888,7 @@ msgstr "只粉丝可见"
 msgid "Following"
 msgstr "关注"
 
-#: src/components/ActorPreviewCard.tsx:141
+#: src/components/ActorPreviewCard.tsx:149
 #: src/components/ProfileCard.tsx:267
 msgid "Following you"
 msgstr "关注了你"
@@ -986,7 +984,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "启用后，AI 将为您生成文章摘要。否则，将使用文章的前几行作为摘要。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:655
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:786
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在联邦宇宙有个账户，你可以在你自己的实例里评论此文章。在你的实例搜索 {0} 后回复。"
 
@@ -1284,7 +1282,7 @@ msgstr "移动到顶部"
 msgid "Move up"
 msgstr "向上移动"
 
-#: src/components/QuestionCard.tsx:411
+#: src/components/QuestionCard.tsx:413
 msgid "Multiple choice"
 msgstr "多选"
 
@@ -1418,7 +1416,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀请次数"
 
-#: src/components/QuestionCard.tsx:414
+#: src/components/QuestionCard.tsx:416
 msgid "Open"
 msgstr "进行中"
 
@@ -1434,7 +1432,7 @@ msgstr "或"
 msgid "Or enter the code from the email"
 msgstr "或输入邮件中的验证码"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:531
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:653
 msgid "Other languages"
 msgstr "其他语言"
 
@@ -1504,11 +1502,11 @@ msgstr "请输入你的联邦宇宙用户名。"
 msgid "Please sign in to access this page"
 msgstr "请登录以访问此页面"
 
-#: src/components/QuestionCard.tsx:361
+#: src/components/QuestionCard.tsx:363
 msgid "Please sign in to vote"
 msgstr "请登录后投票"
 
-#: src/components/QuestionCard.tsx:336
+#: src/components/QuestionCard.tsx:338
 msgid "Poll closed"
 msgstr "投票已结束"
 
@@ -1616,8 +1614,8 @@ msgstr "用{emoji}反应"
 msgid "reaction"
 msgstr "反应"
 
-#: src/components/ArticleCard.tsx:379
-#: src/components/ArticleCard.tsx:399
+#: src/components/ArticleCard.tsx:377
+#: src/components/ArticleCard.tsx:397
 msgid "Read full article"
 msgstr "阅读完整文章"
 
@@ -1746,11 +1744,11 @@ msgstr "搜索内容…"
 msgid "Search results for {0}"
 msgstr "{0}的搜索结果"
 
-#: src/components/QuestionCard.tsx:341
+#: src/components/QuestionCard.tsx:343
 msgid "Select an option"
 msgstr "请选择一个选项"
 
-#: src/components/QuestionCard.tsx:341
+#: src/components/QuestionCard.tsx:343
 msgid "Select options"
 msgstr "请选择选项"
 
@@ -1796,7 +1794,7 @@ msgstr "登录"
 msgid "Sign in to Hackers' Pub"
 msgstr "登录 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:338
+#: src/components/QuestionCard.tsx:340
 msgid "Sign in to vote"
 msgstr "登录后投票"
 
@@ -1829,7 +1827,7 @@ msgstr "登录中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "注册 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:411
+#: src/components/QuestionCard.tsx:413
 msgid "Single choice"
 msgstr "单选"
 
@@ -1866,15 +1864,15 @@ msgstr "设置已成功保存"
 msgid "Successfully saved settings"
 msgstr "设置保存成功"
 
-#: src/components/ArticleCard.tsx:332
-#: src/components/ArticleCard.tsx:351
+#: src/components/ArticleCard.tsx:330
+#: src/components/ArticleCard.tsx:349
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:439
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:447
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:696
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:533
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:541
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:827
 msgid "Table of contents"
 msgstr "目录"
 
@@ -1884,7 +1882,7 @@ msgstr "目录"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:705
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:836
 msgid "Tags"
 msgstr "标签"
 
@@ -2024,14 +2022,20 @@ msgid "Total: {0}"
 msgstr "共 {0} 个"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:215
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
+#: src/components/ArticleCard.tsx:213
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:637
 msgid "Translated from {0}"
 msgstr "翻译自{0}"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:323
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:299
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:410
 msgid "Translating…"
 msgstr "正在翻译…"
+
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:279
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:287
+msgid "Translation request failed"
+msgstr "翻译请求失败"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:296
@@ -2154,19 +2158,19 @@ msgstr "所有人都可以看到，但不会出现在公共时间线中。只有
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未注册用户在内的所有人都可以看到。内容也会出现在公共时间线中。"
 
-#: src/components/QuestionCard.tsx:343
+#: src/components/QuestionCard.tsx:345
 msgid "Vote"
 msgstr "投票"
 
-#: src/components/QuestionCard.tsx:357
+#: src/components/QuestionCard.tsx:359
 msgid "Vote recorded"
 msgstr "已记录投票"
 
-#: src/components/QuestionCard.tsx:337
+#: src/components/QuestionCard.tsx:339
 msgid "Voted"
 msgstr "已投票"
 
-#: src/components/QuestionCard.tsx:339
+#: src/components/QuestionCard.tsx:341
 msgid "Voting…"
 msgstr "正在投票…"
 
@@ -2190,7 +2194,7 @@ msgstr "你在想啥？"
 msgid "Without shares"
 msgstr "不含转帖"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:646
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:777
 msgid "Write a reply…"
 msgstr "写个回复…"
 
