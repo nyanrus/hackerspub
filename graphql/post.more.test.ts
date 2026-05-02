@@ -968,6 +968,40 @@ const requestArticleTranslationMutation = parse(`
   }
 `);
 
+// Same payload shape as `requestArticleTranslationMutation`, but the
+// inner `contents(language: ...)` query takes the language as a
+// variable so tests that queue translations into languages other than
+// Korean can still introspect the freshly inserted row.
+const requestArticleTranslationMutationByLanguage = parse(`
+  mutation RequestArticleTranslationByLanguage(
+    $input: RequestArticleTranslationInput!
+    $language: Locale!
+  ) {
+    requestArticleTranslation(input: $input) {
+      __typename
+      ... on RequestArticleTranslationPayload {
+        article {
+          id
+          contents(language: $language, includeBeingTranslated: true) {
+            language
+            originalLanguage
+            beingTranslated
+          }
+        }
+      }
+      ... on NotAuthenticatedError {
+        notAuthenticated
+      }
+      ... on InvalidInputError {
+        inputPath
+      }
+      ... on LlmTranslationNotAllowedError {
+        reason
+      }
+    }
+  }
+`);
+
 interface TranslatableArticleFixture {
   author: Awaited<ReturnType<typeof insertAccountWithActor>>;
   postId: Uuid;
@@ -1301,6 +1335,65 @@ test("requestArticleTranslation rejects regional variants of the source language
         reason: "SAME_LANGUAGE",
       },
     });
+  });
+});
+
+test("requestArticleTranslation allows cross-script variants of the same language", async () => {
+  // Simplified vs Traditional Chinese genuinely produce a different
+  // translation output, so `zh-CN` -> `zh-TW` (and vice versa) must
+  // be allowed even though both share the `zh` language subtag.  The
+  // language+script comparison in the resolver permits this because
+  // `zh-CN` maximizes to `zh-Hans-CN` while `zh-TW` maximizes to
+  // `zh-Hant-TW`.
+  await withRollback(async (tx) => {
+    const { postId, sourceId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatecrossscript",
+      slug: "crossscript",
+      language: "zh-CN",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatecrossscriptrequester",
+      name: "Cross Script Requester",
+      email: "rattranslatecrossscriptrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutationByLanguage,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "zh-TW",
+        },
+        language: "zh-TW",
+      },
+      contextValue: makeUserContextWithStubbedTranslator(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "RequestArticleTranslationPayload",
+        article: {
+          id: encodeGlobalID("Article", postId),
+          contents: [
+            {
+              language: "zh-TW",
+              originalLanguage: "zh-CN",
+              beingTranslated: true,
+            },
+          ],
+        },
+      },
+    });
+
+    const stored = await tx.query.articleContentTable.findFirst({
+      where: { sourceId, language: "zh-TW" },
+    });
+    assert.ok(stored != null);
+    assert.equal(stored.beingTranslated, true);
+    assert.equal(stored.originalLanguage, "zh-CN");
   });
 });
 
