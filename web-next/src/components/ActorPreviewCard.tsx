@@ -9,6 +9,7 @@ import {
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import type { ActorPreviewCard_actor$key } from "./__generated__/ActorPreviewCard_actor.graphql.ts";
 import { FollowButton } from "./FollowButton.tsx";
+import { InternalLink } from "./InternalLink.tsx";
 
 export interface ActorPreviewCardProps {
   $actor: ActorPreviewCard_actor$key;
@@ -45,33 +46,61 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
   return (
     <Show when={actor()}>
       {(a) => {
-        const profileHref = () =>
-          a().local ? `/@${a().username}` : a().url ?? a().iri;
-        const profileTarget = () => (a().local ? undefined : "_blank");
-        const profileRel = () => a().local ? undefined : "noopener noreferrer";
+        const actorHref = () => a().url ?? a().iri;
+        const actorInternalHref = () =>
+          a().local ? `/@${a().username}` : `/${a().handle}`;
+        const followingText = () =>
+          i18n._(
+            msg`${
+              plural(a().followeesCount.totalCount, {
+                one: "# following",
+                other: "# following",
+              })
+            }`,
+          );
+        const followersText = () =>
+          i18n._(
+            msg`${
+              plural(a().followersCount.totalCount, {
+                one: "# follower",
+                other: "# followers",
+              })
+            }`,
+          );
         return (
           <div class="flex flex-col">
             <div class="flex items-start gap-3 p-4">
               <Avatar class="size-12 shrink-0">
-                <a
-                  href={profileHref()}
-                  target={profileTarget()}
-                  rel={profileRel()}
+                <InternalLink
+                  href={actorHref()}
+                  internalHref={actorInternalHref()}
                 >
                   <AvatarImage src={a().avatarUrl} class="size-12" />
                   <AvatarFallback class="size-12">
                     {a().avatarInitials}
                   </AvatarFallback>
-                </a>
+                </InternalLink>
               </Avatar>
               <div class="flex min-w-0 flex-1 flex-col">
-                <a
-                  href={profileHref()}
-                  target={profileTarget()}
-                  rel={profileRel()}
-                  innerHTML={a().name || a().username}
-                  class="truncate font-semibold"
-                />
+                <Show
+                  when={(a().name ?? "").trim() !== ""}
+                  fallback={
+                    <InternalLink
+                      href={actorHref()}
+                      internalHref={actorInternalHref()}
+                      class="truncate font-semibold"
+                    >
+                      {a().username}
+                    </InternalLink>
+                  }
+                >
+                  <InternalLink
+                    href={actorHref()}
+                    internalHref={actorInternalHref()}
+                    innerHTML={a().name ?? ""}
+                    class="truncate font-semibold"
+                  />
+                </Show>
                 <span
                   class="truncate text-sm text-muted-foreground select-all"
                   title={a().handle}
@@ -92,31 +121,29 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
               </div>
             </Show>
             <div class="px-4 pb-4 text-sm text-muted-foreground">
-              <a
-                href={a().local ? `/@${a().username}/following` : undefined}
+              <Show
+                when={a().local}
+                fallback={<span>{followingText()}</span>}
               >
-                {i18n._(
-                  msg`${
-                    plural(a().followeesCount.totalCount, {
-                      one: "# following",
-                      other: "# following",
-                    })
-                  }`,
-                )}
-              </a>
+                <InternalLink
+                  href={`/@${a().username}/following`}
+                  internalHref={`/@${a().username}/following`}
+                >
+                  {followingText()}
+                </InternalLink>
+              </Show>
               {" · "}
-              <a
-                href={a().local ? `/@${a().username}/followers` : undefined}
+              <Show
+                when={a().local}
+                fallback={<span>{followersText()}</span>}
               >
-                {i18n._(
-                  msg`${
-                    plural(a().followersCount.totalCount, {
-                      one: "# follower",
-                      other: "# followers",
-                    })
-                  }`,
-                )}
-              </a>
+                <InternalLink
+                  href={`/@${a().username}/followers`}
+                  internalHref={`/@${a().username}/followers`}
+                >
+                  {followersText()}
+                </InternalLink>
+              </Show>
               <Show when={a().followsViewer}>
                 {" · "}
                 {t`Following you`}
