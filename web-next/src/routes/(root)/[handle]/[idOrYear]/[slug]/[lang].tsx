@@ -48,12 +48,14 @@ const LangPageQueryDef = graphql`
       actor {
         username
       }
-      contents(language: $language, includeBeingTranslated: false) {
+      contents(language: $language, includeBeingTranslated: true) {
         language
         originalLanguage
       }
-      ...Slug_head @arguments(language: $language)
-      ...Slug_body @arguments(language: $language)
+      ...Slug_head
+        @arguments(language: $language, includeBeingTranslated: true)
+      ...Slug_body
+        @arguments(language: $language, includeBeingTranslated: true)
     }
     viewer {
       ...Slug_viewer
