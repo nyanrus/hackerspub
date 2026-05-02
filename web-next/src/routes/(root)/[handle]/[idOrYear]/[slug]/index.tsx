@@ -159,7 +159,7 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
           summary
           language
         }
-        allContents: contents {
+        allContents: contents(includeBeingTranslated: true) {
           language
         }
         language
@@ -611,7 +611,7 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         slug
         language
         allowLlmTranslation
-        allContents: contents {
+        allContents: contents(includeBeingTranslated: true) {
           language
           url
         }
