@@ -93,13 +93,19 @@ export function useMentionHoverCards(
       return undefined;
     }
     const host = url.host;
-    // Strip the leading `@` and anything after a second `@` (some servers
-    // render full `@user@host` text inside the link).
-    const username = (a.textContent ?? "")
-      .trim()
-      .replace(/^@/, "")
-      .split("@")[0]
-      ?.trim();
+    // Prefer the URL's last path segment (more reliable across the
+    // common ActivityPub profile URL shapes: `/@user`, `/users/user`,
+    // `/profile/user`). Fall back to the link's text content if the URL
+    // path doesn't yield a usable username.
+    const lastSegment = url.pathname.split("/").filter(Boolean).pop();
+    let username = lastSegment?.replace(/^@/, "").trim() ?? "";
+    if (!username) {
+      username = (a.textContent ?? "")
+        .trim()
+        .replace(/^@/, "")
+        .split("@")[0]
+        ?.trim() ?? "";
+    }
     if (!host || !username) return undefined;
     return { el: a, handle: `@${username}@${host}` };
   };
