@@ -711,6 +711,137 @@ test("articleByYearAndSlug returns a local article by route components", async (
   });
 });
 
+const articleContentsIncludeBeingTranslatedQuery = parse(`
+  query ArticleContentsIncludeBeingTranslated(
+    $handle: String!
+    $idOrYear: String!
+    $slug: String!
+    $includeBeingTranslated: Boolean
+  ) {
+    articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $slug) {
+      contents(includeBeingTranslated: $includeBeingTranslated) {
+        language
+        beingTranslated
+      }
+    }
+  }
+`);
+
+test("Article.contents includeBeingTranslated:true returns both completed and in-progress rows", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "translationsincludetest",
+      name: "Translation Include Test",
+      email: "translationsinclude@example.com",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "translationsincluderequester",
+      name: "Translation Include Requester",
+      email: "translationsincluderequester@example.com",
+    });
+    const sourceId = generateUuidV7();
+    const postId = generateUuidV7();
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(articleSourceTable).values({
+      id: sourceId,
+      accountId: author.account.id,
+      publishedYear: 2026,
+      slug: "include-being-translated",
+      tags: [],
+      allowLlmTranslation: true,
+      published,
+      updated: published,
+    });
+    await tx.insert(articleContentTable).values([
+      {
+        sourceId,
+        language: "en",
+        title: "Original",
+        content: "English original.",
+        published,
+        updated: published,
+      },
+      {
+        sourceId,
+        language: "ko",
+        title: "Original (placeholder)",
+        content: "English original.",
+        originalLanguage: "en",
+        translationRequesterId: requester.account.id,
+        beingTranslated: true,
+        published,
+        updated: published,
+      },
+    ]);
+    await tx.insert(postTable).values(
+      {
+        id: postId,
+        iri: `http://localhost/objects/${postId}`,
+        type: "Article",
+        visibility: "public",
+        actorId: author.actor.id,
+        articleSourceId: sourceId,
+        name: "Original",
+        contentHtml: "<p>English original.</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url:
+          `http://localhost/@${author.account.username}/2026/include-being-translated`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const variableValues = {
+      handle: author.account.username,
+      idOrYear: "2026",
+      slug: "include-being-translated",
+    };
+
+    type ContentRow = { language: string; beingTranslated: boolean };
+    type QueryShape = {
+      articleByYearAndSlug: { contents: ContentRow[] };
+    };
+
+    const completedOnly = await execute({
+      schema,
+      document: articleContentsIncludeBeingTranslatedQuery,
+      variableValues: { ...variableValues, includeBeingTranslated: false },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(completedOnly.errors, undefined);
+    const completedContents =
+      (toPlainJson(completedOnly.data) as QueryShape).articleByYearAndSlug
+        .contents;
+    assert.deepEqual(
+      completedContents,
+      [{ language: "en", beingTranslated: false }],
+    );
+
+    const includingInProgress = await execute({
+      schema,
+      document: articleContentsIncludeBeingTranslatedQuery,
+      variableValues: { ...variableValues, includeBeingTranslated: true },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(includingInProgress.errors, undefined);
+    const allContents =
+      (toPlainJson(includingInProgress.data) as QueryShape).articleByYearAndSlug
+        .contents;
+    const sorted = [...allContents].sort((a, b) =>
+      a.language.localeCompare(b.language)
+    );
+    assert.deepEqual(sorted, [
+      { language: "en", beingTranslated: false },
+      { language: "ko", beingTranslated: true },
+    ]);
+  });
+});
+
 test("createNote creates a note for the signed-in account", async () => {
   await withRollback(async (tx) => {
     const account = await insertAccountWithActor(tx, {

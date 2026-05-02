@@ -301,11 +301,9 @@ export const Article = builder.drizzleNode("postTable", {
         with: {
           articleSource: {
             with: {
-              contents: {
-                where: {
-                  beingTranslated: args.includeBeingTranslated ?? false,
-                },
-              },
+              contents: args.includeBeingTranslated
+                ? {}
+                : { where: { beingTranslated: false } },
             },
           },
         },
