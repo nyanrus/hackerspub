@@ -6,8 +6,12 @@ import {
   useParams,
 } from "@solidjs/router";
 import { HttpStatusCode } from "@solidjs/start";
-import { fetchQuery, graphql } from "relay-runtime";
-import type { Subscription } from "relay-runtime";
+import {
+  type Disposable,
+  fetchQuery,
+  graphql,
+  type Subscription,
+} from "relay-runtime";
 import {
   createEffect,
   createMemo,
@@ -17,7 +21,6 @@ import {
   Show,
   Switch,
 } from "solid-js";
-import type { Disposable } from "relay-runtime";
 import {
   createMutation,
   createPreloadedQuery,
@@ -26,8 +29,8 @@ import {
 } from "solid-relay";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
-import type { LangPage_requestArticleTranslation_Mutation } from "./__generated__/LangPage_requestArticleTranslation_Mutation.graphql.ts";
 import type { LangPageQuery } from "./__generated__/LangPageQuery.graphql.ts";
+import type { LangPage_requestArticleTranslation_Mutation } from "./__generated__/LangPage_requestArticleTranslation_Mutation.graphql.ts";
 import {
   ArticleBody,
   ArticleMetaHead,
@@ -162,7 +165,15 @@ interface ArticleLangPageContentProps {
 }
 
 function ArticleLangPageContent(props: ArticleLangPageContentProps) {
+  const { t } = useLingui();
   const env = useRelayEnvironment();
+  const [requestTranslation] = createMutation<
+    LangPage_requestArticleTranslation_Mutation
+  >(requestArticleTranslationMutation);
+  const [requestFailed, setRequestFailed] = createSignal(false);
+  let pendingRequest: Disposable | null = null;
+  onCleanup(() => pendingRequest?.dispose());
+
   const data = createPreloadedQuery<LangPageQuery>(
     LangPageQueryDef,
     () =>
@@ -195,6 +206,37 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   const shouldAutoRequest = createMemo(() =>
     canRequestTranslation() && (content() == null || isStaleInProgress())
   );
+  // Counter that bumps every time content transitions from existing
+  // to null.  The auto-request effect uses it (via `requestKey`) to
+  // distinguish "still the same first-time-missing render" from "the
+  // background failure-cleanup branch in
+  // `startArticleContentTranslation` deleted the placeholder row and
+  // we need to re-queue."
+  const [missingEpoch, setMissingEpoch] = createSignal(0);
+  let prevContentExisted = false;
+  createEffect(() => {
+    const exists = content() != null;
+    if (prevContentExisted && !exists) {
+      setMissingEpoch((n) => n + 1);
+    }
+    prevContentExisted = exists;
+  });
+  // Identity for "this is a fresh reason to fire the mutation."  When
+  // it changes, the auto-request effect fires another mutation; when
+  // it stays the same (or is null because we don't need to request),
+  // it doesn't.  The stale branch includes `content()?.updated` so a
+  // second-time-stale row produces a different key from the first
+  // stale fire; the missing branch includes `missingEpoch()` so a
+  // row that gets deleted, re-queued, then deleted again produces a
+  // different key each time.
+  const requestKey = createMemo(() => {
+    if (!shouldAutoRequest()) return null;
+    const c = content();
+    if (c == null) {
+      return `missing/${article()?.id}/${props.language}/${missingEpoch()}`;
+    }
+    return `stale/${article()?.id}/${props.language}/${c.updated}`;
+  });
   const canonicalBase = createMemo(() => {
     const a = article();
     return a == null
@@ -210,6 +252,53 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     return null;
   });
 
+  // Auto-request a translation whenever `requestKey()` changes to a
+  // non-null value.  Three edges fire it: initial mount with content
+  // missing, the in-progress row going stale (>30 min since
+  // `updated`), and the row vanishing again after the background
+  // translator's failure-cleanup branch deleted it.  `firedKey` keeps
+  // a duplicate fire from happening when an unrelated reactive memo
+  // re-evaluates the effect with the same key.
+  let firedRequestKey: string | null = null;
+  createEffect(() => {
+    const key = requestKey();
+    if (key == null || key === firedRequestKey) return;
+    firedRequestKey = key;
+    setRequestFailed(false);
+    pendingRequest?.dispose();
+    pendingRequest = requestTranslation({
+      variables: {
+        input: {
+          articleId: article()!.id,
+          targetLanguage: props.language,
+        },
+        language: props.language,
+      },
+      onCompleted(response) {
+        const payload = response.requestArticleTranslation;
+        if (payload.__typename !== "RequestArticleTranslationPayload") {
+          console.error(
+            "Translation request returned an error payload:",
+            payload,
+          );
+          showToast({
+            title: t`Translation request failed`,
+            variant: "destructive",
+          });
+          setRequestFailed(true);
+        }
+      },
+      onError(error) {
+        console.error("Translation request failed:", error);
+        showToast({
+          title: t`Translation request failed`,
+          variant: "destructive",
+        });
+        setRequestFailed(true);
+      },
+    });
+  });
+
   // While a translation is in flight, poll for completion every 30
   // seconds.  When `beingTranslated` flips back to false (translation
   // finished) or the component unmounts, the interval is cleared via
@@ -217,7 +306,7 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // `fetchQuery` is used (instead of revalidating the Solid Router
   // cache key) because it forces a network round trip and writes the
   // fresh response into the Relay store, which `createPreloadedQuery`
-  // observes — revalidating the router cache alone would leave the
+  // observes; revalidating the router cache alone would leave the
   // already-populated Relay store unchanged.
   createEffect(() => {
     if (!content()?.beingTranslated) return;
@@ -252,11 +341,17 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
         <Match when={article() == null}>
           <HttpStatusCode code={404} />
         </Match>
+        <Match when={shouldAutoRequest() && requestFailed()}>
+          <HttpStatusCode code={404} />
+        </Match>
         <Match when={shouldAutoRequest()}>
-          <AutoRequestTranslation
-            articleId={article()!.id}
-            language={props.language}
-          />
+          <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto xl:max-w-4xl 2xl:max-w-screen-lg">
+            <article class="min-w-0">
+              <ArticleTranslationPlaceholder
+                targetLanguage={props.language}
+              />
+            </article>
+          </div>
         </Match>
         <Match when={content() == null}>
           <HttpStatusCode code={404} />
@@ -276,72 +371,6 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
           />
         </Match>
       </Switch>
-    </Show>
-  );
-}
-
-interface AutoRequestTranslationProps {
-  articleId: string;
-  language: string;
-}
-
-function AutoRequestTranslation(props: AutoRequestTranslationProps) {
-  const { t } = useLingui();
-  const [requestTranslation] = createMutation<
-    LangPage_requestArticleTranslation_Mutation
-  >(requestArticleTranslationMutation);
-  const [failed, setFailed] = createSignal(false);
-  // Tracks the last `${articleId}/${language}` we fired the mutation
-  // for; SolidStart can reuse this component across client-side param
-  // changes (e.g. switching from a missing /ja to a missing /zh-CN
-  // without unmounting the route), and we want each distinct request
-  // to fire exactly once.
-  let firedKey: string | null = null;
-  let disposable: Disposable | null = null;
-
-  onCleanup(() => disposable?.dispose());
-
-  createEffect(() => {
-    const key = `${props.articleId}/${props.language}`;
-    if (firedKey === key) return;
-    firedKey = key;
-    setFailed(false);
-    disposable?.dispose();
-    disposable = requestTranslation({
-      variables: {
-        input: {
-          articleId: props.articleId,
-          targetLanguage: props.language,
-        },
-        language: props.language,
-      },
-      onCompleted(response) {
-        const payload = response.requestArticleTranslation;
-        if (payload.__typename !== "RequestArticleTranslationPayload") {
-          showToast({
-            title: t`Translation request failed`,
-            variant: "destructive",
-          });
-          setFailed(true);
-        }
-      },
-      onError(_error) {
-        showToast({
-          title: t`Translation request failed`,
-          variant: "destructive",
-        });
-        setFailed(true);
-      },
-    });
-  });
-
-  return (
-    <Show when={!failed()} fallback={<HttpStatusCode code={404} />}>
-      <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto xl:max-w-4xl 2xl:max-w-screen-lg">
-        <article class="min-w-0">
-          <ArticleTranslationPlaceholder targetLanguage={props.language} />
-        </article>
-      </div>
     </Show>
   );
 }
