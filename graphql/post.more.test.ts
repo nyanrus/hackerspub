@@ -12,7 +12,7 @@ import {
   type NewPost,
   postTable,
 } from "@hackerspub/models/schema";
-import { generateUuidV7 } from "@hackerspub/models/uuid";
+import { generateUuidV7, type Uuid } from "@hackerspub/models/uuid";
 import { schema } from "./mod.ts";
 import {
   createFedCtx,
@@ -711,6 +711,137 @@ test("articleByYearAndSlug returns a local article by route components", async (
   });
 });
 
+const articleContentsIncludeBeingTranslatedQuery = parse(`
+  query ArticleContentsIncludeBeingTranslated(
+    $handle: String!
+    $idOrYear: String!
+    $slug: String!
+    $includeBeingTranslated: Boolean
+  ) {
+    articleByYearAndSlug(handle: $handle, idOrYear: $idOrYear, slug: $slug) {
+      contents(includeBeingTranslated: $includeBeingTranslated) {
+        language
+        beingTranslated
+      }
+    }
+  }
+`);
+
+test("Article.contents includeBeingTranslated:true returns both completed and in-progress rows", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "translationsincludetest",
+      name: "Translation Include Test",
+      email: "translationsinclude@example.com",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "translationsincluderequester",
+      name: "Translation Include Requester",
+      email: "translationsincluderequester@example.com",
+    });
+    const sourceId = generateUuidV7();
+    const postId = generateUuidV7();
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(articleSourceTable).values({
+      id: sourceId,
+      accountId: author.account.id,
+      publishedYear: 2026,
+      slug: "include-being-translated",
+      tags: [],
+      allowLlmTranslation: true,
+      published,
+      updated: published,
+    });
+    await tx.insert(articleContentTable).values([
+      {
+        sourceId,
+        language: "en",
+        title: "Original",
+        content: "English original.",
+        published,
+        updated: published,
+      },
+      {
+        sourceId,
+        language: "ko",
+        title: "Original (placeholder)",
+        content: "English original.",
+        originalLanguage: "en",
+        translationRequesterId: requester.account.id,
+        beingTranslated: true,
+        published,
+        updated: published,
+      },
+    ]);
+    await tx.insert(postTable).values(
+      {
+        id: postId,
+        iri: `http://localhost/objects/${postId}`,
+        type: "Article",
+        visibility: "public",
+        actorId: author.actor.id,
+        articleSourceId: sourceId,
+        name: "Original",
+        contentHtml: "<p>English original.</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url:
+          `http://localhost/@${author.account.username}/2026/include-being-translated`,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const variableValues = {
+      handle: author.account.username,
+      idOrYear: "2026",
+      slug: "include-being-translated",
+    };
+
+    type ContentRow = { language: string; beingTranslated: boolean };
+    type QueryShape = {
+      articleByYearAndSlug: { contents: ContentRow[] };
+    };
+
+    const completedOnly = await execute({
+      schema,
+      document: articleContentsIncludeBeingTranslatedQuery,
+      variableValues: { ...variableValues, includeBeingTranslated: false },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(completedOnly.errors, undefined);
+    const completedContents =
+      (toPlainJson(completedOnly.data) as QueryShape).articleByYearAndSlug
+        .contents;
+    assert.deepEqual(
+      completedContents,
+      [{ language: "en", beingTranslated: false }],
+    );
+
+    const includingInProgress = await execute({
+      schema,
+      document: articleContentsIncludeBeingTranslatedQuery,
+      variableValues: { ...variableValues, includeBeingTranslated: true },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+    assert.equal(includingInProgress.errors, undefined);
+    const allContents =
+      (toPlainJson(includingInProgress.data) as QueryShape).articleByYearAndSlug
+        .contents;
+    const sorted = [...allContents].sort((a, b) =>
+      a.language.localeCompare(b.language)
+    );
+    assert.deepEqual(sorted, [
+      { language: "en", beingTranslated: false },
+      { language: "ko", beingTranslated: true },
+    ]);
+  });
+});
+
 test("createNote creates a note for the signed-in account", async () => {
   await withRollback(async (tx) => {
     const account = await insertAccountWithActor(tx, {
@@ -807,5 +938,659 @@ test("deletePost rejects deleting shared posts and postByUrl resolves owned post
         id: encodeGlobalID("Note", original.id),
       },
     });
+  });
+});
+
+const requestArticleTranslationMutation = parse(`
+  mutation RequestArticleTranslation($input: RequestArticleTranslationInput!) {
+    requestArticleTranslation(input: $input) {
+      __typename
+      ... on RequestArticleTranslationPayload {
+        article {
+          id
+          contents(language: "ko", includeBeingTranslated: true) {
+            language
+            originalLanguage
+            beingTranslated
+          }
+        }
+      }
+      ... on NotAuthenticatedError {
+        notAuthenticated
+      }
+      ... on InvalidInputError {
+        inputPath
+      }
+      ... on LlmTranslationNotAllowedError {
+        reason
+      }
+    }
+  }
+`);
+
+// Same payload shape as `requestArticleTranslationMutation`, but the
+// inner `contents(language: ...)` query takes the language as a
+// variable so tests that queue translations into languages other than
+// Korean can still introspect the freshly inserted row.
+const requestArticleTranslationMutationByLanguage = parse(`
+  mutation RequestArticleTranslationByLanguage(
+    $input: RequestArticleTranslationInput!
+    $language: Locale!
+  ) {
+    requestArticleTranslation(input: $input) {
+      __typename
+      ... on RequestArticleTranslationPayload {
+        article {
+          id
+          contents(language: $language, includeBeingTranslated: true) {
+            language
+            originalLanguage
+            beingTranslated
+          }
+        }
+      }
+      ... on NotAuthenticatedError {
+        notAuthenticated
+      }
+      ... on InvalidInputError {
+        inputPath
+      }
+      ... on LlmTranslationNotAllowedError {
+        reason
+      }
+    }
+  }
+`);
+
+interface TranslatableArticleFixture {
+  author: Awaited<ReturnType<typeof insertAccountWithActor>>;
+  postId: Uuid;
+  sourceId: Uuid;
+}
+
+async function insertTranslatableArticle(
+  tx: Parameters<typeof withRollback>[0] extends (tx: infer T) => Promise<void>
+    ? T
+    : never,
+  options: {
+    username: string;
+    slug: string;
+    allowLlmTranslation?: boolean;
+    language?: string;
+    visibility?: "public" | "unlisted" | "followers" | "direct" | "none";
+  },
+): Promise<TranslatableArticleFixture> {
+  const author = await insertAccountWithActor(tx, {
+    username: options.username,
+    name: options.username,
+    email: `${options.username}@example.com`,
+  });
+  const sourceId = generateUuidV7();
+  const postId = generateUuidV7();
+  const published = new Date("2026-04-15T00:00:00.000Z");
+  const language = options.language ?? "en";
+
+  await tx.insert(articleSourceTable).values({
+    id: sourceId,
+    accountId: author.account.id,
+    publishedYear: 2026,
+    slug: options.slug,
+    tags: [],
+    allowLlmTranslation: options.allowLlmTranslation ?? true,
+    published,
+    updated: published,
+  });
+  await tx.insert(articleContentTable).values({
+    sourceId,
+    language,
+    title: "Hello",
+    content: "Plain article body without any external links.",
+    published,
+    updated: published,
+  });
+  await tx.insert(postTable).values(
+    {
+      id: postId,
+      iri: `http://localhost/objects/${postId}`,
+      type: "Article",
+      visibility: options.visibility ?? "public",
+      actorId: author.actor.id,
+      articleSourceId: sourceId,
+      name: "Hello",
+      contentHtml: "<p>Plain article body without any external links.</p>",
+      language,
+      tags: {},
+      emojis: {},
+      url: `http://localhost/@${author.account.username}/2026/${options.slug}`,
+      published,
+      updated: published,
+    } satisfies NewPost,
+  );
+
+  return { author, postId: postId as Uuid, sourceId: sourceId as Uuid };
+}
+
+function makeUserContextWithStubbedTranslator(
+  tx: Parameters<typeof withRollback>[0] extends (tx: infer T) => Promise<void>
+    ? T
+    : never,
+  account: Parameters<typeof makeUserContext>[1],
+): UserContext {
+  // Stub the translator with a hanging LanguageModel so the queued
+  // `beingTranslated: true` row is never deleted by the
+  // failure-cleanup branch of `startArticleContentTranslation` while
+  // the test is asserting on the mutation's response.
+  const fedCtx = createFedCtx(tx);
+  fedCtx.data.models = {
+    summarizer: {} as never,
+    translator: {
+      specificationVersion: "v2",
+      provider: "test",
+      modelId: "hang",
+      supportedUrls: {},
+      doGenerate: () => new Promise<never>(() => {}),
+      doStream: () => new Promise<never>(() => {}),
+    },
+  } as unknown as typeof fedCtx.data.models;
+  return makeUserContext(tx, account, { fedCtx });
+}
+
+test("requestArticleTranslation rejects guests", async () => {
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslateguest",
+      slug: "guest",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeGuestContext(tx),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "NotAuthenticatedError",
+        notAuthenticated: "",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects non-existent articleId", async () => {
+  await withRollback(async (tx) => {
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatemissing",
+      name: "Translation Requester Missing",
+      email: "rattranslatemissing@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", generateUuidV7()),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "InvalidInputError",
+        inputPath: "articleId",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects non-Article posts", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertAccountWithActor(tx, {
+      username: "rattranslatenotearticle",
+      name: "Translation Note Article",
+      email: "rattranslatenotearticle@example.com",
+    });
+    const note = await insertNotePost(tx, { account: author.account });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", note.post.id),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContext(tx, author.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "InvalidInputError",
+        inputPath: "articleId",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects articles the viewer cannot see", async () => {
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatehidden",
+      slug: "hidden",
+      visibility: "direct",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatehiddenrequester",
+      name: "Hidden Requester",
+      email: "rattranslatehiddenrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "InvalidInputError",
+        inputPath: "articleId",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects articles with allowLlmTranslation=false", async () => {
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatedisabled",
+      slug: "disabled",
+      allowLlmTranslation: false,
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatedisabledrequester",
+      name: "Disabled Requester",
+      email: "rattranslatedisabledrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "LlmTranslationNotAllowedError",
+        reason: "DISABLED",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects requests where target language equals the original", async () => {
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatesamelang",
+      slug: "samelang",
+      language: "ko",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatesamelangrequester",
+      name: "Same Lang Requester",
+      email: "rattranslatesamelangrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "LlmTranslationNotAllowedError",
+        reason: "SAME_LANGUAGE",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation rejects regional variants of the source language", async () => {
+  // `Article.contents(language: ...)` negotiates among available
+  // locales rather than requiring an exact tag, so allowing a
+  // same-family target (`en` -> `en-US`, `ko` -> `ko-KR`) would
+  // create a redundant placeholder row whose canonical URL would
+  // negotiate back to the existing source content and leave the
+  // newly inserted row unreachable.
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatesamefamily",
+      slug: "samefamily",
+      language: "en",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatesamefamilyrequester",
+      name: "Same Family Requester",
+      email: "rattranslatesamefamilyrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "en-US",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "LlmTranslationNotAllowedError",
+        reason: "SAME_LANGUAGE",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation allows cross-script variants of the same language", async () => {
+  // Simplified vs Traditional Chinese genuinely produce a different
+  // translation output, so `zh-CN` -> `zh-TW` (and vice versa) must
+  // be allowed even though both share the `zh` language subtag.  The
+  // language+script comparison in the resolver permits this because
+  // `zh-CN` maximizes to `zh-Hans-CN` while `zh-TW` maximizes to
+  // `zh-Hant-TW`.
+  await withRollback(async (tx) => {
+    const { postId, sourceId } = await insertTranslatableArticle(tx, {
+      username: "rattranslatecrossscript",
+      slug: "crossscript",
+      language: "zh-CN",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatecrossscriptrequester",
+      name: "Cross Script Requester",
+      email: "rattranslatecrossscriptrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutationByLanguage,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "zh-TW",
+        },
+        language: "zh-TW",
+      },
+      contextValue: makeUserContextWithStubbedTranslator(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "RequestArticleTranslationPayload",
+        article: {
+          id: encodeGlobalID("Article", postId),
+          contents: [
+            {
+              language: "zh-TW",
+              originalLanguage: "zh-CN",
+              beingTranslated: true,
+            },
+          ],
+        },
+      },
+    });
+
+    const stored = await tx.query.articleContentTable.findFirst({
+      where: { sourceId, language: "zh-TW" },
+    });
+    assert.ok(stored != null);
+    assert.equal(stored.beingTranslated, true);
+    assert.equal(stored.originalLanguage, "zh-CN");
+  });
+});
+
+test("requestArticleTranslation rejects locales not on the project allow-list", async () => {
+  // The `Locale` scalar would happily accept any well-formed BCP 47
+  // tag, but the `[lang]` route only serves locales that pass
+  // `normalizeLocale` (the same `POSSIBLE_LOCALES` whitelist used
+  // across the project), so the mutation should refuse anything the
+  // canonical article URL flow can't display.  Pick a tag that's a
+  // valid BCP 47 string but missing from `POSSIBLE_LOCALES`.
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslateunknownlang",
+      slug: "unknown-lang",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslateunknownlangrequester",
+      name: "Unknown Lang Requester",
+      email: "rattranslateunknownlangrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          // `ka-GE` (Georgian / Georgia): valid BCP 47, but the
+          // project's `POSSIBLE_LOCALES` only contains `ka` for
+          // Georgian.
+          targetLanguage: "ka-GE",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "InvalidInputError",
+        inputPath: "targetLanguage",
+      },
+    });
+  });
+});
+
+test("requestArticleTranslation queues an in-progress translation row", async () => {
+  await withRollback(async (tx) => {
+    const { postId, sourceId } = await insertTranslatableArticle(tx, {
+      username: "rattranslateok",
+      slug: "ok",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslateokrequester",
+      name: "OK Requester",
+      email: "rattranslateokrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+      },
+      contextValue: makeUserContextWithStubbedTranslator(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "RequestArticleTranslationPayload",
+        article: {
+          id: encodeGlobalID("Article", postId),
+          contents: [
+            {
+              language: "ko",
+              originalLanguage: "en",
+              beingTranslated: true,
+            },
+          ],
+        },
+      },
+    });
+
+    const stored = await tx.query.articleContentTable.findFirst({
+      where: { sourceId, language: "ko" },
+    });
+    assert.ok(stored != null);
+    assert.equal(stored.beingTranslated, true);
+    assert.equal(stored.originalLanguage, "en");
+    assert.equal(stored.translationRequesterId, requester.account.id);
+  });
+});
+
+test("requestArticleTranslation skips enqueueing when a completed translation already exists", async () => {
+  // The model layer is already idempotent against this case (it
+  // returns early without invoking the translator), but the resolver
+  // can short-circuit even earlier from the already-fetched
+  // `articleSource.contents`.  Exercise the early return by stubbing
+  // the translator with one that throws if invoked: a successful
+  // mutation response that doesn't disturb the existing row proves
+  // the precheck fired.
+  await withRollback(async (tx) => {
+    const { postId, sourceId, author } = await insertTranslatableArticle(tx, {
+      username: "rattranslatealready",
+      slug: "alreadytranslated",
+    });
+    // Insert a completed `ko` translation alongside the original `en`
+    // row so the resolver's precheck has something to match.
+    const existingPublished = new Date("2026-04-16T00:00:00.000Z");
+    await tx.insert(articleContentTable).values({
+      sourceId,
+      language: "ko",
+      title: "안녕",
+      content: "이미 번역된 본문.",
+      originalLanguage: "en",
+      beingTranslated: false,
+      translationRequesterId: author.account.id,
+      published: existingPublished,
+      updated: existingPublished,
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslatealreadyrequester",
+      name: "Already Requester",
+      email: "rattranslatealreadyrequester@example.com",
+    });
+
+    const fedCtx = createFedCtx(tx);
+    let translatorCalled = false;
+    fedCtx.data.models = {
+      summarizer: {} as never,
+      translator: {
+        specificationVersion: "v2",
+        provider: "test",
+        modelId: "throw",
+        supportedUrls: {},
+        doGenerate: () => {
+          translatorCalled = true;
+          throw new Error(
+            "translator should not be invoked when a completed " +
+              "translation already exists",
+          );
+        },
+        doStream: () => {
+          translatorCalled = true;
+          throw new Error(
+            "translator should not be invoked when a completed " +
+              "translation already exists",
+          );
+        },
+      },
+    } as unknown as typeof fedCtx.data.models;
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutationByLanguage,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          targetLanguage: "ko",
+        },
+        language: "ko",
+      },
+      contextValue: makeUserContext(tx, requester.account, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "RequestArticleTranslationPayload",
+        article: {
+          id: encodeGlobalID("Article", postId),
+          contents: [
+            {
+              language: "ko",
+              originalLanguage: "en",
+              beingTranslated: false,
+            },
+          ],
+        },
+      },
+    });
+    assert.equal(translatorCalled, false);
+
+    // The pre-existing row must be untouched: not flipped back to
+    // `beingTranslated`, not re-stamped with the new requester.
+    const stored = await tx.query.articleContentTable.findFirst({
+      where: { sourceId, language: "ko" },
+    });
+    assert.ok(stored != null);
+    assert.equal(stored.beingTranslated, false);
+    assert.equal(stored.translationRequesterId, author.account.id);
   });
 });

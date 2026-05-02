@@ -647,6 +647,15 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+type LlmTranslationNotAllowedError {
+  reason: LlmTranslationNotAllowedReason!
+}
+
+enum LlmTranslationNotAllowedReason {
+  DISABLED
+  SAME_LANGUAGE
+}
+
 """A BCP 47-compliant language tag."""
 scalar Locale
 
@@ -766,6 +775,7 @@ type Mutation {
   registerFcmDeviceToken(input: RegisterFcmDeviceTokenInput!): RegisterFcmDeviceTokenResult!
   removeFollower(input: RemoveFollowerInput!): RemoveFollowerResult!
   removeReactionFromPost(input: RemoveReactionFromPostInput!): RemoveReactionFromPostResult!
+  requestArticleTranslation(input: RequestArticleTranslationInput!): RequestArticleTranslationResult!
   revokePasskey(passkeyId: ID!): ID
 
   """Revoke a session by its ID."""
@@ -1425,6 +1435,19 @@ type ReplyNotification implements Node & Notification {
   post: Post
   uuid: UUID!
 }
+
+input RequestArticleTranslationInput {
+  articleId: ID!
+  clientMutationId: ID
+  targetLanguage: Locale!
+}
+
+type RequestArticleTranslationPayload {
+  article: Article!
+  clientMutationId: ID
+}
+
+union RequestArticleTranslationResult = InvalidInputError | LlmTranslationNotAllowedError | NotAuthenticatedError | RequestArticleTranslationPayload
 
 input SaveArticleDraftInput {
   clientMutationId: ID

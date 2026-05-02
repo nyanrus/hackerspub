@@ -1,5 +1,6 @@
+import { normalizeLocale } from "@hackerspub/models/i18n";
 import type { Toc } from "@hackerspub/models/markup";
-import { Meta } from "@solidjs/meta";
+import { Link, Meta } from "@solidjs/meta";
 import {
   query,
   type RouteDefinition,
@@ -28,9 +29,11 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "~/components/ui/avatar.tsx";
+import { Button } from "~/components/ui/button.tsx";
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import IconLoader2 from "~icons/lucide/loader-2";
 import {
   MentionHoverCardLayer,
   useMentionHoverCards,
@@ -60,16 +63,18 @@ const SlugPageQueryDef = graphql`
     $handle: String!
     $idOrYear: String!
     $slug: String!
+    $language: Locale
   ) {
     articleByYearAndSlug(
       handle: $handle
       idOrYear: $idOrYear
       slug: $slug
     ) {
-      ...Slug_head
-      ...Slug_body
+      ...Slug_head @arguments(language: $language)
+      ...Slug_body @arguments(language: $language)
     }
     viewer {
+      locales
       ...Slug_viewer
     }
   }
@@ -80,7 +85,7 @@ const loadPageQuery = query(
     loadQuery<SlugPageQuery>(
       useRelayEnvironment()(),
       SlugPageQueryDef,
-      { handle, idOrYear, slug },
+      { handle, idOrYear, slug, language: null },
     ),
   "loadArticlePageQuery",
 );
@@ -109,6 +114,7 @@ export default function ArticlePage() {
               <ArticleBody
                 $article={article()}
                 $viewer={data().viewer ?? undefined}
+                viewerLocales={data().viewer?.locales}
               />
             </>
           )}
@@ -118,25 +124,46 @@ export default function ArticlePage() {
   );
 }
 
+export { ArticleBody, ArticleMetaHead };
+// `ArticleTranslationPlaceholder` is also exported above (`export function ...`).
+
 interface ArticleMetaHeadProps {
   $article: Slug_head$key;
+  /**
+   * Language tag to append to the article URL when computing the
+   * canonical/og:url. Pass it on the `[lang]` route; omit on the index
+   * route so the canonical points at the article's bare URL.
+   */
+  canonicalLanguage?: string;
 }
 
 function ArticleMetaHead(props: ArticleMetaHeadProps) {
   const { t } = useLingui();
   const article = createFragment(
     graphql`
-      fragment Slug_head on Article {
+      fragment Slug_head on Article
+        @argumentDefinitions(
+          language: { type: "Locale" }
+          includeBeingTranslated: { type: "Boolean", defaultValue: false }
+        )
+      {
         actor {
           handle
           name
           rawName
           username
         }
-        contents {
+        contents(
+          language: $language
+          includeBeingTranslated: $includeBeingTranslated
+        ) {
           title
           summary
           language
+        }
+        allContents: contents(includeBeingTranslated: true) {
+          language
+          beingTranslated
         }
         language
         iri
@@ -154,14 +181,58 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents?.[0];
+        // The bare slug route doesn't pass a `language` argument to
+        // `Slug_head`, so `contents` returns every completed row in
+        // whatever order the resolver picks; `contents[0]` is then
+        // an arbitrary translation rather than the article's source
+        // text.  Find the row whose language matches the article's
+        // own `language` (the canonical "original") first, and only
+        // fall back to `contents[0]` if the original isn't in the
+        // returned set (e.g., the `[lang]` route filtered to a
+        // specific translation).
+        const content = () => {
+          const c = article().contents;
+          if (c == null) return undefined;
+          return c.find((entry) => entry.language === article().language) ??
+            c[0];
+        };
         const title = () => content()?.title ?? "";
         const description = () => content()?.summary ?? "";
+        const currentLanguage = () =>
+          content()?.language ?? article().language ?? undefined;
+        const canonicalUrl = () => {
+          const articleUrl = article().url;
+          if (articleUrl == null) return null;
+          if (props.canonicalLanguage == null) return articleUrl;
+          try {
+            const u = new URL(articleUrl);
+            // Strip any trailing slashes (more than one is unlikely
+            // but possible if the upstream URL ever changes), then
+            // append the language as a new path segment.  The
+            // language tag is `encodeURIComponent`-d to be defensive
+            // against future tags that might contain reserved
+            // characters; a normalized BCP 47 tag is a no-op here.
+            u.pathname = `${u.pathname.replace(/\/+$/, "")}/${
+              encodeURIComponent(props.canonicalLanguage)
+            }`;
+            return u.toString();
+          } catch {
+            return null;
+          }
+        };
         return (
           <>
             <Title>
               {t`${article().actor.rawName}: ${title()}`}
             </Title>
+            <Show when={canonicalUrl()}>
+              {(href) => (
+                <>
+                  <Link rel="canonical" href={href()} />
+                  <Meta property="og:url" content={href()} />
+                </>
+              )}
+            </Show>
             <Meta property="og:title" content={title()} />
             <Meta property="og:description" content={description()} />
             <Meta property="og:type" content="article" />
@@ -201,9 +272,30 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
                 <Meta property="article:tag" content={hashtag.name} />
               )}
             </For>
-            <Show when={content()?.language ?? article().language}>
-              {(language) => <Meta property="og:locale" content={language()} />}
+            <Show when={currentLanguage()}>
+              {(language) => (
+                <Meta
+                  property="og:locale"
+                  content={language().replaceAll("-", "_")}
+                />
+              )}
             </Show>
+            <For
+              each={article().allContents.filter(
+                // In-progress placeholder rows aren't readable
+                // translations yet, so listing them as
+                // `og:locale:alternate` would advertise content the
+                // crawler will only see as a "translating…" message.
+                (c) => !c.beingTranslated && c.language !== currentLanguage(),
+              )}
+            >
+              {(c) => (
+                <Meta
+                  property="og:locale:alternate"
+                  content={c.language.replaceAll("-", "_")}
+                />
+              )}
+            </For>
             <HttpHeader
               name="Link"
               value={`<${article().iri}>; rel="alternate"; type="application/activity+json"`}
@@ -233,6 +325,7 @@ function articleOgImageUrls(
 interface ArticleBodyProps {
   $article: Slug_body$key;
   $viewer?: Slug_viewer$key;
+  viewerLocales?: readonly string[] | null;
 }
 
 function ArticleBody(props: ArticleBodyProps) {
@@ -240,14 +333,24 @@ function ArticleBody(props: ArticleBodyProps) {
   const mentionState = useMentionHoverCards(proseRef);
   const article = createFragment(
     graphql`
-      fragment Slug_body on Article {
-        contents {
+      fragment Slug_body on Article
+        @argumentDefinitions(
+          language: { type: "Locale" }
+          includeBeingTranslated: { type: "Boolean", defaultValue: false }
+        )
+      {
+        contents(
+          language: $language
+          includeBeingTranslated: $includeBeingTranslated
+        ) {
           title
           content
           toc
           language
+          originalLanguage
           beingTranslated
         }
+        language
         tags
         ...PostControls_post
         ...Slug_articleHeader
@@ -261,7 +364,18 @@ function ArticleBody(props: ArticleBodyProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents?.[0];
+        // Same deterministic picker as `ArticleMetaHead` uses: prefer
+        // the row whose language matches the article's own
+        // (canonical original) over an arbitrary `contents[0]`,
+        // falling back to the first row if the original isn't in the
+        // returned set (the `[lang]` route filters to one specific
+        // translation).
+        const content = () => {
+          const c = article().contents;
+          if (c == null) return undefined;
+          return c.find((entry) => entry.language === article().language) ??
+            c[0];
+        };
         const toc = () => (content()?.toc ?? []) as Toc[];
 
         return (
@@ -271,14 +385,24 @@ function ArticleBody(props: ArticleBodyProps) {
                 <ArticleTitle
                   title={content()?.title}
                   language={content()?.language ?? undefined}
-                  beingTranslated={content()?.beingTranslated ?? false}
                 />
                 <ArticleHeader $article={article()} />
                 <ArticleInlineToc
                   items={toc()}
                   hidden={content()?.beingTranslated ?? false}
                 />
-                <ArticleLanguageSwitcher $article={article()} />
+                <ArticleLanguageSwitcher
+                  $article={article()}
+                  currentLanguage={content()?.language ?? undefined}
+                  currentOriginalLanguage={content()?.originalLanguage}
+                  viewerLocales={props.viewerLocales}
+                />
+
+                <Show when={content()?.beingTranslated}>
+                  <ArticleTranslationPlaceholder
+                    targetLanguage={content()?.language ?? undefined}
+                  />
+                </Show>
 
                 <Show when={!content()?.beingTranslated && content()?.content}>
                   {(html) => (
@@ -320,21 +444,113 @@ function ArticleBody(props: ArticleBodyProps) {
 interface ArticleTitleProps {
   title?: string | null;
   language?: string;
-  beingTranslated: boolean;
 }
 
 function ArticleTitle(props: ArticleTitleProps) {
-  const { t } = useLingui();
+  // Always render the article's `<h1>`, even while a translation is
+  // in progress, so the page keeps a primary heading and screen
+  // readers have a stable navigation landmark.  The translating
+  // placeholder card renders below this title rather than replacing
+  // it.
+  return (
+    <Show when={props.title}>
+      {(title) => (
+        <h1 class="text-4xl font-bold" lang={props.language}>
+          {title()}
+        </h1>
+      )}
+    </Show>
+  );
+}
+
+interface ArticleTranslationPlaceholderProps {
+  /**
+   * BCP-47 tag of the language the article is being translated *into*.
+   * Used to render the localized language name in the heading via
+   * `Intl.DisplayNames` and as a `lang` hint on the heading element.
+   */
+  targetLanguage?: string;
+}
+
+export function ArticleTranslationPlaceholder(
+  props: ArticleTranslationPlaceholderProps,
+) {
+  const { t, i18n } = useLingui();
+  const targetLanguageName = () => {
+    if (props.targetLanguage == null) return null;
+    try {
+      return new Intl.DisplayNames(i18n.locale, { type: "language" })
+        .of(props.targetLanguage) ?? props.targetLanguage;
+    } catch {
+      return props.targetLanguage;
+    }
+  };
 
   return (
-    <Show
-      when={!props.beingTranslated}
-      fallback={<h1 class="text-4xl font-bold">{t`Translating…`}</h1>}
-    >
-      <h1 class="text-4xl font-bold" lang={props.language}>
-        {props.title}
-      </h1>
-    </Show>
+    <div class="mt-4 border rounded-lg p-6 flex flex-col items-center gap-3 text-center">
+      <IconLoader2 class="size-8 animate-spin opacity-60" aria-hidden="true" />
+      <Show
+        when={targetLanguageName()}
+        fallback={<p class="text-lg font-semibold">{t`Translating…`}</p>}
+      >
+        {(name) => (
+          <p class="text-lg font-semibold">
+            {t`Translating to ${name()}…`}
+          </p>
+        )}
+      </Show>
+      <p class="text-sm text-muted-foreground max-w-md">
+        {t`This usually takes about a minute. The page will update automatically when the translation is ready.`}
+      </p>
+    </div>
+  );
+}
+
+interface ArticleTranslationFailureProps {
+  /**
+   * BCP-47 tag of the language whose translation request failed,
+   * used to localize the heading.  Same shape as
+   * `ArticleTranslationPlaceholder.targetLanguage`.
+   */
+  targetLanguage?: string;
+  onRetry: () => void;
+}
+
+export function ArticleTranslationFailure(
+  props: ArticleTranslationFailureProps,
+) {
+  const { t, i18n } = useLingui();
+  const targetLanguageName = () => {
+    if (props.targetLanguage == null) return null;
+    try {
+      return new Intl.DisplayNames(i18n.locale, { type: "language" })
+        .of(props.targetLanguage) ?? props.targetLanguage;
+    } catch {
+      return props.targetLanguage;
+    }
+  };
+
+  return (
+    <div class="mt-4 border rounded-lg p-6 flex flex-col items-center gap-3 text-center">
+      <Show
+        when={targetLanguageName()}
+        fallback={
+          <p class="text-lg font-semibold">{t`Translation request failed`}</p>
+        }
+      >
+        {(name) => (
+          <p class="text-lg font-semibold">
+            {t`Translation request failed for ${name()}`}
+          </p>
+        )}
+      </Show>
+      <p class="text-sm text-muted-foreground max-w-md">
+        {t`We couldn't reach the translation service. Try again, or come back in a few minutes.`}
+      </p>
+      <Button variant="outline" onClick={() => props.onRetry()}>
+        {t`Try again`}
+      </Button>
+    </div>
   );
 }
 
@@ -470,6 +686,9 @@ function ArticleInlineToc(props: ArticleInlineTocProps) {
 
 interface ArticleLanguageSwitcherProps {
   $article: Slug_languageSwitcher$key;
+  currentLanguage?: string;
+  currentOriginalLanguage?: string | null;
+  viewerLocales?: readonly string[] | null;
 }
 
 function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
@@ -482,9 +701,10 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
         }
         publishedYear
         slug
-        contents {
+        language
+        allowLlmTranslation
+        allContents: contents(includeBeingTranslated: true) {
           language
-          originalLanguage
           url
         }
       }
@@ -495,12 +715,72 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
   return (
     <Show when={article()}>
       {(article) => {
-        const content = () => article().contents[0];
         const postUrl = () =>
           `/@${article().actor.username}/${article().publishedYear}/${article().slug}`;
+        // Extra links for the viewer's preferred locales that aren't
+        // already represented in the existing translations and aren't
+        // the article's original language.  Clicking one navigates to
+        // `/lang`, which auto-fires `requestArticleTranslation` from
+        // `[lang].tsx` and renders the in-progress placeholder.
+        //
+        // Comparisons are done on the language *and* script subtags
+        // (after `Intl.Locale.maximize()`) so two regional variants
+        // that share both (e.g., `en-US` vs `en-GB`) collapse — the
+        // existing translation already covers the viewer's locale —
+        // but two variants that differ in script (e.g., `zh-CN` vs
+        // `zh-TW`, which maximize to `zh-Hans-CN` vs `zh-Hant-TW`)
+        // stay distinct, because Simplified and Traditional Chinese
+        // are meaningfully different translation outputs and the
+        // viewer should be offered a link for each.  This mirrors the
+        // `requestArticleTranslation` mutation's same-language check.
+        const extraLocales = () => {
+          if (!article().allowLlmTranslation) return [];
+          const locales = props.viewerLocales;
+          if (locales == null || locales.length === 0) return [];
+          const subtag = (locale: string | null | undefined) => {
+            if (locale == null) return null;
+            try {
+              const max = new Intl.Locale(locale).maximize();
+              return `${max.language}-${max.script}`;
+            } catch {
+              return locale;
+            }
+          };
+          const existing = new Set(
+            article().allContents.map((c) => subtag(c.language)),
+          );
+          const articleSubtag = subtag(article().language);
+          const currentSubtag = subtag(props.currentLanguage);
+          const seen = new Set<string>();
+          // Each entry is the (normalized) locale tag we'll use as
+          // both the link href segment and the display-name lookup.
+          // We normalize through `normalizeLocale` (the same allow-
+          // list the `[lang]` route's `matchFilters` and the
+          // `requestArticleTranslation` mutation enforce) so a
+          // viewer locale like `fr-CH` or `ka-GE` (valid BCP 47 but
+          // outside `POSSIBLE_LOCALES`) is dropped here instead of
+          // rendering a link that lands on 404.
+          const result: string[] = [];
+          for (const locale of locales) {
+            const normalized = normalizeLocale(locale);
+            if (normalized == null) continue;
+            const s = subtag(normalized);
+            if (s == null) continue;
+            if (s === articleSubtag) continue;
+            if (s === currentSubtag) continue;
+            if (existing.has(s)) continue;
+            if (seen.has(s)) continue;
+            seen.add(s);
+            result.push(normalized);
+          }
+          return result;
+        };
 
         return (
-          <Show when={article().contents.length > 1}>
+          <Show
+            when={article().allContents.length > 1 ||
+              extraLocales().length > 0}
+          >
             <aside class="mt-8 p-4 max-w-[80ch] border border-stone-200 dark:border-stone-700 flex flex-row gap-3 rounded-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -517,10 +797,10 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                 />
               </svg>
               <div>
-                <Show when={content()?.originalLanguage}>
+                <Show when={props.currentOriginalLanguage}>
                   {(originalLanguage) => {
                     const sourceUrl = () => {
-                      const entry = article().contents.find(
+                      const entry = article().allContents.find(
                         (c) => c.language === originalLanguage(),
                       );
                       return entry?.url ?? postUrl();
@@ -546,23 +826,37 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
                 <nav class="text-stone-600 dark:text-stone-400">
                   <strong>{t`Other languages`}</strong> &rarr;{" "}
                   <For
-                    each={article().contents.filter(
-                      (c) => c.language !== content()?.language,
-                    )}
+                    each={[
+                      ...article().allContents.filter(
+                        (c) => c.language !== props.currentLanguage,
+                      ).map((c) => ({
+                        language: c.language,
+                        // Being-translated placeholder rows have no
+                        // server-assigned `url` yet; fall back to the
+                        // canonical `/lang` segment so the link still
+                        // points at a real route (where the placeholder
+                        // UI renders) instead of an empty href.
+                        href: c.url ?? `${postUrl()}/${c.language}`,
+                      })),
+                      ...extraLocales().map((language) => ({
+                        language,
+                        href: `${postUrl()}/${language}`,
+                      })),
+                    ]}
                   >
-                    {(otherContent, i) => (
+                    {(other, i) => (
                       <>
                         {i() > 0 && <>{" "}&middot;{" "}</>}
                         <a
-                          href={otherContent.url}
-                          hreflang={otherContent.language}
-                          lang={otherContent.language}
+                          href={other.href}
+                          hreflang={other.language}
+                          lang={other.language}
                           rel="alternate"
                           class="text-stone-900 dark:text-stone-100"
                         >
-                          {new Intl.DisplayNames(otherContent.language, {
+                          {new Intl.DisplayNames(other.language, {
                             type: "language",
-                          }).of(otherContent.language)}
+                          }).of(other.language)}
                         </a>
                       </>
                     )}

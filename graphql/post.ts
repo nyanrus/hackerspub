@@ -6,7 +6,9 @@ import { getAvatarUrl } from "@hackerspub/models/account";
 import {
   createArticle,
   deleteArticleDraft,
+  getOriginalArticleContent,
   LanguageChangeWithTranslationsError,
+  startArticleContentTranslation,
   updateArticle,
   updateArticleDraft,
 } from "@hackerspub/models/article";
@@ -17,7 +19,7 @@ import {
 } from "@hackerspub/models/bookmark";
 import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
 import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
-import { negotiateLocale } from "@hackerspub/models/i18n";
+import { negotiateLocale, normalizeLocale } from "@hackerspub/models/i18n";
 import { renderMarkup } from "@hackerspub/models/markup";
 import { createNote } from "@hackerspub/models/note";
 import {
@@ -65,14 +67,36 @@ class SharedPostDeletionNotAllowedError extends Error {
   }
 }
 
+type LlmTranslationNotAllowedReason = "DISABLED" | "SAME_LANGUAGE";
+
+class LlmTranslationNotAllowedError extends Error {
+  public constructor(public readonly reason: LlmTranslationNotAllowedReason) {
+    super(`LLM translation not allowed: ${reason}`);
+  }
+}
+
 export const PostType = builder.enumType("PostType", {
   values: ["ARTICLE", "NOTE", "QUESTION"],
 });
+
+const LlmTranslationNotAllowedReasonRef = builder.enumType(
+  "LlmTranslationNotAllowedReason",
+  {
+    values: ["DISABLED", "SAME_LANGUAGE"] as const,
+  },
+);
 
 builder.objectType(SharedPostDeletionNotAllowedError, {
   name: "SharedPostDeletionNotAllowedError",
   fields: (t) => ({
     inputPath: t.expose("inputPath", { type: "String" }),
+  }),
+});
+
+builder.objectType(LlmTranslationNotAllowedError, {
+  name: "LlmTranslationNotAllowedError",
+  fields: (t) => ({
+    reason: t.expose("reason", { type: LlmTranslationNotAllowedReasonRef }),
   }),
 });
 
@@ -301,11 +325,9 @@ export const Article = builder.drizzleNode("postTable", {
         with: {
           articleSource: {
             with: {
-              contents: {
-                where: {
-                  beingTranslated: args.includeBeingTranslated ?? false,
-                },
-              },
+              contents: args.includeBeingTranslated
+                ? {}
+                : { where: { beingTranslated: false } },
             },
           },
         },
@@ -1763,6 +1785,126 @@ builder.relayMutationField(
       }
 
       return updated;
+    },
+  },
+  {
+    outputFields: (t) => ({
+      article: t.field({
+        type: Article,
+        resolve: (post) => post,
+      }),
+    }),
+  },
+);
+
+builder.relayMutationField(
+  "requestArticleTranslation",
+  {
+    inputFields: (t) => ({
+      articleId: t.globalID({ for: [Article], required: true }),
+      targetLanguage: t.field({ type: "Locale", required: true }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+        LlmTranslationNotAllowedError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      const session = await ctx.session;
+      if (session == null || ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const post = await ctx.db.query.postTable.findFirst({
+        where: { id: args.input.articleId.id },
+        with: {
+          actor: {
+            with: {
+              followers: true,
+              blockees: true,
+              blockers: true,
+            },
+          },
+          mentions: true,
+          articleSource: {
+            with: { contents: true },
+          },
+        },
+      });
+      if (
+        post == null ||
+        post.type !== "Article" ||
+        post.articleSource == null ||
+        !isPostVisibleTo(post, ctx.account.actor)
+      ) {
+        throw new InvalidInputError("articleId");
+      }
+      if (!post.articleSource.allowLlmTranslation) {
+        throw new LlmTranslationNotAllowedError("DISABLED");
+      }
+      const original = getOriginalArticleContent(post.articleSource);
+      if (original == null) {
+        throw new InvalidInputError("articleId");
+      }
+      // The `Locale` scalar accepts any syntactically valid BCP 47
+      // tag, but the `[lang]` route only serves locales that pass
+      // `normalizeLocale` (i.e. the `POSSIBLE_LOCALES` whitelist
+      // used across the project).  Run the same check here so an
+      // API client cannot enqueue a translation for a tag the
+      // canonical article URL flow will never display.
+      const targetLanguage = normalizeLocale(
+        args.input.targetLanguage.baseName,
+      );
+      if (targetLanguage == null) {
+        throw new InvalidInputError("targetLanguage");
+      }
+      // Reject targets that share the source's *language and script*
+      // subtags after maximization (so `en` -> `en-US` and `ko` ->
+      // `ko-KR` are blocked because they both maximize to the same
+      // `language`+`script` pair, but `zh-CN` -> `zh-TW` is allowed
+      // because Simplified vs Traditional script genuinely produces a
+      // different translation output).  `Article.contents` negotiates
+      // among available locales rather than requiring exact tags, so
+      // permitting a same-script variant would create a redundant
+      // placeholder row whose canonical URL would negotiate back to
+      // the existing source content and leave the newly inserted row
+      // unreachable; a different-script variant has its own canonical
+      // URL slot in the negotiation result.
+      const targetMax = new Intl.Locale(targetLanguage).maximize();
+      const originalMax = new Intl.Locale(original.language).maximize();
+      if (
+        targetMax.language === originalMax.language &&
+        targetMax.script === originalMax.script
+      ) {
+        throw new LlmTranslationNotAllowedError("SAME_LANGUAGE");
+      }
+
+      // Skip enqueueing if a *completed* translation for the target
+      // locale already exists.  `startArticleContentTranslation` is
+      // already idempotent against this case (it returns early without
+      // calling the translator), but checking here against the
+      // already-fetched `articleSource.contents` lets the resolver
+      // avoid the extra DB round-trip and makes the no-op intent
+      // explicit at the resolver layer.  In-progress and stale rows
+      // are intentionally not short-circuited here so the model layer
+      // can re-queue them per its 30-minute staleness window.
+      const alreadyTranslated = post.articleSource.contents.some(
+        (c) =>
+          !c.beingTranslated && normalizeLocale(c.language) === targetLanguage,
+      );
+      if (!alreadyTranslated) {
+        await startArticleContentTranslation(ctx.fedCtx, {
+          content: original,
+          targetLanguage,
+          requester: ctx.account,
+        });
+      }
+
+      return post;
     },
   },
   {
