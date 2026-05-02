@@ -2,6 +2,7 @@ import { graphql } from "relay-runtime";
 import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import type { NotificationActor_notification$key } from "./__generated__/NotificationActor_notification.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 
 interface NotificationActorProps {
   $notification: NotificationActor_notification$key;
@@ -40,28 +41,30 @@ export function NotificationActor(props: NotificationActorProps) {
       {(notification) => (
         <Show when={firstActor(notification())}>
           {(firstActor) => (
-            <a href={`/${firstActor().handle}`} class="min-w-0">
-              <Show
-                when={firstActor().name}
-                fallback={
-                  <span class="font-semibold text-muted-foreground">
-                    {firstActor().handle}
-                  </span>
-                }
-              >
-                {(name) => (
-                  <span class="inline min-w-0">
-                    <span innerHTML={name()} class="font-semibold" />{" "}
-                    <span
-                      class="break-all text-muted-foreground"
-                      title={firstActor().handle}
-                    >
-                      ({firstActor().handle})
+            <ActorHoverCard handle={firstActor().handle}>
+              <a href={`/${firstActor().handle}`} class="min-w-0">
+                <Show
+                  when={firstActor().name}
+                  fallback={
+                    <span class="font-semibold text-muted-foreground">
+                      {firstActor().handle}
                     </span>
-                  </span>
-                )}
-              </Show>
-            </a>
+                  }
+                >
+                  {(name) => (
+                    <span class="inline min-w-0">
+                      <span innerHTML={name()} class="font-semibold" />{" "}
+                      <span
+                        class="break-all text-muted-foreground"
+                        title={firstActor().handle}
+                      >
+                        ({firstActor().handle})
+                      </span>
+                    </span>
+                  )}
+                </Show>
+              </a>
+            </ActorHoverCard>
           )}
         </Show>
       )}

@@ -8,9 +8,14 @@ import {
 } from "~/components/ui/avatar.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
+import {
   ArticleCard_article$key,
 } from "./__generated__/ArticleCard_article.graphql.ts";
 import { ArticleCardInternal_article$key } from "./__generated__/ArticleCardInternal_article.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { ArticleControls } from "./ArticleControls.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { PostActionMenu } from "./PostActionMenu.tsx";
@@ -43,9 +48,12 @@ export function ArticleCard(props: ArticleCardProps) {
     () => props.$article,
   );
   const [hover, setHover] = createSignal(false);
+  const [articleRef, setArticleRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(articleRef);
 
   return (
     <article
+      ref={setArticleRef}
       class="group flex flex-col border-b transition-colors last:border-none"
       classList={{ "bg-muted/40": hover() }}
     >
@@ -86,6 +94,7 @@ export function ArticleCard(props: ArticleCardProps) {
           </Show>
         )}
       </Show>
+      <MentionHoverCardLayer state={mentionState} />
     </article>
   );
 }
@@ -144,21 +153,29 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
       {(article) => (
         <>
           <div class="m-4 mb-0 flex gap-3 sm:gap-4">
-            <Avatar class="size-12">
-              <InternalLink
-                href={article().actor.url ?? article().actor.iri}
-                internalHref={article().actor.local
-                  ? `/@${article().actor.username}`
-                  : `/${article().actor.handle}`}
-              >
-                <AvatarImage src={article().actor.avatarUrl} class="size-12" />
-                <AvatarFallback class="size-12">
-                  {article().actor.avatarInitials}
-                </AvatarFallback>
-              </InternalLink>
-            </Avatar>
+            <ActorHoverCard handle={article().actor.handle} class="shrink-0">
+              <Avatar class="size-12">
+                <InternalLink
+                  href={article().actor.url ?? article().actor.iri}
+                  internalHref={article().actor.local
+                    ? `/@${article().actor.username}`
+                    : `/${article().actor.handle}`}
+                >
+                  <AvatarImage
+                    src={article().actor.avatarUrl}
+                    class="size-12"
+                  />
+                  <AvatarFallback class="size-12">
+                    {article().actor.avatarInitials}
+                  </AvatarFallback>
+                </InternalLink>
+              </Avatar>
+            </ActorHoverCard>
             <div class="flex min-w-0 flex-col">
-              <div class="flex min-w-0 items-baseline gap-x-1">
+              <ActorHoverCard
+                handle={article().actor.handle}
+                class="flex min-w-0 items-baseline gap-x-1"
+              >
                 <Show when={(article().actor.name ?? "").trim() !== ""}>
                   <InternalLink
                     innerHTML={article().actor.name ?? ""}
@@ -175,7 +192,7 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
                 >
                   {article().actor.handle}
                 </span>
-              </div>
+              </ActorHoverCard>
               <div class="flex flex-row items-center gap-1 text-sm text-muted-foreground/70">
                 <Timestamp value={article().published} capitalizeFirstLetter />
                 <PostActionMenu

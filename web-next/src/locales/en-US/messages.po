@@ -24,13 +24,19 @@ msgstr "{0, plural, one {# comment} other {# comments}}"
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 
+#. placeholder {0}: a().followersCount.totalCount
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:249
+#: src/components/ActorPreviewCard.tsx:106
+#: src/components/ActorPreviewCard.tsx:130
+#: src/components/ProfileCard.tsx:257
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, one {# follower} other {# followers}}"
 
+#. placeholder {0}: a().followeesCount.totalCount
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:234
+#: src/components/ActorPreviewCard.tsx:95
+#: src/components/ActorPreviewCard.tsx:119
+#: src/components/ProfileCard.tsx:242
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, one {# following} other {# following}}"
 
@@ -42,12 +48,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, one {# invitation left} other {# invitations left}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:462
+#: src/components/QuestionCard.tsx:476
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, one {# vote} other {# votes}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:408
+#: src/components/QuestionCard.tsx:422
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, one {# voter} other {# voters}}"
 
@@ -149,8 +155,8 @@ msgstr "{0} replied to your post"
 
 #. placeholder {0}: "SHARER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/PostSharer.tsx:36
-#: src/components/QuestionCard.tsx:78
+#: src/components/PostSharer.tsx:37
+#: src/components/QuestionCard.tsx:83
 msgid "{0} shared {1}"
 msgstr "{0} shared {1}"
 
@@ -402,7 +408,7 @@ msgstr "Choose the language your friend prefers. This language will only be used
 msgid "Choose your preferred language for the verification email."
 msgstr "Choose your preferred language for the verification email."
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Closed"
 msgstr "Closed"
 
@@ -455,7 +461,11 @@ msgstr "Could not copy the link to the clipboard."
 msgid "Could not find a post at this URL"
 msgstr "Could not find a post at this URL"
 
-#: src/components/QuestionCard.tsx:353
+#: src/components/ActorHoverCardLoader.tsx:36
+msgid "Could not load profile."
+msgstr "Could not load profile."
+
+#: src/components/QuestionCard.tsx:367
 msgid "Could not vote on this poll"
 msgstr "Could not vote on this poll"
 
@@ -602,11 +612,11 @@ msgstr "Email address"
 msgid "Email or username"
 msgstr "Email or username"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ended"
 msgstr "Ended"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ends"
 msgstr "Ends"
 
@@ -842,7 +852,7 @@ msgstr "Failed to update the article. Please try again."
 msgid "Failed to upload image"
 msgstr "Failed to upload image"
 
-#: src/components/QuestionCard.tsx:361
+#: src/components/QuestionCard.tsx:375
 msgid "Failed to vote"
 msgstr "Failed to vote"
 
@@ -884,7 +894,8 @@ msgstr "Followers only"
 msgid "Following"
 msgstr "Following"
 
-#: src/components/ProfileCard.tsx:259
+#: src/components/ActorPreviewCard.tsx:141
+#: src/components/ProfileCard.tsx:267
 msgid "Following you"
 msgstr "Following you"
 
@@ -1277,7 +1288,7 @@ msgstr "Move to the top"
 msgid "Move up"
 msgstr "Move up"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Multiple choice"
 msgstr "Multiple choice"
 
@@ -1412,7 +1423,7 @@ msgstr "Notifications"
 msgid "Number of invitations"
 msgstr "Number of invitations"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Open"
 msgstr "Open"
 
@@ -1498,11 +1509,11 @@ msgstr "Please enter your Fediverse handle."
 msgid "Please sign in to access this page"
 msgstr "Please sign in to access this page"
 
-#: src/components/QuestionCard.tsx:347
+#: src/components/QuestionCard.tsx:361
 msgid "Please sign in to vote"
 msgstr "Please sign in to vote"
 
-#: src/components/QuestionCard.tsx:322
+#: src/components/QuestionCard.tsx:336
 msgid "Poll closed"
 msgstr "Poll closed"
 
@@ -1610,8 +1621,8 @@ msgstr "React with {emoji}"
 msgid "reaction"
 msgstr "reaction"
 
-#: src/components/ArticleCard.tsx:360
-#: src/components/ArticleCard.tsx:380
+#: src/components/ArticleCard.tsx:379
+#: src/components/ArticleCard.tsx:399
 msgid "Read full article"
 msgstr "Read full article"
 
@@ -1740,11 +1751,11 @@ msgstr "Search posts…"
 msgid "Search results for {0}"
 msgstr "Search results for {0}"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select an option"
 msgstr "Select an option"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select options"
 msgstr "Select options"
 
@@ -1790,7 +1801,7 @@ msgstr "Sign in"
 msgid "Sign in to Hackers' Pub"
 msgstr "Sign in to Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:338
 msgid "Sign in to vote"
 msgstr "Sign in to vote"
 
@@ -1823,7 +1834,7 @@ msgstr "Signing in…"
 msgid "Signing up for Hackers' Pub"
 msgstr "Signing up for Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Single choice"
 msgstr "Single choice"
 
@@ -1860,8 +1871,8 @@ msgstr "Successfully saved preferences"
 msgid "Successfully saved settings"
 msgstr "Successfully saved settings"
 
-#: src/components/ArticleCard.tsx:313
 #: src/components/ArticleCard.tsx:332
+#: src/components/ArticleCard.tsx:351
 msgid "Summarized by LLM"
 msgstr "Summarized by LLM"
 
@@ -2018,7 +2029,7 @@ msgid "Total: {0}"
 msgstr "Total: {0}"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:196
+#: src/components/ArticleCard.tsx:215
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
 msgid "Translated from {0}"
 msgstr "Translated from {0}"
@@ -2116,7 +2127,7 @@ msgstr "Users you have invited"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:204
+#: src/components/ProfileCard.tsx:212
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "Verified that this link is owned by {0} {1}"
 
@@ -2148,19 +2159,19 @@ msgstr "Visible to everyone, but does not appear in the public timeline. Only th
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 
-#: src/components/QuestionCard.tsx:329
+#: src/components/QuestionCard.tsx:343
 msgid "Vote"
 msgstr "Vote"
 
-#: src/components/QuestionCard.tsx:343
+#: src/components/QuestionCard.tsx:357
 msgid "Vote recorded"
 msgstr "Vote recorded"
 
-#: src/components/QuestionCard.tsx:323
+#: src/components/QuestionCard.tsx:337
 msgid "Voted"
 msgstr "Voted"
 
-#: src/components/QuestionCard.tsx:325
+#: src/components/QuestionCard.tsx:339
 msgid "Voting…"
 msgstr "Voting…"
 
@@ -2201,11 +2212,11 @@ msgstr "Write your article here. You can use Markdown. Your article will be auto
 msgid "You are about to follow {0}."
 msgstr "You are about to follow {0}."
 
-#: src/components/ProfileCard.tsx:127
+#: src/components/ProfileCard.tsx:133
 msgid "You are blocked by this user. You can't follow them or see their posts."
 msgstr "You are blocked by this user. You can't follow them or see their posts."
 
-#: src/components/ProfileCard.tsx:120
+#: src/components/ProfileCard.tsx:126
 msgid "You are blocking this user. They can't follow you or see your posts."
 msgstr "You are blocking this user. They can't follow you or see your posts."
 

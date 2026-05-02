@@ -4,6 +4,7 @@ import { graphql } from "relay-runtime";
 import type { JSX } from "solid-js";
 import { For, Match, Show, Switch } from "solid-js";
 import { createFragment } from "solid-relay";
+import { ActorHoverCard } from "~/components/ActorHoverCard.tsx";
 import { NotificationActor } from "~/components/NotificationActor.tsx";
 import { Trans } from "~/components/Trans.tsx";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
@@ -63,18 +64,22 @@ export function NotificationMessage(props: NotificationMessageProps) {
           <div class="group flex shrink-0 -space-x-8 hover:-space-x-5">
             <For each={notification().actors.edges.slice(0, 4).toReversed()}>
               {({ node }) => (
-                <Avatar
-                  as={A}
-                  href={node.local ? `/@${node.username}` : `/${node.handle}`}
+                <ActorHoverCard
+                  handle={node.handle}
                   class="z-0 hover:z-10 transition-all duration-300 ease-out motion-reduce:transition-none"
                 >
-                  <AvatarImage
-                    src={node.avatarUrl}
-                    alt={node.name == null
-                      ? node.handle
-                      : `${unescape(node.name)} (${node.handle})`}
-                  />
-                </Avatar>
+                  <Avatar
+                    as={A}
+                    href={node.local ? `/@${node.username}` : `/${node.handle}`}
+                  >
+                    <AvatarImage
+                      src={node.avatarUrl}
+                      alt={node.name == null
+                        ? node.handle
+                        : `${unescape(node.name)} (${node.handle})`}
+                    />
+                  </Avatar>
+                </ActorHoverCard>
               )}
             </For>
           </div>

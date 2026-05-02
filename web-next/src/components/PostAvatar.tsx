@@ -2,6 +2,7 @@ import { graphql } from "relay-runtime";
 import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { PostAvatar_actor$key } from "./__generated__/PostAvatar_actor.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar.tsx";
 
@@ -28,15 +29,17 @@ export function PostAvatar(props: PostAvatarProps) {
   return (
     <Show when={actor()}>
       {(a) => (
-        <Avatar>
-          <InternalLink
-            href={a().url ?? a().iri}
-            internalHref={a().local ? `/@${a().username}` : `/${a().handle}`}
-          >
-            <AvatarImage src={a().avatarUrl} />
-            <AvatarFallback>{a().avatarInitials}</AvatarFallback>
-          </InternalLink>
-        </Avatar>
+        <ActorHoverCard handle={a().handle} class="shrink-0">
+          <Avatar>
+            <InternalLink
+              href={a().url ?? a().iri}
+              internalHref={a().local ? `/@${a().username}` : `/${a().handle}`}
+            >
+              <AvatarImage src={a().avatarUrl} />
+              <AvatarFallback>{a().avatarInitials}</AvatarFallback>
+            </InternalLink>
+          </Avatar>
+        </ActorHoverCard>
       )}
     </Show>
   );

@@ -3,6 +3,7 @@ import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import { PostSharer_post$key } from "./__generated__/PostSharer_post.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { Timestamp } from "./Timestamp.tsx";
 import { Trans } from "./Trans.tsx";
 
@@ -36,16 +37,18 @@ export function PostSharer(props: PostSharerProps) {
             message={t`${"SHARER"} shared ${"RELATIVE_TIME"}`}
             values={{
               SHARER: () => (
-                <a
-                  href={`/${
-                    post().actor.local
-                      ? `@${post().actor.username}`
-                      : post().actor.handle
-                  }`}
-                  class="font-semibold"
-                >
-                  {post().actor.name}
-                </a>
+                <ActorHoverCard handle={post().actor.handle}>
+                  <a
+                    href={`/${
+                      post().actor.local
+                        ? `@${post().actor.username}`
+                        : post().actor.handle
+                    }`}
+                    class="font-semibold"
+                  >
+                    {post().actor.name}
+                  </a>
+                </ActorHoverCard>
               ),
               RELATIVE_TIME: () => <Timestamp value={post().published} />,
             }}

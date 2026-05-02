@@ -30,6 +30,7 @@ import { escape } from "@std/html/entities";
 import xss from "xss";
 import { builder, type UserContext } from "./builder.ts";
 import { InvalidInputError } from "./error.ts";
+import { lookupActorByUrl, parseHttpUrl } from "./lookup.ts";
 import { Article, Note, Post, Question } from "./post.ts";
 import { NotAuthenticatedError } from "./session.ts";
 
@@ -653,6 +654,24 @@ builder.queryFields((t) => ({
       );
       if (!isActor(actorObject)) return null;
       return await persistActor(ctx.fedCtx, actorObject, { documentLoader });
+    },
+  }),
+  actorByUrl: t.drizzleField({
+    type: Actor,
+    args: {
+      url: t.arg({ type: "URL", required: true }),
+    },
+    nullable: true,
+    async resolve(query, _, { url }, ctx) {
+      const parsed = parseHttpUrl(url.toString());
+      if (parsed == null) return null;
+      const looked = await lookupActorByUrl(ctx, parsed);
+      if (looked == null) return null;
+      // Re-fetch through Pothos's drizzle query so selection-driven
+      // relations on Actor are loaded.
+      return await ctx.db.query.actorTable.findFirst(
+        query({ where: { id: looked.id } }),
+      );
     },
   }),
   instanceByHost: t.drizzleField({

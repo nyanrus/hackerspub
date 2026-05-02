@@ -1,6 +1,6 @@
 import { compactUrl } from "@hackerspub/models/url";
 import { graphql } from "relay-runtime";
-import { For, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import {
   Avatar,
@@ -13,6 +13,10 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { ProfileCard_actor$key } from "./__generated__/ProfileCard_actor.graphql.ts";
 import { FollowButton } from "./FollowButton.tsx";
 import { ProfileActionMenu } from "./ProfileActionMenu.tsx";
@@ -25,6 +29,8 @@ export interface ProfileCardProps {
 
 export function ProfileCard(props: ProfileCardProps) {
   const { t, i18n } = useLingui();
+  const [bioRef, setBioRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(bioRef);
   const actor = createFragment(
     graphql`
       fragment ProfileCard_actor on Actor {
@@ -131,9 +137,11 @@ export function ProfileCard(props: ProfileCardProps) {
           <Show when={(actor().bio?.trim() ?? "") !== ""}>
             <div class="p-4 pt-0">
               <div
+                ref={setBioRef}
                 innerHTML={actor().bio ?? ""}
                 class="mx-auto prose dark:prose-invert"
               />
+              <MentionHoverCardLayer state={mentionState} />
             </div>
           </Show>
           <Show

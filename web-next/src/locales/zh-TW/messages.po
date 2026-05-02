@@ -24,13 +24,19 @@ msgstr "{0, plural, other {# 則評論}}"
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, other {符合條件的帳號 # 個}}；若現在重新發放，將向其中 {1, plural, other {# 個帳號}}發放邀請。"
 
+#. placeholder {0}: a().followersCount.totalCount
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:249
+#: src/components/ActorPreviewCard.tsx:106
+#: src/components/ActorPreviewCard.tsx:130
+#: src/components/ProfileCard.tsx:257
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人關注}}"
 
+#. placeholder {0}: a().followeesCount.totalCount
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:234
+#: src/components/ActorPreviewCard.tsx:95
+#: src/components/ActorPreviewCard.tsx:119
+#: src/components/ProfileCard.tsx:242
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {關注 # 人}}"
 
@@ -42,12 +48,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩餘 # 次邀請}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:462
+#: src/components/QuestionCard.tsx:476
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {# 票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:408
+#: src/components/QuestionCard.tsx:422
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
@@ -149,8 +155,8 @@ msgstr "{0} 回覆了你的內容"
 
 #. placeholder {0}: "SHARER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/PostSharer.tsx:36
-#: src/components/QuestionCard.tsx:78
+#: src/components/PostSharer.tsx:37
+#: src/components/QuestionCard.tsx:83
 msgid "{0} shared {1}"
 msgstr "{0}在{1}轉貼了"
 
@@ -402,7 +408,7 @@ msgstr "選擇你的朋友使用的語言。這個語言只會用於邀請。"
 msgid "Choose your preferred language for the verification email."
 msgstr "請選擇驗證信件的語言。"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Closed"
 msgstr "已結束"
 
@@ -455,7 +461,11 @@ msgstr "無法將連結複製到剪貼簿。"
 msgid "Could not find a post at this URL"
 msgstr "無法在此URL找到內容"
 
-#: src/components/QuestionCard.tsx:353
+#: src/components/ActorHoverCardLoader.tsx:36
+msgid "Could not load profile."
+msgstr "無法載入個人資料。"
+
+#: src/components/QuestionCard.tsx:367
 msgid "Could not vote on this poll"
 msgstr "無法提交此投票"
 
@@ -602,11 +612,11 @@ msgstr "電子郵件地址"
 msgid "Email or username"
 msgstr "電子郵件或使用者名稱"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ended"
 msgstr "已結束"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ends"
 msgstr "截止"
 
@@ -838,7 +848,7 @@ msgstr "文章更新失敗，請重試。"
 msgid "Failed to upload image"
 msgstr "圖片上傳失敗"
 
-#: src/components/QuestionCard.tsx:361
+#: src/components/QuestionCard.tsx:375
 msgid "Failed to vote"
 msgstr "投票失敗"
 
@@ -880,7 +890,8 @@ msgstr "只粉絲可見"
 msgid "Following"
 msgstr "關注"
 
-#: src/components/ProfileCard.tsx:259
+#: src/components/ActorPreviewCard.tsx:141
+#: src/components/ProfileCard.tsx:267
 msgid "Following you"
 msgstr "關注了你"
 
@@ -1273,7 +1284,7 @@ msgstr "移動到頂部"
 msgid "Move up"
 msgstr "向上移動"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Multiple choice"
 msgstr "多選"
 
@@ -1407,7 +1418,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀請次數"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Open"
 msgstr "進行中"
 
@@ -1493,11 +1504,11 @@ msgstr "請輸入你的聯邦宇宙使用者名稱。"
 msgid "Please sign in to access this page"
 msgstr "請登入以存取此頁面"
 
-#: src/components/QuestionCard.tsx:347
+#: src/components/QuestionCard.tsx:361
 msgid "Please sign in to vote"
 msgstr "請登入後投票"
 
-#: src/components/QuestionCard.tsx:322
+#: src/components/QuestionCard.tsx:336
 msgid "Poll closed"
 msgstr "投票已結束"
 
@@ -1605,8 +1616,8 @@ msgstr "用{emoji}反應"
 msgid "reaction"
 msgstr "反應"
 
-#: src/components/ArticleCard.tsx:360
-#: src/components/ArticleCard.tsx:380
+#: src/components/ArticleCard.tsx:379
+#: src/components/ArticleCard.tsx:399
 msgid "Read full article"
 msgstr "閱讀完整文章"
 
@@ -1735,11 +1746,11 @@ msgstr "搜尋內容…"
 msgid "Search results for {0}"
 msgstr "{0}的搜尋結果"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select an option"
 msgstr "請選擇一個選項"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select options"
 msgstr "請選擇選項"
 
@@ -1785,7 +1796,7 @@ msgstr "登入"
 msgid "Sign in to Hackers' Pub"
 msgstr "登入 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:338
 msgid "Sign in to vote"
 msgstr "登入後投票"
 
@@ -1818,7 +1829,7 @@ msgstr "登入中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "註冊 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Single choice"
 msgstr "單選"
 
@@ -1855,8 +1866,8 @@ msgstr "設定已成功儲存"
 msgid "Successfully saved settings"
 msgstr "設定儲存成功"
 
-#: src/components/ArticleCard.tsx:313
 #: src/components/ArticleCard.tsx:332
+#: src/components/ArticleCard.tsx:351
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
@@ -2013,7 +2024,7 @@ msgid "Total: {0}"
 msgstr "共 {0} 個"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:196
+#: src/components/ArticleCard.tsx:215
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
@@ -2111,7 +2122,7 @@ msgstr "您邀請的使用者"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:204
+#: src/components/ProfileCard.tsx:212
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "已於{1}驗證此連結歸{0}所有"
 
@@ -2143,19 +2154,19 @@ msgstr "所有人都可以看到，但不會出現在公共時間軸中。只有
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未註冊使用者在內的所有人都可以看到。內容也會出現在公共時間軸中。"
 
-#: src/components/QuestionCard.tsx:329
+#: src/components/QuestionCard.tsx:343
 msgid "Vote"
 msgstr "投票"
 
-#: src/components/QuestionCard.tsx:343
+#: src/components/QuestionCard.tsx:357
 msgid "Vote recorded"
 msgstr "已記錄投票"
 
-#: src/components/QuestionCard.tsx:323
+#: src/components/QuestionCard.tsx:337
 msgid "Voted"
 msgstr "已投票"
 
-#: src/components/QuestionCard.tsx:325
+#: src/components/QuestionCard.tsx:339
 msgid "Voting…"
 msgstr "正在投票…"
 
@@ -2196,11 +2207,11 @@ msgstr "在此撰寫文章。您可以使用 Markdown。在您撰寫時，文章
 msgid "You are about to follow {0}."
 msgstr "你即將關注{0}。"
 
-#: src/components/ProfileCard.tsx:127
+#: src/components/ProfileCard.tsx:133
 msgid "You are blocked by this user. You can't follow them or see their posts."
 msgstr "你已被此使用者封鎖。你無法關注該使用者或查看該使用者的內容。"
 
-#: src/components/ProfileCard.tsx:120
+#: src/components/ProfileCard.tsx:126
 msgid "You are blocking this user. They can't follow you or see your posts."
 msgstr "你正在封鎖此使用者。該使用者無法關注你或查看你的內容。"
 

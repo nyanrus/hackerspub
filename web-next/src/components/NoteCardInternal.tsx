@@ -1,6 +1,10 @@
 import { graphql } from "relay-runtime";
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { createFragment } from "solid-relay";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import { NoteCardInternal_note$key } from "./__generated__/NoteCardInternal_note.graphql.ts";
 import { LinkPreview } from "./LinkPreview.tsx";
 import { NoteHeader } from "./NoteHeader.tsx";
@@ -40,6 +44,9 @@ export function NoteCardInternal(props: NoteCardInternalProps) {
     () => props.$note,
   );
 
+  const [proseRef, setProseRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(proseRef);
+
   return (
     <Show when={note()}>
       {(n) => (
@@ -53,10 +60,12 @@ export function NoteCardInternal(props: NoteCardInternalProps) {
               onDeleted={props.onDeleted}
             />
             <div
+              ref={setProseRef}
               innerHTML={n().content}
               lang={n().language ?? undefined}
               class="prose dark:prose-invert mt-1 break-words overflow-wrap"
             />
+            <MentionHoverCardLayer state={mentionState} />
             <NoteMedia $note={n()} />
             <LinkPreview $note={n()} />
             <Show when={n().quotedPost}>

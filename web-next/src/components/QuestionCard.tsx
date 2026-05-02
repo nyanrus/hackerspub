@@ -18,9 +18,14 @@ import { Button } from "~/components/ui/button.tsx";
 import { showToast } from "~/components/ui/toast.tsx";
 import { useViewer } from "~/contexts/ViewerContext.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import {
+  MentionHoverCardLayer,
+  useMentionHoverCards,
+} from "~/lib/mentionHoverCards.tsx";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
 import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { QuestionActionMenu } from "./PostActionMenu.tsx";
 import { PostAvatar } from "./PostAvatar.tsx";
@@ -78,16 +83,18 @@ export function QuestionCard(props: QuestionCardProps) {
                     message={t`${"SHARER"} shared ${"RELATIVE_TIME"}`}
                     values={{
                       SHARER: () => (
-                        <a
-                          href={`/${
-                            q().actor.local
-                              ? `@${q().actor.username}`
-                              : q().actor.handle
-                          }`}
-                          class="font-semibold"
-                        >
-                          {q().actor.name}
-                        </a>
+                        <ActorHoverCard handle={q().actor.handle}>
+                          <a
+                            href={`/${
+                              q().actor.local
+                                ? `@${q().actor.username}`
+                                : q().actor.handle
+                            }`}
+                            class="font-semibold"
+                          >
+                            {q().actor.name}
+                          </a>
+                        </ActorHoverCard>
                       ),
                       RELATIVE_TIME: () => <Timestamp value={q().published} />,
                     }}
@@ -118,6 +125,9 @@ interface QuestionCardContentProps {
 }
 
 function QuestionCardContent(props: QuestionCardContentProps) {
+  const [proseRef, setProseRef] = createSignal<HTMLElement>();
+  const mentionState = useMentionHoverCards(proseRef);
+
   const question = createFragment(
     graphql`
       fragment QuestionCardContent_question on Question {
@@ -218,23 +228,27 @@ function QuestionCardContent(props: QuestionCardContentProps) {
           <PostAvatar $actor={q().actor} />
           <div class="min-w-0 grow">
             <div class="flex items-center gap-1 flex-wrap">
-              <Show when={(q().actor.name ?? "").trim() !== ""}>
-                <InternalLink
-                  href={q().actor.url ?? q().actor.iri}
-                  internalHref={q().actor.local
-                    ? `/@${q().actor.username}`
-                    : `/${q().actor.handle}`}
-                  innerHTML={q().actor.name ?? ""}
-                  class="font-semibold"
-                />
-                {" "}
-              </Show>
-              <span
-                class="min-w-0 grow truncate select-all text-muted-foreground"
-                title={q().actor.handle}
+              <ActorHoverCard
+                handle={q().actor.handle}
+                class="min-w-0 grow flex flex-wrap items-baseline gap-x-1"
               >
-                {q().actor.handle}
-              </span>
+                <Show when={(q().actor.name ?? "").trim() !== ""}>
+                  <InternalLink
+                    href={q().actor.url ?? q().actor.iri}
+                    internalHref={q().actor.local
+                      ? `/@${q().actor.username}`
+                      : `/${q().actor.handle}`}
+                    innerHTML={q().actor.name ?? ""}
+                    class="font-semibold"
+                  />
+                </Show>
+                <span
+                  class="min-w-0 truncate select-all text-muted-foreground"
+                  title={q().actor.handle}
+                >
+                  {q().actor.handle}
+                </span>
+              </ActorHoverCard>
               <span class="flex items-center text-sm text-muted-foreground/60 gap-1.5">
                 <InternalLink
                   href={q().url ?? q().iri}
@@ -257,10 +271,12 @@ function QuestionCardContent(props: QuestionCardContentProps) {
               </span>
             </div>
             <div
+              ref={setProseRef}
               innerHTML={q().content}
               lang={q().language ?? undefined}
               class="prose dark:prose-invert break-words overflow-wrap"
             />
+            <MentionHoverCardLayer state={mentionState} />
             <Show when={q().poll}>
               {(poll) => (
                 <PollPanel

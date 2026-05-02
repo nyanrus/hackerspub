@@ -24,13 +24,19 @@ msgstr "{0, plural, other {# 条评论}}"
 msgid "{0, plural, one {# eligible account} other {# eligible accounts}}; {1, plural, one {# would receive an invitation} other {# would receive invitations}} if regenerated now."
 msgstr "{0, plural, other {符合条件的账号 # 个}}；若现在重新发放，将向其中 {1, plural, other {# 个账号}}发放邀请。"
 
+#. placeholder {0}: a().followersCount.totalCount
 #. placeholder {0}: actor().followersCount.totalCount
-#: src/components/ProfileCard.tsx:249
+#: src/components/ActorPreviewCard.tsx:106
+#: src/components/ActorPreviewCard.tsx:130
+#: src/components/ProfileCard.tsx:257
 msgid "{0, plural, one {# follower} other {# followers}}"
 msgstr "{0, plural, other {被 # 人关注}}"
 
+#. placeholder {0}: a().followeesCount.totalCount
 #. placeholder {0}: actor().followeesCount.totalCount
-#: src/components/ProfileCard.tsx:234
+#: src/components/ActorPreviewCard.tsx:95
+#: src/components/ActorPreviewCard.tsx:119
+#: src/components/ProfileCard.tsx:242
 msgid "{0, plural, one {# following} other {# following}}"
 msgstr "{0, plural, other {关注 # 人}}"
 
@@ -42,12 +48,12 @@ msgid "{0, plural, one {# invitation left} other {# invitations left}}"
 msgstr "{0, plural, other {剩余 # 次邀请}}"
 
 #. placeholder {0}: votes()
-#: src/components/QuestionCard.tsx:462
+#: src/components/QuestionCard.tsx:476
 msgid "{0, plural, one {# vote} other {# votes}}"
 msgstr "{0, plural, other {# 票}}"
 
 #. placeholder {0}: props.poll.voters.totalCount
-#: src/components/QuestionCard.tsx:408
+#: src/components/QuestionCard.tsx:422
 msgid "{0, plural, one {# voter} other {# voters}}"
 msgstr "{0, plural, other {# 位投票者}}"
 
@@ -149,8 +155,8 @@ msgstr "{0} 回复了你的内容"
 
 #. placeholder {0}: "SHARER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/PostSharer.tsx:36
-#: src/components/QuestionCard.tsx:78
+#: src/components/PostSharer.tsx:37
+#: src/components/QuestionCard.tsx:83
 msgid "{0} shared {1}"
 msgstr "{0}在{1}转帖了"
 
@@ -402,7 +408,7 @@ msgstr "选择你的朋友使用的语言。这个语言只会用于邀请。"
 msgid "Choose your preferred language for the verification email."
 msgstr "请选择验证邮件的语言。"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Closed"
 msgstr "已结束"
 
@@ -455,7 +461,11 @@ msgstr "无法将链接复制到剪贴板。"
 msgid "Could not find a post at this URL"
 msgstr "无法在此URL找到内容"
 
-#: src/components/QuestionCard.tsx:353
+#: src/components/ActorHoverCardLoader.tsx:36
+msgid "Could not load profile."
+msgstr "无法加载个人资料。"
+
+#: src/components/QuestionCard.tsx:367
 msgid "Could not vote on this poll"
 msgstr "无法提交此投票"
 
@@ -602,11 +612,11 @@ msgstr "电子邮件地址"
 msgid "Email or username"
 msgstr "邮箱或用户名"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ended"
 msgstr "已结束"
 
-#: src/components/QuestionCard.tsx:403
+#: src/components/QuestionCard.tsx:417
 msgid "Ends"
 msgstr "截止"
 
@@ -838,7 +848,7 @@ msgstr "文章更新失败，请重试。"
 msgid "Failed to upload image"
 msgstr "图片上传失败"
 
-#: src/components/QuestionCard.tsx:361
+#: src/components/QuestionCard.tsx:375
 msgid "Failed to vote"
 msgstr "投票失败"
 
@@ -880,7 +890,8 @@ msgstr "只粉丝可见"
 msgid "Following"
 msgstr "关注"
 
-#: src/components/ProfileCard.tsx:259
+#: src/components/ActorPreviewCard.tsx:141
+#: src/components/ProfileCard.tsx:267
 msgid "Following you"
 msgstr "关注了你"
 
@@ -1273,7 +1284,7 @@ msgstr "移动到顶部"
 msgid "Move up"
 msgstr "向上移动"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Multiple choice"
 msgstr "多选"
 
@@ -1407,7 +1418,7 @@ msgstr "通知"
 msgid "Number of invitations"
 msgstr "邀请次数"
 
-#: src/components/QuestionCard.tsx:400
+#: src/components/QuestionCard.tsx:414
 msgid "Open"
 msgstr "进行中"
 
@@ -1493,11 +1504,11 @@ msgstr "请输入你的联邦宇宙用户名。"
 msgid "Please sign in to access this page"
 msgstr "请登录以访问此页面"
 
-#: src/components/QuestionCard.tsx:347
+#: src/components/QuestionCard.tsx:361
 msgid "Please sign in to vote"
 msgstr "请登录后投票"
 
-#: src/components/QuestionCard.tsx:322
+#: src/components/QuestionCard.tsx:336
 msgid "Poll closed"
 msgstr "投票已结束"
 
@@ -1605,8 +1616,8 @@ msgstr "用{emoji}反应"
 msgid "reaction"
 msgstr "反应"
 
-#: src/components/ArticleCard.tsx:360
-#: src/components/ArticleCard.tsx:380
+#: src/components/ArticleCard.tsx:379
+#: src/components/ArticleCard.tsx:399
 msgid "Read full article"
 msgstr "阅读完整文章"
 
@@ -1735,11 +1746,11 @@ msgstr "搜索内容…"
 msgid "Search results for {0}"
 msgstr "{0}的搜索结果"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select an option"
 msgstr "请选择一个选项"
 
-#: src/components/QuestionCard.tsx:327
+#: src/components/QuestionCard.tsx:341
 msgid "Select options"
 msgstr "请选择选项"
 
@@ -1785,7 +1796,7 @@ msgstr "登录"
 msgid "Sign in to Hackers' Pub"
 msgstr "登录 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:324
+#: src/components/QuestionCard.tsx:338
 msgid "Sign in to vote"
 msgstr "登录后投票"
 
@@ -1818,7 +1829,7 @@ msgstr "登录中…"
 msgid "Signing up for Hackers' Pub"
 msgstr "注册 Hackers' Pub"
 
-#: src/components/QuestionCard.tsx:397
+#: src/components/QuestionCard.tsx:411
 msgid "Single choice"
 msgstr "单选"
 
@@ -1855,8 +1866,8 @@ msgstr "设置已成功保存"
 msgid "Successfully saved settings"
 msgstr "设置保存成功"
 
-#: src/components/ArticleCard.tsx:313
 #: src/components/ArticleCard.tsx:332
+#: src/components/ArticleCard.tsx:351
 msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
@@ -2013,7 +2024,7 @@ msgid "Total: {0}"
 msgstr "共 {0} 个"
 
 #. placeholder {0}: "LANGUAGE"
-#: src/components/ArticleCard.tsx:196
+#: src/components/ArticleCard.tsx:215
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:515
 msgid "Translated from {0}"
 msgstr "翻译自{0}"
@@ -2111,7 +2122,7 @@ msgstr "您邀请的用户"
 
 #. placeholder {0}: "OWNER"
 #. placeholder {1}: "RELATIVE_TIME"
-#: src/components/ProfileCard.tsx:204
+#: src/components/ProfileCard.tsx:212
 msgid "Verified that this link is owned by {0} {1}"
 msgstr "已于{1}验证此链接归{0}所有"
 
@@ -2143,19 +2154,19 @@ msgstr "所有人都可以看到，但不会出现在公共时间线中。只有
 msgid "Visible to everyone, including non-registered users. The post will appear in the public timeline as well."
 msgstr "包括未注册用户在内的所有人都可以看到。内容也会出现在公共时间线中。"
 
-#: src/components/QuestionCard.tsx:329
+#: src/components/QuestionCard.tsx:343
 msgid "Vote"
 msgstr "投票"
 
-#: src/components/QuestionCard.tsx:343
+#: src/components/QuestionCard.tsx:357
 msgid "Vote recorded"
 msgstr "已记录投票"
 
-#: src/components/QuestionCard.tsx:323
+#: src/components/QuestionCard.tsx:337
 msgid "Voted"
 msgstr "已投票"
 
-#: src/components/QuestionCard.tsx:325
+#: src/components/QuestionCard.tsx:339
 msgid "Voting…"
 msgstr "正在投票…"
 
@@ -2196,11 +2207,11 @@ msgstr "在此撰写文章。您可以使用 Markdown。在您撰写时，文章
 msgid "You are about to follow {0}."
 msgstr "你即将从你的账户关注{0}。"
 
-#: src/components/ProfileCard.tsx:127
+#: src/components/ProfileCard.tsx:133
 msgid "You are blocked by this user. You can't follow them or see their posts."
 msgstr "你已被此用户屏蔽。你无法关注该用户或查看该用户的内容。"
 
-#: src/components/ProfileCard.tsx:120
+#: src/components/ProfileCard.tsx:126
 msgid "You are blocking this user. They can't follow you or see your posts."
 msgstr "你正在屏蔽此用户。该用户无法关注你或查看你的内容。"
 
