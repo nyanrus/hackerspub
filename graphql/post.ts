@@ -6,7 +6,9 @@ import { getAvatarUrl } from "@hackerspub/models/account";
 import {
   createArticle,
   deleteArticleDraft,
+  getOriginalArticleContent,
   LanguageChangeWithTranslationsError,
+  startArticleContentTranslation,
   updateArticle,
   updateArticleDraft,
 } from "@hackerspub/models/article";
@@ -65,14 +67,36 @@ class SharedPostDeletionNotAllowedError extends Error {
   }
 }
 
+type LlmTranslationNotAllowedReason = "DISABLED" | "SAME_LANGUAGE";
+
+class LlmTranslationNotAllowedError extends Error {
+  public constructor(public readonly reason: LlmTranslationNotAllowedReason) {
+    super(`LLM translation not allowed: ${reason}`);
+  }
+}
+
 export const PostType = builder.enumType("PostType", {
   values: ["ARTICLE", "NOTE", "QUESTION"],
 });
+
+const LlmTranslationNotAllowedReasonRef = builder.enumType(
+  "LlmTranslationNotAllowedReason",
+  {
+    values: ["DISABLED", "SAME_LANGUAGE"] as const,
+  },
+);
 
 builder.objectType(SharedPostDeletionNotAllowedError, {
   name: "SharedPostDeletionNotAllowedError",
   fields: (t) => ({
     inputPath: t.expose("inputPath", { type: "String" }),
+  }),
+});
+
+builder.objectType(LlmTranslationNotAllowedError, {
+  name: "LlmTranslationNotAllowedError",
+  fields: (t) => ({
+    reason: t.expose("reason", { type: LlmTranslationNotAllowedReasonRef }),
   }),
 });
 
@@ -1761,6 +1785,83 @@ builder.relayMutationField(
       }
 
       return updated;
+    },
+  },
+  {
+    outputFields: (t) => ({
+      article: t.field({
+        type: Article,
+        resolve: (post) => post,
+      }),
+    }),
+  },
+);
+
+builder.relayMutationField(
+  "requestArticleTranslation",
+  {
+    inputFields: (t) => ({
+      articleId: t.globalID({ for: [Article], required: true }),
+      targetLanguage: t.field({ type: "Locale", required: true }),
+    }),
+  },
+  {
+    errors: {
+      types: [
+        NotAuthenticatedError,
+        InvalidInputError,
+        LlmTranslationNotAllowedError,
+      ],
+    },
+    async resolve(_root, args, ctx) {
+      const session = await ctx.session;
+      if (session == null || ctx.account == null) {
+        throw new NotAuthenticatedError();
+      }
+
+      const post = await ctx.db.query.postTable.findFirst({
+        where: { id: args.input.articleId.id },
+        with: {
+          actor: {
+            with: {
+              followers: true,
+              blockees: true,
+              blockers: true,
+            },
+          },
+          mentions: true,
+          articleSource: {
+            with: { contents: true },
+          },
+        },
+      });
+      if (
+        post == null ||
+        post.type !== "Article" ||
+        post.articleSource == null ||
+        !isPostVisibleTo(post, ctx.account.actor)
+      ) {
+        throw new InvalidInputError("articleId");
+      }
+      if (!post.articleSource.allowLlmTranslation) {
+        throw new LlmTranslationNotAllowedError("DISABLED");
+      }
+      const original = getOriginalArticleContent(post.articleSource);
+      if (original == null) {
+        throw new InvalidInputError("articleId");
+      }
+      const targetLanguage = args.input.targetLanguage.baseName;
+      if (targetLanguage === original.language) {
+        throw new LlmTranslationNotAllowedError("SAME_LANGUAGE");
+      }
+
+      await startArticleContentTranslation(ctx.fedCtx, {
+        content: original,
+        targetLanguage,
+        requester: ctx.account,
+      });
+
+      return post;
     },
   },
   {
