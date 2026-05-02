@@ -223,6 +223,12 @@ export function MentionHoverCardLayer(props: MentionHoverCardLayerProps) {
           )}
           onPointerEnter={props.state.onContentEnter}
           onPointerLeave={props.state.onContentLeave}
+          // Hover-card preview: don't yank focus into the popover when it
+          // opens on pointer hover (Kobalte's Popover defaults to focusing
+          // the first interactive element, which would blur whatever the
+          // user was focused on; we just want a non-modal preview).
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <Show when={props.state.lookup()}>
             {(lookup) => (
