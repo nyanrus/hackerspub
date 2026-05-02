@@ -128,7 +128,7 @@ export function useMentionHoverCards(
     cancelClose();
     if (anchor() === m.el && open()) return;
     cancelOpen();
-    openTimer = window.setTimeout(() => {
+    openTimer = setTimeout(() => {
       // Update the anchor first so Popper recomputes against the new rect
       // when open flips to true.
       setAnchor(m.el);
@@ -146,7 +146,7 @@ export function useMentionHoverCards(
     if (into && m.el.contains(into)) return;
     cancelOpen();
     cancelClose();
-    closeTimer = window.setTimeout(() => {
+    closeTimer = setTimeout(() => {
       setOpen(false);
       closeTimer = undefined;
     }, CLOSE_DELAY_MS);
@@ -194,7 +194,7 @@ export function useMentionHoverCards(
     onContentLeave: () => {
       cancelOpen();
       cancelClose();
-      closeTimer = window.setTimeout(() => {
+      closeTimer = setTimeout(() => {
         setOpen(false);
         closeTimer = undefined;
       }, CLOSE_DELAY_MS);
