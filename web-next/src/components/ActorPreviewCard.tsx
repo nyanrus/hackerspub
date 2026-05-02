@@ -92,56 +92,31 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
               </div>
             </Show>
             <div class="px-4 pb-4 text-sm text-muted-foreground">
-              <Show
-                when={a().local}
-                fallback={
-                  <>
-                    <span>
-                      {i18n._(
-                        msg`${
-                          plural(a().followeesCount.totalCount, {
-                            one: "# following",
-                            other: "# following",
-                          })
-                        }`,
-                      )}
-                    </span>
-                    {" · "}
-                    <span>
-                      {i18n._(
-                        msg`${
-                          plural(a().followersCount.totalCount, {
-                            one: "# follower",
-                            other: "# followers",
-                          })
-                        }`,
-                      )}
-                    </span>
-                  </>
-                }
+              <a
+                href={a().local ? `/@${a().username}/following` : undefined}
               >
-                <a href={`/@${a().username}/following`}>
-                  {i18n._(
-                    msg`${
-                      plural(a().followeesCount.totalCount, {
-                        one: "# following",
-                        other: "# following",
-                      })
-                    }`,
-                  )}
-                </a>
-                {" · "}
-                <a href={`/@${a().username}/followers`}>
-                  {i18n._(
-                    msg`${
-                      plural(a().followersCount.totalCount, {
-                        one: "# follower",
-                        other: "# followers",
-                      })
-                    }`,
-                  )}
-                </a>
-              </Show>
+                {i18n._(
+                  msg`${
+                    plural(a().followeesCount.totalCount, {
+                      one: "# following",
+                      other: "# following",
+                    })
+                  }`,
+                )}
+              </a>
+              {" · "}
+              <a
+                href={a().local ? `/@${a().username}/followers` : undefined}
+              >
+                {i18n._(
+                  msg`${
+                    plural(a().followersCount.totalCount, {
+                      one: "# follower",
+                      other: "# followers",
+                    })
+                  }`,
+                )}
+              </a>
               <Show when={a().followsViewer}>
                 {" · "}
                 {t`Following you`}
