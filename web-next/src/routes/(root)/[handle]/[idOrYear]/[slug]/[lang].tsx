@@ -199,10 +199,19 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // updated in 30 minutes the background translation worker has
   // probably died, and the model layer's retry path will accept a
   // fresh `requestArticleTranslation` call to re-queue it.
+  // `Date.parse` returns `NaN` if the GraphQL `DateTime` scalar ever
+  // hands us back something that isn't a valid ISO-8601 timestamp;
+  // a `NaN` comparison is always false, so we'd silently treat the
+  // row as fresh forever and never retry, which is the wrong default
+  // for a stuck translation.  Treat unparseable timestamps as
+  // `0` (Unix epoch) so the row reads as definitively stale and the
+  // retry path gets a chance to recover.
   const isStaleInProgress = createMemo(() => {
     const c = content();
     if (c == null || !c.beingTranslated) return false;
-    return Date.parse(c.updated) < Date.now() - TRANSLATION_STALE_MS;
+    const updatedMs = Date.parse(c.updated);
+    const lastUpdate = Number.isNaN(updatedMs) ? 0 : updatedMs;
+    return lastUpdate < Date.now() - TRANSLATION_STALE_MS;
   });
   const shouldAutoRequest = createMemo(() =>
     canRequestTranslation() && (content() == null || isStaleInProgress())
@@ -375,6 +384,21 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
           </div>
         </Match>
         <Match when={content() == null}>
+          <HttpStatusCode code={404} />
+        </Match>
+        <Match when={isStaleInProgress() && !canRequestTranslation()}>
+          {
+            /*
+             * The placeholder row's `updated` is older than the
+             * staleness window and we can't auto-recover (guest, or
+             * the article disabled LLM translation after the row was
+             * queued).  Treat it as not-found rather than rendering
+             * the indefinite "translating" placeholder; otherwise the
+             * visitor sees a perpetual spinner with no way for us to
+             * recover.  A logged-in viewer with translation rights
+             * can still re-trigger the queue from the bare slug page.
+             */
+          }
           <HttpStatusCode code={404} />
         </Match>
         <Match when={redirectHref() != null}>
