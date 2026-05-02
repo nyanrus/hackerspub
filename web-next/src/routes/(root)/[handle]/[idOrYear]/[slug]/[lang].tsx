@@ -140,7 +140,10 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
           <Navigate href={redirectHref()!} />
         </Match>
         <Match when={article() != null && content() != null}>
-          <ArticleMetaHead $article={article()!} />
+          <ArticleMetaHead
+            $article={article()!}
+            canonicalLanguage={content()!.language}
+          />
           <ArticleBody
             $article={article()!}
             $viewer={data()?.viewer ?? undefined}

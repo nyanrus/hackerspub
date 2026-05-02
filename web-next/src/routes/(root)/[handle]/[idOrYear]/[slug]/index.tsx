@@ -1,5 +1,5 @@
 import type { Toc } from "@hackerspub/models/markup";
-import { Meta } from "@solidjs/meta";
+import { Link, Meta } from "@solidjs/meta";
 import {
   query,
   type RouteDefinition,
@@ -123,6 +123,12 @@ export { ArticleBody, ArticleMetaHead };
 
 interface ArticleMetaHeadProps {
   $article: Slug_head$key;
+  /**
+   * Language tag to append to the article URL when computing the
+   * canonical/og:url. Pass it on the `[lang]` route; omit on the index
+   * route so the canonical points at the article's bare URL.
+   */
+  canonicalLanguage?: string;
 }
 
 function ArticleMetaHead(props: ArticleMetaHeadProps) {
@@ -141,6 +147,9 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
         contents(language: $language) {
           title
           summary
+          language
+        }
+        allContents: contents {
           language
         }
         language
@@ -162,11 +171,35 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
         const content = () => article().contents?.[0];
         const title = () => content()?.title ?? "";
         const description = () => content()?.summary ?? "";
+        const currentLanguage = () =>
+          content()?.language ?? article().language ?? undefined;
+        const canonicalUrl = () => {
+          const articleUrl = article().url;
+          if (articleUrl == null) return null;
+          if (props.canonicalLanguage == null) return articleUrl;
+          try {
+            const u = new URL(articleUrl);
+            u.pathname = `${
+              u.pathname.replace(/\/$/, "")
+            }/${props.canonicalLanguage}`;
+            return u.toString();
+          } catch {
+            return null;
+          }
+        };
         return (
           <>
             <Title>
               {t`${article().actor.rawName}: ${title()}`}
             </Title>
+            <Show when={canonicalUrl()}>
+              {(href) => (
+                <>
+                  <Link rel="canonical" href={href()} />
+                  <Meta property="og:url" content={href()} />
+                </>
+              )}
+            </Show>
             <Meta property="og:title" content={title()} />
             <Meta property="og:description" content={description()} />
             <Meta property="og:type" content="article" />
@@ -206,9 +239,26 @@ function ArticleMetaHead(props: ArticleMetaHeadProps) {
                 <Meta property="article:tag" content={hashtag.name} />
               )}
             </For>
-            <Show when={content()?.language ?? article().language}>
-              {(language) => <Meta property="og:locale" content={language()} />}
+            <Show when={currentLanguage()}>
+              {(language) => (
+                <Meta
+                  property="og:locale"
+                  content={language().replace("-", "_")}
+                />
+              )}
             </Show>
+            <For
+              each={article().allContents.filter(
+                (c) => c.language !== currentLanguage(),
+              )}
+            >
+              {(c) => (
+                <Meta
+                  property="og:locale:alternate"
+                  content={c.language.replace("-", "_")}
+                />
+              )}
+            </For>
             <HttpHeader
               name="Link"
               value={`<${article().iri}>; rel="alternate"; type="application/activity+json"`}
