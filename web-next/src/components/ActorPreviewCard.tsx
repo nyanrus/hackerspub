@@ -63,7 +63,7 @@ export function ActorPreviewCard(props: ActorPreviewCardProps) {
                 <a
                   href={profileHref()}
                   target={profileTarget()}
-                  innerHTML={a().name ?? a().username}
+                  innerHTML={a().name || a().username}
                   class="truncate font-semibold"
                 />
                 <span

@@ -54,7 +54,7 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
                   href={`/${
                     actor().local ? `@${actor().username}` : actor().handle
                   }`}
-                  innerHTML={actor().name ?? actor().username}
+                  innerHTML={actor().name || actor().username}
                   class="truncate text-lg font-semibold"
                 />
               </ActorHoverCard>
