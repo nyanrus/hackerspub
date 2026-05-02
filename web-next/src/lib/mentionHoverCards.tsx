@@ -6,16 +6,32 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
-import { ActorHoverCardLoader } from "~/components/ActorHoverCardLoader.tsx";
+import {
+  ActorHoverCardLoader,
+  ActorHoverCardLoaderByUrl,
+} from "~/components/ActorHoverCardLoader.tsx";
 import { ACTOR_HOVER_SURFACE_CLASS } from "~/components/ui/hover-card.tsx";
 import { cn } from "~/lib/utils.ts";
 
 const OPEN_DELAY_MS = 400;
 const CLOSE_DELAY_MS = 200;
 
+/**
+ * What the mention layer needs to fetch the actor.
+ *
+ * `kind: "url"` is preferred (the mention link's `href` is a stable
+ * ActivityPub identifier we can resolve directly via the `actorByUrl`
+ * query). `kind: "handle"` is the local-Markdown-renderer fast path:
+ * `<a class="mention" data-username data-host …>` already carries the
+ * canonical handle, so we skip the URL roundtrip.
+ */
+export type MentionLookup =
+  | { kind: "handle"; value: string }
+  | { kind: "url"; value: string };
+
 export interface MentionHoverCardState {
   anchor: Accessor<HTMLElement | undefined>;
-  handle: Accessor<string | undefined>;
+  lookup: Accessor<MentionLookup | undefined>;
   open: Accessor<boolean>;
   setOpen: (open: boolean) => void;
   onContentEnter: () => void;
@@ -35,7 +51,7 @@ export function useMentionHoverCards(
   getEl: Accessor<HTMLElement | undefined>,
 ): MentionHoverCardState {
   const [anchor, setAnchor] = createSignal<HTMLElement | undefined>();
-  const [handle, setHandle] = createSignal<string | undefined>();
+  const [lookup, setLookup] = createSignal<MentionLookup | undefined>();
   const [open, setOpen] = createSignal(false);
 
   let openTimer: number | undefined;
@@ -55,22 +71,23 @@ export function useMentionHoverCards(
   };
 
   /**
-   * Resolve a hovered mention element to a fediverse handle.
+   * Resolve a hovered mention element to a way of looking up the actor.
    *
    * Two source markups are supported:
    *
    * 1. The local Markdown renderer (see `models/markup.ts`) emits
-   *    `<a class="u-url mention" data-username data-host …>`, so handle
-   *    parts come straight from those data attributes.
+   *    `<a class="u-url mention" data-username data-host …>`. We can build
+   *    the handle directly and use the `actorByHandle` query.
    * 2. Federated content (e.g., notes received over ActivityPub) typically
    *    uses Mastodon-style h-card markup
    *    `<span class="h-card"><a class="u-url mention" href="…">@user</a></span>`
-   *    without data attributes. In that case we derive the host from the
-   *    href URL and the username from the link text.
+   *    without data attributes. The `href` is the actor's URL/IRI; resolve
+   *    it directly through `actorByUrl` so we don't have to guess the
+   *    handle from path-segment heuristics.
    */
   const resolveMention = (
     target: EventTarget | null,
-  ): { el: HTMLElement; handle: string } | undefined => {
+  ): { el: HTMLElement; lookup: MentionLookup } | undefined => {
     const t = target as Element | null;
     if (!t?.closest) return undefined;
     const a = t.closest(
@@ -81,7 +98,10 @@ export function useMentionHoverCards(
     const dsUsername = a.getAttribute("data-username");
     const dsHost = a.getAttribute("data-host");
     if (dsUsername && dsHost) {
-      return { el: a, handle: `@${dsUsername}@${dsHost}` };
+      return {
+        el: a,
+        lookup: { kind: "handle", value: `@${dsUsername}@${dsHost}` },
+      };
     }
 
     const href = a.getAttribute("href");
@@ -92,22 +112,8 @@ export function useMentionHoverCards(
     } catch {
       return undefined;
     }
-    const host = url.host;
-    // Prefer the URL's last path segment (more reliable across the
-    // common ActivityPub profile URL shapes: `/@user`, `/users/user`,
-    // `/profile/user`). Fall back to the link's text content if the URL
-    // path doesn't yield a usable username.
-    const lastSegment = url.pathname.split("/").filter(Boolean).pop();
-    let username = lastSegment?.replace(/^@/, "").trim() ?? "";
-    if (!username) {
-      username = (a.textContent ?? "")
-        .trim()
-        .replace(/^@/, "")
-        .split("@")[0]
-        ?.trim() ?? "";
-    }
-    if (!host || !username) return undefined;
-    return { el: a, handle: `@${username}@${host}` };
+    if (url.protocol !== "http:" && url.protocol !== "https:") return undefined;
+    return { el: a, lookup: { kind: "url", value: url.href } };
   };
 
   const onPointerOver = (e: PointerEvent) => {
@@ -126,7 +132,7 @@ export function useMentionHoverCards(
       // Update the anchor first so Popper recomputes against the new rect
       // when open flips to true.
       setAnchor(m.el);
-      setHandle(m.handle);
+      setLookup(m.lookup);
       setOpen(true);
       openTimer = undefined;
     }, OPEN_DELAY_MS);
@@ -166,7 +172,7 @@ export function useMentionHoverCards(
       if (a && el.contains(a)) {
         setOpen(false);
         setAnchor(undefined);
-        setHandle(undefined);
+        setLookup(undefined);
       }
     });
   });
@@ -179,7 +185,7 @@ export function useMentionHoverCards(
 
   return {
     anchor,
-    handle,
+    lookup,
     open,
     setOpen,
     onContentEnter: () => {
@@ -218,8 +224,15 @@ export function MentionHoverCardLayer(props: MentionHoverCardLayerProps) {
           onPointerEnter={props.state.onContentEnter}
           onPointerLeave={props.state.onContentLeave}
         >
-          <Show when={props.state.handle()}>
-            {(handle) => <ActorHoverCardLoader handle={handle()} />}
+          <Show when={props.state.lookup()}>
+            {(lookup) => (
+              <Show
+                when={lookup().kind === "url"}
+                fallback={<ActorHoverCardLoader handle={lookup().value} />}
+              >
+                <ActorHoverCardLoaderByUrl url={lookup().value} />
+              </Show>
+            )}
           </Show>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
