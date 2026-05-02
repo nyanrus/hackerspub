@@ -2,6 +2,7 @@ import { graphql } from "relay-runtime";
 import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { NoteHeader_note$key } from "./__generated__/NoteHeader_note.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { PostActionMenu } from "./PostActionMenu.tsx";
 import { Timestamp } from "./Timestamp.tsx";
@@ -42,14 +43,16 @@ export function NoteHeader(props: NoteHeaderProps) {
       {(n) => (
         <div class="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
           <Show when={(n().actor.name ?? "").trim() !== ""}>
-            <InternalLink
-              href={n().actor.url ?? n().actor.iri}
-              internalHref={n().actor.local
-                ? `/@${n().actor.username}`
-                : `/${n().actor.handle}`}
-              innerHTML={n().actor.name ?? ""}
-              class="font-semibold"
-            />
+            <ActorHoverCard handle={n().actor.handle}>
+              <InternalLink
+                href={n().actor.url ?? n().actor.iri}
+                internalHref={n().actor.local
+                  ? `/@${n().actor.username}`
+                  : `/${n().actor.handle}`}
+                innerHTML={n().actor.name ?? ""}
+                class="font-semibold"
+              />
+            </ActorHoverCard>
             {" "}
           </Show>
           <span

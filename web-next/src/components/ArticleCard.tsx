@@ -11,6 +11,7 @@ import {
   ArticleCard_article$key,
 } from "./__generated__/ArticleCard_article.graphql.ts";
 import { ArticleCardInternal_article$key } from "./__generated__/ArticleCardInternal_article.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { ArticleControls } from "./ArticleControls.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { PostActionMenu } from "./PostActionMenu.tsx";
@@ -144,30 +145,40 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
       {(article) => (
         <>
           <div class="m-4 mb-0 flex gap-3 sm:gap-4">
-            <Avatar class="size-12">
-              <InternalLink
-                href={article().actor.url ?? article().actor.iri}
-                internalHref={article().actor.local
-                  ? `/@${article().actor.username}`
-                  : `/${article().actor.handle}`}
-              >
-                <AvatarImage src={article().actor.avatarUrl} class="size-12" />
-                <AvatarFallback class="size-12">
-                  {article().actor.avatarInitials}
-                </AvatarFallback>
-              </InternalLink>
-            </Avatar>
+            <ActorHoverCard handle={article().actor.handle} class="shrink-0">
+              <Avatar class="size-12">
+                <InternalLink
+                  href={article().actor.url ?? article().actor.iri}
+                  internalHref={article().actor.local
+                    ? `/@${article().actor.username}`
+                    : `/${article().actor.handle}`}
+                >
+                  <AvatarImage
+                    src={article().actor.avatarUrl}
+                    class="size-12"
+                  />
+                  <AvatarFallback class="size-12">
+                    {article().actor.avatarInitials}
+                  </AvatarFallback>
+                </InternalLink>
+              </Avatar>
+            </ActorHoverCard>
             <div class="flex min-w-0 flex-col">
               <div class="flex min-w-0 items-baseline gap-x-1">
                 <Show when={(article().actor.name ?? "").trim() !== ""}>
-                  <InternalLink
-                    innerHTML={article().actor.name ?? ""}
-                    href={article().actor.url ?? article().actor.iri}
-                    internalHref={article().actor.local
-                      ? `/@${article().actor.username}`
-                      : `/${article().actor.handle}`}
-                    class="shrink-0 font-semibold"
-                  />
+                  <ActorHoverCard
+                    handle={article().actor.handle}
+                    class="shrink-0"
+                  >
+                    <InternalLink
+                      innerHTML={article().actor.name ?? ""}
+                      href={article().actor.url ?? article().actor.iri}
+                      internalHref={article().actor.local
+                        ? `/@${article().actor.username}`
+                        : `/${article().actor.handle}`}
+                      class="shrink-0 font-semibold"
+                    />
+                  </ActorHoverCard>
                 </Show>
                 <span
                   class="min-w-0 truncate select-all text-muted-foreground"

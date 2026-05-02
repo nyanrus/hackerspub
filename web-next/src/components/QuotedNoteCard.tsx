@@ -1,6 +1,7 @@
 import { graphql } from "relay-runtime";
 import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
+import { ActorHoverCard } from "~/components/ActorHoverCard.tsx";
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
@@ -46,27 +47,31 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
           <div class="w-0 h-0 border-l-[15px] border-r-[15px] border-b-[20px] border-l-transparent border-r-transparent border-b-muted ml-4" />
           <div class="flex flex-col bg-muted p-4">
             <div class="flex min-w-0 gap-4">
-              <Avatar class="size-12 shrink-0">
-                <InternalLink
-                  href={note().actor.url ?? note().actor.iri}
-                  internalHref={note().actor.local
-                    ? `/@${note().actor.username}`
-                    : `/${note().actor.handle}`}
-                >
-                  <AvatarImage src={note().actor.avatarUrl} class="size-12" />
-                </InternalLink>
-              </Avatar>
+              <ActorHoverCard handle={note().actor.handle} class="shrink-0">
+                <Avatar class="size-12 shrink-0">
+                  <InternalLink
+                    href={note().actor.url ?? note().actor.iri}
+                    internalHref={note().actor.local
+                      ? `/@${note().actor.username}`
+                      : `/${note().actor.handle}`}
+                  >
+                    <AvatarImage src={note().actor.avatarUrl} class="size-12" />
+                  </InternalLink>
+                </Avatar>
+              </ActorHoverCard>
               <div class="flex min-w-0 flex-col">
                 <div class="min-w-0">
                   <Show when={(note().actor.name ?? "").trim() !== ""}>
-                    <InternalLink
-                      href={note().actor.url ?? note().actor.iri}
-                      internalHref={note().actor.local
-                        ? `/@${note().actor.username}`
-                        : `/${note().actor.handle}`}
-                      innerHTML={note().actor.name ?? ""}
-                      class="font-semibold"
-                    />
+                    <ActorHoverCard handle={note().actor.handle}>
+                      <InternalLink
+                        href={note().actor.url ?? note().actor.iri}
+                        internalHref={note().actor.local
+                          ? `/@${note().actor.username}`
+                          : `/${note().actor.handle}`}
+                        innerHTML={note().actor.name ?? ""}
+                        class="font-semibold"
+                      />
+                    </ActorHoverCard>
                     {" "}
                   </Show>
                   <span

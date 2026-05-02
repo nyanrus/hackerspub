@@ -21,6 +21,7 @@ import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
 import type { QuestionCard_question$key } from "./__generated__/QuestionCard_question.graphql.ts";
 import type { QuestionCardContent_question$key } from "./__generated__/QuestionCardContent_question.graphql.ts";
 import type { QuestionCard_voteOnPoll_Mutation } from "./__generated__/QuestionCard_voteOnPoll_Mutation.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { InternalLink } from "./InternalLink.tsx";
 import { QuestionActionMenu } from "./PostActionMenu.tsx";
 import { PostAvatar } from "./PostAvatar.tsx";
@@ -78,16 +79,18 @@ export function QuestionCard(props: QuestionCardProps) {
                     message={t`${"SHARER"} shared ${"RELATIVE_TIME"}`}
                     values={{
                       SHARER: () => (
-                        <a
-                          href={`/${
-                            q().actor.local
-                              ? `@${q().actor.username}`
-                              : q().actor.handle
-                          }`}
-                          class="font-semibold"
-                        >
-                          {q().actor.name}
-                        </a>
+                        <ActorHoverCard handle={q().actor.handle}>
+                          <a
+                            href={`/${
+                              q().actor.local
+                                ? `@${q().actor.username}`
+                                : q().actor.handle
+                            }`}
+                            class="font-semibold"
+                          >
+                            {q().actor.name}
+                          </a>
+                        </ActorHoverCard>
                       ),
                       RELATIVE_TIME: () => <Timestamp value={q().published} />,
                     }}
@@ -219,14 +222,16 @@ function QuestionCardContent(props: QuestionCardContentProps) {
           <div class="min-w-0 grow">
             <div class="flex items-center gap-1 flex-wrap">
               <Show when={(q().actor.name ?? "").trim() !== ""}>
-                <InternalLink
-                  href={q().actor.url ?? q().actor.iri}
-                  internalHref={q().actor.local
-                    ? `/@${q().actor.username}`
-                    : `/${q().actor.handle}`}
-                  innerHTML={q().actor.name ?? ""}
-                  class="font-semibold"
-                />
+                <ActorHoverCard handle={q().actor.handle}>
+                  <InternalLink
+                    href={q().actor.url ?? q().actor.iri}
+                    internalHref={q().actor.local
+                      ? `/@${q().actor.username}`
+                      : `/${q().actor.handle}`}
+                    innerHTML={q().actor.name ?? ""}
+                    class="font-semibold"
+                  />
+                </ActorHoverCard>
                 {" "}
               </Show>
               <span

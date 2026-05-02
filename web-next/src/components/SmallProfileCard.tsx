@@ -3,6 +3,7 @@ import { Show } from "solid-js";
 import { createFragment } from "solid-relay";
 import { Avatar, AvatarImage } from "~/components/ui/avatar.tsx";
 import type { SmallProfileCard_actor$key } from "./__generated__/SmallProfileCard_actor.graphql.ts";
+import { ActorHoverCard } from "./ActorHoverCard.tsx";
 import { FollowButton } from "./FollowButton.tsx";
 
 export interface SmallProfileCardProps {
@@ -30,23 +31,27 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
       {(actor) => (
         <div class="flex flex-col gap-4 p-4">
           <div class="flex min-w-0 flex-row items-start gap-4">
-            <Avatar class="size-16 shrink-0">
-              <a
-                href={`/${
-                  actor().local ? `@${actor().username}` : actor().handle
-                }`}
-              >
-                <AvatarImage src={actor().avatarUrl} class="size-16" />
-              </a>
-            </Avatar>
+            <ActorHoverCard handle={actor().handle} class="shrink-0">
+              <Avatar class="size-16 shrink-0">
+                <a
+                  href={`/${
+                    actor().local ? `@${actor().username}` : actor().handle
+                  }`}
+                >
+                  <AvatarImage src={actor().avatarUrl} class="size-16" />
+                </a>
+              </Avatar>
+            </ActorHoverCard>
             <div class="flex min-w-0 flex-1 flex-col">
-              <a
-                href={`/${
-                  actor().local ? `@${actor().username}` : actor().handle
-                }`}
-                innerHTML={actor().name ?? actor().username}
-                class="truncate text-lg font-semibold"
-              />
+              <ActorHoverCard handle={actor().handle}>
+                <a
+                  href={`/${
+                    actor().local ? `@${actor().username}` : actor().handle
+                  }`}
+                  innerHTML={actor().name ?? actor().username}
+                  class="truncate text-lg font-semibold"
+                />
+              </ActorHoverCard>
               <span
                 class="truncate text-muted-foreground select-all"
                 title={actor().handle}
