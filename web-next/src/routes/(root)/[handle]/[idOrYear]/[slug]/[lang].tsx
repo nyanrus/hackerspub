@@ -341,6 +341,32 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // `requestFailed` and bumps `retryAttempt`, so manual recovery
   // still works.
   let firedRequestKey: string | null = null;
+
+  // Solid Router reuses this component across param-only navigations
+  // (e.g., `/zh-TW` -> `/ja` on the same article, or `/ja` on a
+  // different article), so any local state from the previous URL
+  // would otherwise carry over.  `requestKey()` already includes
+  // `props.language` and `article()?.id`, so a navigation produces
+  // a fresh key, but `requestFailed` and `firedRequestKey` itself
+  // stay sticky: a failure on one `/{lang}` would gate auto-request
+  // on the next, and a stale `firedRequestKey` matching the new key
+  // (after navigating away and back to the same URL) would keep the
+  // effect from re-firing.  Reset both, plus the
+  // `prevContentExisted` ref the `missingEpoch` effect relies on,
+  // whenever any route param changes; cancel any in-flight mutation
+  // too because its result no longer applies.
+  createEffect(() => {
+    props.handle;
+    props.idOrYear;
+    props.slug;
+    props.language;
+    pendingRequest?.dispose();
+    pendingRequest = null;
+    setRequestFailed(false);
+    firedRequestKey = null;
+    prevContentExisted = false;
+  });
+
   createEffect(() => {
     const key = requestKey();
     if (key == null || key === firedRequestKey || requestFailed()) return;
