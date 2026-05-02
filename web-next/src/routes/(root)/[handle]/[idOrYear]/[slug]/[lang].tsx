@@ -2,6 +2,7 @@ import { normalizeLocale } from "@hackerspub/models/i18n";
 import {
   Navigate,
   query,
+  revalidate,
   type RouteDefinition,
   useParams,
 } from "@solidjs/router";
@@ -67,6 +68,7 @@ const LangPageQueryDef = graphql`
       contents(language: $language, includeBeingTranslated: true) {
         language
         originalLanguage
+        beingTranslated
       }
       ...Slug_head
         @arguments(language: $language, includeBeingTranslated: true)
@@ -179,6 +181,25 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     if (c.originalLanguage == null) return base;
     if (c.language !== props.language) return `${base}/${c.language}`;
     return null;
+  });
+
+  // While a translation is in flight, poll for completion every 30
+  // seconds.  When `beingTranslated` flips back to false (translation
+  // finished) or the component unmounts, the interval is cleared via
+  // `onCleanup` registered inside this effect's tracking scope.
+  createEffect(() => {
+    if (!content()?.beingTranslated) return;
+    const interval = setInterval(() => {
+      void revalidate(
+        loadLangPageQuery.keyFor(
+          props.handle,
+          props.idOrYear,
+          props.slug,
+          props.language,
+        ),
+      );
+    }, 30_000);
+    onCleanup(() => clearInterval(interval));
   });
 
   return (
