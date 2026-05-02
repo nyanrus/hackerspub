@@ -7,6 +7,7 @@ import {
 } from "@solidjs/router";
 import { HttpStatusCode } from "@solidjs/start";
 import { fetchQuery, graphql } from "relay-runtime";
+import type { Subscription } from "relay-runtime";
 import {
   createEffect,
   createMemo,
@@ -32,6 +33,13 @@ import {
   ArticleMetaHead,
   ArticleTranslationPlaceholder,
 } from "./index.tsx";
+
+// Matches the staleness window inside `startArticleContentTranslation`
+// (`models/article.ts`).  After 30 minutes of no `updated` change on a
+// `beingTranslated: true` row, the model's retry path is willing to
+// re-queue the translation, so the route should re-fire its mutation
+// instead of polling forever.
+const TRANSLATION_STALE_MS = 30 * 60 * 1000;
 
 export const route = {
   matchFilters: {
@@ -72,6 +80,7 @@ const LangPageQueryDef = graphql`
         language
         originalLanguage
         beingTranslated
+        updated
       }
       ...Slug_head
         @arguments(language: $language, includeBeingTranslated: true)
@@ -173,6 +182,19 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     return viewer() != null && a != null && a.allowLlmTranslation &&
       a.language !== props.language;
   });
+  // Mirrors the `30 * 60 * 1000` staleness window inside
+  // `startArticleContentTranslation`: if the placeholder row hasn't
+  // updated in 30 minutes the background translation worker has
+  // probably died, and the model layer's retry path will accept a
+  // fresh `requestArticleTranslation` call to re-queue it.
+  const isStaleInProgress = createMemo(() => {
+    const c = content();
+    if (c == null || !c.beingTranslated) return false;
+    return Date.parse(c.updated) < Date.now() - TRANSLATION_STALE_MS;
+  });
+  const shouldAutoRequest = createMemo(() =>
+    canRequestTranslation() && (content() == null || isStaleInProgress())
+  );
   const canonicalBase = createMemo(() => {
     const a = article();
     return a == null
@@ -199,15 +221,29 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // already-populated Relay store unchanged.
   createEffect(() => {
     if (!content()?.beingTranslated) return;
+    let pending: Subscription | null = null;
     const interval = setInterval(() => {
-      fetchQuery<LangPageQuery>(env(), LangPageQueryDef, {
+      pending?.unsubscribe();
+      pending = fetchQuery<LangPageQuery>(env(), LangPageQueryDef, {
         handle: props.handle,
         idOrYear: props.idOrYear,
         slug: props.slug,
         language: props.language,
-      }).subscribe({});
+      }).subscribe({
+        error(error: unknown) {
+          // Background polling can hit transient network failures
+          // without any UI affordance; surface them in the console
+          // so they're discoverable, but don't toast or otherwise
+          // interrupt the placeholder.  The next tick will retry on
+          // its own.
+          console.error("Translation polling failed:", error);
+        },
+      });
     }, 30_000);
-    onCleanup(() => clearInterval(interval));
+    onCleanup(() => {
+      clearInterval(interval);
+      pending?.unsubscribe();
+    });
   });
 
   return (
@@ -216,7 +252,7 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
         <Match when={article() == null}>
           <HttpStatusCode code={404} />
         </Match>
-        <Match when={content() == null && canRequestTranslation()}>
+        <Match when={shouldAutoRequest()}>
           <AutoRequestTranslation
             articleId={article()!.id}
             language={props.language}
