@@ -54,8 +54,8 @@ export function useMentionHoverCards(
   const [lookup, setLookup] = createSignal<MentionLookup | undefined>();
   const [open, setOpen] = createSignal(false);
 
-  let openTimer: number | undefined;
-  let closeTimer: number | undefined;
+  let openTimer: ReturnType<typeof setTimeout> | undefined;
+  let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const cancelOpen = () => {
     if (openTimer !== undefined) {
