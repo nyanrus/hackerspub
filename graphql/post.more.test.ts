@@ -1262,6 +1262,50 @@ test("requestArticleTranslation rejects requests where target language equals th
   });
 });
 
+test("requestArticleTranslation rejects locales not on the project allow-list", async () => {
+  // The `Locale` scalar would happily accept any well-formed BCP 47
+  // tag, but the `[lang]` route only serves locales that pass
+  // `normalizeLocale` (the same `POSSIBLE_LOCALES` whitelist used
+  // across the project), so the mutation should refuse anything the
+  // canonical article URL flow can't display.  Pick a tag that's a
+  // valid BCP 47 string but missing from `POSSIBLE_LOCALES`.
+  await withRollback(async (tx) => {
+    const { postId } = await insertTranslatableArticle(tx, {
+      username: "rattranslateunknownlang",
+      slug: "unknown-lang",
+    });
+    const requester = await insertAccountWithActor(tx, {
+      username: "rattranslateunknownlangrequester",
+      name: "Unknown Lang Requester",
+      email: "rattranslateunknownlangrequester@example.com",
+    });
+
+    const result = await execute({
+      schema,
+      document: requestArticleTranslationMutation,
+      variableValues: {
+        input: {
+          articleId: encodeGlobalID("Article", postId),
+          // `ka-GE` (Georgian / Georgia): valid BCP 47, but the
+          // project's `POSSIBLE_LOCALES` only contains `ka` for
+          // Georgian.
+          targetLanguage: "ka-GE",
+        },
+      },
+      contextValue: makeUserContext(tx, requester.account),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      requestArticleTranslation: {
+        __typename: "InvalidInputError",
+        inputPath: "targetLanguage",
+      },
+    });
+  });
+});
+
 test("requestArticleTranslation queues an in-progress translation row", async () => {
   await withRollback(async (tx) => {
     const { postId, sourceId } = await insertTranslatableArticle(tx, {

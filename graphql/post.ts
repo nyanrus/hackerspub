@@ -19,7 +19,7 @@ import {
 } from "@hackerspub/models/bookmark";
 import { isReactionEmoji, renderCustomEmojis } from "@hackerspub/models/emoji";
 import { addExternalLinkTargets, stripHtml } from "@hackerspub/models/html";
-import { negotiateLocale } from "@hackerspub/models/i18n";
+import { negotiateLocale, normalizeLocale } from "@hackerspub/models/i18n";
 import { renderMarkup } from "@hackerspub/models/markup";
 import { createNote } from "@hackerspub/models/note";
 import {
@@ -1850,7 +1850,18 @@ builder.relayMutationField(
       if (original == null) {
         throw new InvalidInputError("articleId");
       }
-      const targetLanguage = args.input.targetLanguage.baseName;
+      // The `Locale` scalar accepts any syntactically valid BCP 47
+      // tag, but the `[lang]` route only serves locales that pass
+      // `normalizeLocale` (i.e. the `POSSIBLE_LOCALES` whitelist
+      // used across the project).  Run the same check here so an
+      // API client cannot enqueue a translation for a tag the
+      // canonical article URL flow will never display.
+      const targetLanguage = normalizeLocale(
+        args.input.targetLanguage.baseName,
+      );
+      if (targetLanguage == null) {
+        throw new InvalidInputError("targetLanguage");
+      }
       if (targetLanguage === original.language) {
         throw new LlmTranslationNotAllowedError("SAME_LANGUAGE");
       }
