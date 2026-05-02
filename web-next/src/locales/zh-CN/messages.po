@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:812
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:878
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 条评论}}"
 
@@ -167,7 +167,7 @@ msgstr "{0} 转发了你的内容"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:203
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:204
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
@@ -587,7 +587,7 @@ msgstr "拖动选择要保留的区域，然后点击「裁剪」来更新你的
 msgid "e.g., @user@mastodon.social"
 msgstr "例如：@user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:555
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:602
 msgid "Edit"
 msgstr "编辑"
 
@@ -984,7 +984,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "启用后，AI 将为您生成文章摘要。否则，将使用文章的前几行作为摘要。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:834
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:900
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在联邦宇宙有个账户，你可以在你自己的实例里评论此文章。在你的实例搜索 {0} 后回复。"
 
@@ -1432,7 +1432,7 @@ msgstr "或"
 msgid "Or enter the code from the email"
 msgstr "或输入邮件中的验证码"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:701
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:767
 msgid "Other languages"
 msgstr "其他语言"
 
@@ -1870,9 +1870,9 @@ msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:581
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:589
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:875
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:628
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:636
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:941
 msgid "Table of contents"
 msgstr "目录"
 
@@ -1882,7 +1882,7 @@ msgstr "目录"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:884
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:950
 msgid "Tags"
 msgstr "标签"
 
@@ -1990,7 +1990,7 @@ msgstr "未找到此邀请链接。"
 msgid "This service does not support remote follow."
 msgstr "该服务不支持远程关注。"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:461
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:460
 msgid "This usually takes about a minute. The page will update automatically when the translation is ready."
 msgstr "通常需要一分钟左右。翻译完成后页面将自动更新。"
 
@@ -2027,12 +2027,12 @@ msgstr "共 {0} 个"
 
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:213
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:685
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:751
 msgid "Translated from {0}"
 msgstr "翻译自{0}"
 
 #. placeholder {0}: name()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:456
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:455
 msgid "Translating to {0}…"
 msgstr "正在翻译为{0}…"
 
@@ -2040,10 +2040,20 @@ msgstr "正在翻译为{0}…"
 msgid "Translating…"
 msgstr "正在翻译…"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:286
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:294
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:299
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:308
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:495
 msgid "Translation request failed"
 msgstr "翻译请求失败"
+
+#. placeholder {0}: name()
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:500
+msgid "Translation request failed for {0}"
+msgstr "向{0}的翻译请求失败"
+
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:508
+msgid "Try again"
+msgstr "重试"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:296
@@ -2182,6 +2192,10 @@ msgstr "已投票"
 msgid "Voting…"
 msgstr "正在投票…"
 
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:505
+msgid "We couldn't reach the translation service. Try again, or come back in a few minutes."
+msgstr "无法连接到翻译服务。请重试或几分钟后再来。"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:513
 msgid "Website"
 msgstr "网站"
@@ -2202,7 +2216,7 @@ msgstr "你在想啥？"
 msgid "Without shares"
 msgstr "不含转帖"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:825
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:891
 msgid "Write a reply…"
 msgstr "写个回复…"
 

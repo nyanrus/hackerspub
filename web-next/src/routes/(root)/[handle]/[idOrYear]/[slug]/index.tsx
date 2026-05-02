@@ -28,6 +28,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "~/components/ui/avatar.tsx";
+import { Button } from "~/components/ui/button.tsx";
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
@@ -458,6 +459,54 @@ export function ArticleTranslationPlaceholder(
       <p class="text-sm text-muted-foreground max-w-md">
         {t`This usually takes about a minute. The page will update automatically when the translation is ready.`}
       </p>
+    </div>
+  );
+}
+
+interface ArticleTranslationFailureProps {
+  /**
+   * BCP-47 tag of the language whose translation request failed,
+   * used to localize the heading.  Same shape as
+   * `ArticleTranslationPlaceholder.targetLanguage`.
+   */
+  targetLanguage?: string;
+  onRetry: () => void;
+}
+
+export function ArticleTranslationFailure(
+  props: ArticleTranslationFailureProps,
+) {
+  const { t, i18n } = useLingui();
+  const targetLanguageName = () => {
+    if (props.targetLanguage == null) return null;
+    try {
+      return new Intl.DisplayNames(i18n.locale, { type: "language" })
+        .of(props.targetLanguage) ?? props.targetLanguage;
+    } catch {
+      return props.targetLanguage;
+    }
+  };
+
+  return (
+    <div class="mt-4 border rounded-lg p-6 flex flex-col items-center gap-3 text-center">
+      <Show
+        when={targetLanguageName()}
+        fallback={
+          <p class="text-lg font-semibold">{t`Translation request failed`}</p>
+        }
+      >
+        {(name) => (
+          <p class="text-lg font-semibold">
+            {t`Translation request failed for ${name()}`}
+          </p>
+        )}
+      </Show>
+      <p class="text-sm text-muted-foreground max-w-md">
+        {t`We couldn't reach the translation service. Try again, or come back in a few minutes.`}
+      </p>
+      <Button variant="outline" onClick={() => props.onRetry()}>
+        {t`Try again`}
+      </Button>
     </div>
   );
 }

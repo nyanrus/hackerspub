@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:812
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:878
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {#コメント}}"
 
@@ -167,7 +167,7 @@ msgstr "{0}さんがあなたのコンテンツを共有しました"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:203
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:204
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
@@ -587,7 +587,7 @@ msgstr "保持したい領域をドラッグして選択し、「切り抜き」
 msgid "e.g., @user@mastodon.social"
 msgstr "例: @user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:555
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:602
 msgid "Edit"
 msgstr "編集"
 
@@ -984,7 +984,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "有効にすると、AIが記事の要約を生成します。無効の場合は、記事の最初の数行が要約として使用されます。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:834
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:900
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "フェディバース（fediverse）アカウントをお持ちの場合、この記事に返信することができます。ご利用のインスタンスの検索バーに{0}を検索し、該当記事に返信してください。"
 
@@ -1432,7 +1432,7 @@ msgstr "または"
 msgid "Or enter the code from the email"
 msgstr "またはメールのコードを入力してください"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:701
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:767
 msgid "Other languages"
 msgstr "他の言語"
 
@@ -1870,9 +1870,9 @@ msgid "Summarized by LLM"
 msgstr "LLMによる要約"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:581
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:589
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:875
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:628
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:636
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:941
 msgid "Table of contents"
 msgstr "目次"
 
@@ -1882,7 +1882,7 @@ msgstr "目次"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:884
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:950
 msgid "Tags"
 msgstr "タグ"
 
@@ -1990,7 +1990,7 @@ msgstr "この招待リンクが見つかりませんでした。"
 msgid "This service does not support remote follow."
 msgstr "このサービスはリモートフォローに対応していません。"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:461
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:460
 msgid "This usually takes about a minute. The page will update automatically when the translation is ready."
 msgstr "通常1分ほどかかります。翻訳が完了するとページが自動的に更新されます。"
 
@@ -2027,12 +2027,12 @@ msgstr "合計：{0}"
 
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:213
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:685
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:751
 msgid "Translated from {0}"
 msgstr "{0}から翻訳"
 
 #. placeholder {0}: name()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:456
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:455
 msgid "Translating to {0}…"
 msgstr "{0}に翻訳中…"
 
@@ -2040,10 +2040,20 @@ msgstr "{0}に翻訳中…"
 msgid "Translating…"
 msgstr "翻訳中…"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:286
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:294
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:299
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:308
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:495
 msgid "Translation request failed"
 msgstr "翻訳のリクエストに失敗しました"
+
+#. placeholder {0}: name()
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:500
+msgid "Translation request failed for {0}"
+msgstr "{0}への翻訳リクエストに失敗しました"
+
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:508
+msgid "Try again"
+msgstr "再試行"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:146
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:296
@@ -2182,6 +2192,10 @@ msgstr "投票済み"
 msgid "Voting…"
 msgstr "投票中…"
 
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:505
+msgid "We couldn't reach the translation service. Try again, or come back in a few minutes."
+msgstr "翻訳サービスに接続できませんでした。再試行するか、数分後に再度お試しください。"
+
 #: src/routes/(root)/[handle]/settings/index.tsx:513
 msgid "Website"
 msgstr "ウェブサイト"
@@ -2202,7 +2216,7 @@ msgstr "今何してる？"
 msgid "Without shares"
 msgstr "共有除外"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:825
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:891
 msgid "Write a reply…"
 msgstr "返信を書く…"
 

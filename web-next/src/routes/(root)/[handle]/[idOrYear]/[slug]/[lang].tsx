@@ -34,6 +34,7 @@ import type { LangPage_requestArticleTranslation_Mutation } from "./__generated_
 import {
   ArticleBody,
   ArticleMetaHead,
+  ArticleTranslationFailure,
   ArticleTranslationPlaceholder,
 } from "./index.tsx";
 
@@ -221,6 +222,16 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
     }
     prevContentExisted = exists;
   });
+  // Counter for explicit user-initiated retries.  Bumping it changes
+  // `requestKey()`, which causes the auto-request effect to fire
+  // another mutation; we use this so a transient failure (e.g. a
+  // brief network drop) doesn't strand the user on a permanent
+  // not-found state without a way to recover short of reloading.
+  const [retryAttempt, setRetryAttempt] = createSignal(0);
+  const handleRetry = () => {
+    setRequestFailed(false);
+    setRetryAttempt((n) => n + 1);
+  };
   // Identity for "this is a fresh reason to fire the mutation."  When
   // it changes, the auto-request effect fires another mutation; when
   // it stays the same (or is null because we don't need to request),
@@ -228,14 +239,17 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // second-time-stale row produces a different key from the first
   // stale fire; the missing branch includes `missingEpoch()` so a
   // row that gets deleted, re-queued, then deleted again produces a
-  // different key each time.
+  // different key each time; both branches include `retryAttempt()`
+  // so a manual retry forces a re-fire even if nothing else has
+  // moved.
   const requestKey = createMemo(() => {
     if (!shouldAutoRequest()) return null;
     const c = content();
+    const retry = retryAttempt();
     if (c == null) {
-      return `missing/${article()?.id}/${props.language}/${missingEpoch()}`;
+      return `missing/${article()?.id}/${props.language}/${missingEpoch()}/${retry}`;
     }
-    return `stale/${article()?.id}/${props.language}/${c.updated}`;
+    return `stale/${article()?.id}/${props.language}/${c.updated}/${retry}`;
   });
   const canonicalBase = createMemo(() => {
     const a = article();
@@ -342,7 +356,14 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
           <HttpStatusCode code={404} />
         </Match>
         <Match when={shouldAutoRequest() && requestFailed()}>
-          <HttpStatusCode code={404} />
+          <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto xl:max-w-4xl 2xl:max-w-screen-lg">
+            <article class="min-w-0">
+              <ArticleTranslationFailure
+                targetLanguage={props.language}
+                onRetry={handleRetry}
+              />
+            </article>
+          </div>
         </Match>
         <Match when={shouldAutoRequest()}>
           <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto xl:max-w-4xl 2xl:max-w-screen-lg">
