@@ -366,6 +366,19 @@ export function createTestEmailTransport(): TestEmailTransport {
 
 export type FedCtxLookupObject = RequestContext<ContextData>["lookupObject"];
 
+// Authenticated paths in production code call `getDocumentLoader` and pass
+// the returned `DocumentLoader` to `lookupObject` and `persistPost`.  Tests
+// almost always override `lookupObject` to return a synthetic vocab object
+// directly, so the document loader itself is never invoked: the stub below
+// is only there to make `getDocumentLoader` resolve without throwing.
+const stubAuthenticatedDocumentLoader = () =>
+  Promise.reject(
+    new Error(
+      "createFedCtx default authenticated DocumentLoader was invoked; " +
+        "tests should override fedCtx.lookupObject so the loader stays unused.",
+    ),
+  );
+
 export function createFedCtx(
   tx: Transaction,
   options: {
@@ -417,6 +430,9 @@ export function createFedCtx(
         `/objects/${Object.values(values).join("/")}`,
         "http://localhost/",
       );
+    },
+    getDocumentLoader() {
+      return Promise.resolve(stubAuthenticatedDocumentLoader);
     },
     lookupObject,
     sendActivity() {

@@ -439,6 +439,11 @@ test("shared Question wrappers can resolve the original poll", async () => {
 
 test("Question.poll backfills missing remote poll rows", async () => {
   await withRollback(async (tx) => {
+    const viewer = await insertAccountWithActor(tx, {
+      username: "backfillpollviewer",
+      name: "Backfill Poll Viewer",
+      email: "backfillpollviewer@example.com",
+    });
     const author = await insertRemoteActor(tx, {
       username: "backfillpollauthor",
       name: "Backfill Poll Author",
@@ -492,7 +497,7 @@ test("Question.poll backfills missing remote poll rows", async () => {
       schema,
       document: questionPollQuery,
       variableValues: { id: encodeGlobalID("Question", questionId) },
-      contextValue: makeGuestContext(tx, { fedCtx }),
+      contextValue: makeUserContext(tx, viewer.account, { fedCtx }),
       onError: "NO_PROPAGATE",
     });
 
@@ -533,8 +538,69 @@ test("Question.poll backfills missing remote poll rows", async () => {
   });
 });
 
+test("Question.poll refuses federation lookup for guests", async () => {
+  await withRollback(async (tx) => {
+    const author = await insertRemoteActor(tx, {
+      username: "guestbackfillauthor",
+      name: "Guest Backfill Author",
+      host: "remote.example",
+      iri: "https://remote.example/users/guestbackfillauthor",
+    });
+    const questionId = generateUuidV7();
+    const questionIri = `https://remote.example/objects/${questionId}`;
+    const published = new Date("2026-04-15T00:00:00.000Z");
+
+    await tx.insert(postTable).values(
+      {
+        id: questionId,
+        iri: questionIri,
+        type: "Question",
+        visibility: "public",
+        actorId: author.id,
+        name: "Guest backfill?",
+        contentHtml: "<p>Guest backfill?</p>",
+        language: "en",
+        tags: {},
+        emojis: {},
+        url: questionIri,
+        published,
+        updated: published,
+      } satisfies NewPost,
+    );
+
+    const lookupCalls: string[] = [];
+    const fedCtx = createFedCtx(tx, {
+      lookupObject: (uri) => {
+        lookupCalls.push(uri.toString());
+        return Promise.resolve(null);
+      },
+    });
+
+    const result = await execute({
+      schema,
+      document: questionPollQuery,
+      variableValues: { id: encodeGlobalID("Question", questionId) },
+      contextValue: makeGuestContext(tx, { fedCtx }),
+      onError: "NO_PROPAGATE",
+    });
+
+    assert.equal(result.errors, undefined);
+    assert.deepEqual(toPlainJson(result.data), {
+      node: {
+        poll: null,
+      },
+    });
+    assert.deepEqual(lookupCalls, []);
+  });
+});
+
 test("Question.poll ignores non-Question remote backfills", async () => {
   await withRollback(async (tx) => {
+    const viewer = await insertAccountWithActor(tx, {
+      username: "nonquestionbackfillviewer",
+      name: "Non-Question Backfill Viewer",
+      email: "nonquestionbackfillviewer@example.com",
+    });
     const author = await insertRemoteActor(tx, {
       username: "nonquestionbackfillauthor",
       name: "Non-Question Backfill Author",
@@ -578,7 +644,7 @@ test("Question.poll ignores non-Question remote backfills", async () => {
       schema,
       document: questionPollQuery,
       variableValues: { id: encodeGlobalID("Question", questionId) },
-      contextValue: makeGuestContext(tx, { fedCtx }),
+      contextValue: makeUserContext(tx, viewer.account, { fedCtx }),
       onError: "NO_PROPAGATE",
     });
 
@@ -599,6 +665,11 @@ test("Question.poll ignores non-Question remote backfills", async () => {
 
 test("Question.poll returns null when remote backfill fails", async () => {
   await withRollback(async (tx) => {
+    const viewer = await insertAccountWithActor(tx, {
+      username: "failedbackfillpollviewer",
+      name: "Failed Backfill Poll Viewer",
+      email: "failedbackfillpollviewer@example.com",
+    });
     const author = await insertRemoteActor(tx, {
       username: "failedbackfillpollauthor",
       name: "Failed Backfill Poll Author",
@@ -636,7 +707,7 @@ test("Question.poll returns null when remote backfill fails", async () => {
       schema,
       document: questionPollQuery,
       variableValues: { id: encodeGlobalID("Question", questionId) },
-      contextValue: makeGuestContext(tx, { fedCtx }),
+      contextValue: makeUserContext(tx, viewer.account, { fedCtx }),
       onError: "NO_PROPAGATE",
     });
 
