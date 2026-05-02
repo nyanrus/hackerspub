@@ -31,6 +31,7 @@ import {
 import { InternalLink } from "~/components/InternalLink.tsx";
 import { Timestamp } from "~/components/Timestamp.tsx";
 import { msg, plural, useLingui } from "~/lib/i18n/macro.d.ts";
+import IconLoader2 from "~icons/lucide/loader-2";
 import {
   MentionHoverCardLayer,
   useMentionHoverCards,
@@ -122,6 +123,7 @@ export default function ArticlePage() {
 }
 
 export { ArticleBody, ArticleMetaHead };
+// `ArticleTranslationPlaceholder` is also exported above (`export function ...`).
 
 interface ArticleMetaHeadProps {
   $article: Slug_head$key;
@@ -358,6 +360,12 @@ function ArticleBody(props: ArticleBodyProps) {
                   viewerLocales={props.viewerLocales}
                 />
 
+                <Show when={content()?.beingTranslated}>
+                  <ArticleTranslationPlaceholder
+                    targetLanguage={content()?.language ?? undefined}
+                  />
+                </Show>
+
                 <Show when={!content()?.beingTranslated && content()?.content}>
                   {(html) => (
                     <div
@@ -402,17 +410,55 @@ interface ArticleTitleProps {
 }
 
 function ArticleTitle(props: ArticleTitleProps) {
-  const { t } = useLingui();
-
   return (
-    <Show
-      when={!props.beingTranslated}
-      fallback={<h1 class="text-4xl font-bold">{t`Translating…`}</h1>}
-    >
+    <Show when={!props.beingTranslated}>
       <h1 class="text-4xl font-bold" lang={props.language}>
         {props.title}
       </h1>
     </Show>
+  );
+}
+
+interface ArticleTranslationPlaceholderProps {
+  /**
+   * BCP-47 tag of the language the article is being translated *into*.
+   * Used to render the localized language name in the heading via
+   * `Intl.DisplayNames` and as a `lang` hint on the heading element.
+   */
+  targetLanguage?: string;
+}
+
+export function ArticleTranslationPlaceholder(
+  props: ArticleTranslationPlaceholderProps,
+) {
+  const { t, i18n } = useLingui();
+  const targetLanguageName = () => {
+    if (props.targetLanguage == null) return null;
+    try {
+      return new Intl.DisplayNames(i18n.locale, { type: "language" })
+        .of(props.targetLanguage) ?? props.targetLanguage;
+    } catch {
+      return props.targetLanguage;
+    }
+  };
+
+  return (
+    <div class="mt-4 border rounded-lg p-6 flex flex-col items-center gap-3 text-center">
+      <IconLoader2 class="size-8 animate-spin opacity-60" aria-hidden="true" />
+      <Show
+        when={targetLanguageName()}
+        fallback={<p class="text-lg font-semibold">{t`Translating…`}</p>}
+      >
+        {(name) => (
+          <p class="text-lg font-semibold">
+            {t`Translating to ${name()}…`}
+          </p>
+        )}
+      </Show>
+      <p class="text-sm text-muted-foreground max-w-md">
+        {t`This usually takes about a minute. The page will update automatically when the translation is ready.`}
+      </p>
+    </div>
   );
 }
 

@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: article().replies?.edges.length ?? 0
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:764
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:812
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {# 則評論}}"
 
@@ -167,7 +167,7 @@ msgstr "{0} 轉貼了你的內容"
 #. placeholder {0}: post().actor.name
 #. placeholder {1}: post().excerpt
 #. placeholder {1}: title()
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:201
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:203
 #: src/routes/(root)/[handle]/[noteId].tsx:174
 msgid "{0}: {1}"
 msgstr "{0}：{1}"
@@ -587,7 +587,7 @@ msgstr "拖動選擇要保留的區域，然後點擊「裁剪」來更新你的
 msgid "e.g., @user@mastodon.social"
 msgstr "例如：@user@mastodon.social"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:507
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:555
 msgid "Edit"
 msgstr "編輯"
 
@@ -984,7 +984,7 @@ msgid "If enabled, the AI will generate a summary of the article for you. Otherw
 msgstr "啟用後，AI 將為您生成文章摘要。否則，將使用文章的前幾行作為摘要。"
 
 #. placeholder {0}: "ACTIVITYPUB_URI"
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:786
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:834
 msgid "If you have a fediverse account, you can reply to this article from your own instance. Search {0} on your instance and reply to it."
 msgstr "如果你在聯邦宇宙有個帳戶，你可以在你自己的站台裡評論此文章。在你的站台搜尋 {0} 後回覆。"
 
@@ -1432,7 +1432,7 @@ msgstr "或"
 msgid "Or enter the code from the email"
 msgstr "或輸入郵件中的驗證碼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:653
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:701
 msgid "Other languages"
 msgstr "其他語言"
 
@@ -1870,9 +1870,9 @@ msgid "Summarized by LLM"
 msgstr "由 AI 生成的摘要"
 
 #: src/components/DocumentView.tsx:34
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:533
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:541
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:827
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:581
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:589
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:875
 msgid "Table of contents"
 msgstr "目錄"
 
@@ -1882,7 +1882,7 @@ msgstr "目錄"
 
 #: src/components/article-composer/ArticleComposerForm.tsx:142
 #: src/routes/(root)/[handle]/[idOrYear]/[slug]/edit.tsx:292
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:836
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:884
 msgid "Tags"
 msgstr "標籤"
 
@@ -1990,6 +1990,10 @@ msgstr "未找到此邀請連結。"
 msgid "This service does not support remote follow."
 msgstr "該服務不支援遠端關注。"
 
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:461
+msgid "This usually takes about a minute. The page will update automatically when the translation is ready."
+msgstr "通常需要一分鐘左右。翻譯完成後頁面將自動更新。"
+
 #: src/components/article-composer/ArticleComposerPublishFields.tsx:28
 msgid "This will be part of the article URL"
 msgstr "這將成為文章網址的一部分"
@@ -2023,17 +2027,21 @@ msgstr "共 {0} 個"
 
 #. placeholder {0}: "LANGUAGE"
 #: src/components/ArticleCard.tsx:213
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:637
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:685
 msgid "Translated from {0}"
 msgstr "翻譯自{0}"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:299
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:410
+#. placeholder {0}: name()
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:456
+msgid "Translating to {0}…"
+msgstr "正在翻譯為{0}…"
+
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:451
 msgid "Translating…"
 msgstr "正在翻譯…"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:279
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:287
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:286
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/[lang].tsx:294
 msgid "Translation request failed"
 msgstr "翻譯請求失敗"
 
@@ -2194,7 +2202,7 @@ msgstr "你在想什麼？"
 msgid "Without shares"
 msgstr "不含轉貼"
 
-#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:777
+#: src/routes/(root)/[handle]/[idOrYear]/[slug]/index.tsx:825
 msgid "Write a reply…"
 msgstr "寫個回覆…"
 

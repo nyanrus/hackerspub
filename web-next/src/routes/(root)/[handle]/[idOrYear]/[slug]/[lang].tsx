@@ -27,7 +27,11 @@ import { showToast } from "~/components/ui/toast.tsx";
 import { useLingui } from "~/lib/i18n/macro.d.ts";
 import type { LangPage_requestArticleTranslation_Mutation } from "./__generated__/LangPage_requestArticleTranslation_Mutation.graphql.ts";
 import type { LangPageQuery } from "./__generated__/LangPageQuery.graphql.ts";
-import { ArticleBody, ArticleMetaHead } from "./index.tsx";
+import {
+  ArticleBody,
+  ArticleMetaHead,
+  ArticleTranslationPlaceholder,
+} from "./index.tsx";
 
 export const route = {
   matchFilters: {
@@ -299,7 +303,7 @@ function AutoRequestTranslation(props: AutoRequestTranslationProps) {
     <Show when={!failed()} fallback={<HttpStatusCode code={404} />}>
       <div class="mt-8 mb-4 px-4 max-w-3xl mx-auto xl:max-w-4xl 2xl:max-w-screen-lg">
         <article class="min-w-0">
-          <h1 class="text-4xl font-bold">{t`Translating…`}</h1>
+          <ArticleTranslationPlaceholder targetLanguage={props.language} />
         </article>
       </div>
     </Show>
