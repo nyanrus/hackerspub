@@ -360,21 +360,32 @@ function ArticleLangPageContent(props: ArticleLangPageContentProps) {
   // already-populated Relay store unchanged.
   createEffect(() => {
     if (!content()?.beingTranslated) return;
+    // The previous tick's request, if still in flight, is left alone:
+    // Relay treats `unsubscribe()` as a cancellation, so cancelling
+    // it would mean a slow network/server (poll > 30 s) never gets a
+    // chance to write fresh content back to the store.  Skip the new
+    // poll instead and let the prior one finish; the next 30 s tick
+    // tries again.  Only cancel on `onCleanup` (interval removed,
+    // `beingTranslated` flipped, or component unmounted).
     let pending: Subscription | null = null;
     const interval = setInterval(() => {
-      pending?.unsubscribe();
+      if (pending != null) return;
       pending = fetchQuery<LangPageQuery>(env(), LangPageQueryDef, {
         handle: props.handle,
         idOrYear: props.idOrYear,
         slug: props.slug,
         language: props.language,
       }).subscribe({
+        complete() {
+          pending = null;
+        },
         error(error: unknown) {
           // Background polling can hit transient network failures
           // without any UI affordance; surface them in the console
           // so they're discoverable, but don't toast or otherwise
           // interrupt the placeholder.  The next tick will retry on
           // its own.
+          pending = null;
           console.error("Translation polling failed:", error);
         },
       });
