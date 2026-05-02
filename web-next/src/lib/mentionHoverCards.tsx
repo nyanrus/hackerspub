@@ -107,9 +107,13 @@ export function useMentionHoverCards(
 
     const href = a.getAttribute("href");
     if (!href) return undefined;
+    // Protocol-relative URLs (`//host/path`) need a base to parse; treat
+    // them as `https:` to keep the host. Matches `parseContentAnchorUrl`
+    // in `models/html.ts`.
+    const parseTarget = href.startsWith("//") ? `https:${href}` : href;
     let url: URL;
     try {
-      url = new URL(href);
+      url = new URL(parseTarget);
     } catch {
       return undefined;
     }
