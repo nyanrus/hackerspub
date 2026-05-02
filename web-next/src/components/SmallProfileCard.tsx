@@ -50,13 +50,27 @@ export function SmallProfileCard(props: SmallProfileCardProps) {
             </ActorHoverCard>
             <div class="flex min-w-0 flex-1 flex-col">
               <ActorHoverCard handle={actor().handle}>
-                <a
-                  href={`/${
-                    actor().local ? `@${actor().username}` : actor().handle
-                  }`}
-                  innerHTML={actor().name || actor().username}
-                  class="truncate text-lg font-semibold"
-                />
+                <Show
+                  when={(actor().name ?? "").trim() !== ""}
+                  fallback={
+                    <a
+                      href={`/${
+                        actor().local ? `@${actor().username}` : actor().handle
+                      }`}
+                      class="truncate text-lg font-semibold"
+                    >
+                      {actor().username}
+                    </a>
+                  }
+                >
+                  <a
+                    href={`/${
+                      actor().local ? `@${actor().username}` : actor().handle
+                    }`}
+                    innerHTML={actor().name ?? ""}
+                    class="truncate text-lg font-semibold"
+                  />
+                </Show>
               </ActorHoverCard>
               <span
                 class="truncate text-muted-foreground select-all"
