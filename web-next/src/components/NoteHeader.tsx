@@ -55,12 +55,14 @@ export function NoteHeader(props: NoteHeaderProps) {
             </ActorHoverCard>
             {" "}
           </Show>
-          <span
-            class="min-w-0 grow truncate select-all text-muted-foreground"
-            title={n().actor.handle}
-          >
-            {n().actor.handle}
-          </span>
+          <ActorHoverCard handle={n().actor.handle} class="min-w-0 grow">
+            <span
+              class="truncate select-all text-muted-foreground"
+              title={n().actor.handle}
+            >
+              {n().actor.handle}
+            </span>
+          </ActorHoverCard>
           <span class="flex items-center gap-1.5 text-sm text-muted-foreground/70">
             <InternalLink
               href={n().url ?? n().iri}
