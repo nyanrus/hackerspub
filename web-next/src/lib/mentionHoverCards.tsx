@@ -54,41 +54,73 @@ export function useMentionHoverCards(
     }
   };
 
-  const findMention = (target: EventTarget | null): HTMLElement | undefined => {
+  /**
+   * Resolve a hovered mention element to a fediverse handle.
+   *
+   * Two source markups are supported:
+   *
+   * 1. The local Markdown renderer (see `models/markup.ts`) emits
+   *    `<a class="u-url mention" data-username data-host …>`, so handle
+   *    parts come straight from those data attributes.
+   * 2. Federated content (e.g., notes received over ActivityPub) typically
+   *    uses Mastodon-style h-card markup
+   *    `<span class="h-card"><a class="u-url mention" href="…">@user</a></span>`
+   *    without data attributes. In that case we derive the host from the
+   *    href URL and the username from the link text.
+   */
+  const resolveMention = (
+    target: EventTarget | null,
+  ): { el: HTMLElement; handle: string } | undefined => {
     const t = target as Element | null;
     if (!t?.closest) return undefined;
     const a = t.closest(
       "a.mention:not(.hashtag)",
     ) as HTMLElement | null;
     if (!a) return undefined;
-    if (
-      !a.hasAttribute("data-username") || !a.hasAttribute("data-host")
-    ) {
+
+    const dsUsername = a.getAttribute("data-username");
+    const dsHost = a.getAttribute("data-host");
+    if (dsUsername && dsHost) {
+      return { el: a, handle: `@${dsUsername}@${dsHost}` };
+    }
+
+    const href = a.getAttribute("href");
+    if (!href) return undefined;
+    let url: URL;
+    try {
+      url = new URL(href);
+    } catch {
       return undefined;
     }
-    return a;
+    const host = url.host;
+    // Strip the leading `@` and anything after a second `@` (some servers
+    // render full `@user@host` text inside the link).
+    const username = (a.textContent ?? "")
+      .trim()
+      .replace(/^@/, "")
+      .split("@")[0]
+      ?.trim();
+    if (!host || !username) return undefined;
+    return { el: a, handle: `@${username}@${host}` };
   };
 
   const onPointerOver = (e: PointerEvent) => {
     if (e.pointerType === "touch") return;
-    const a = findMention(e.target);
-    if (!a) return;
+    const m = resolveMention(e.target);
+    if (!m) return;
     // Pointer movement between child nodes of the same mention reports the
     // same `closest("a.mention")`; skip those so we don't restart the open
     // delay every time the cursor crosses an inner img/span boundary.
     const from = e.relatedTarget as Node | null;
-    if (from && a.contains(from)) return;
+    if (from && m.el.contains(from)) return;
     cancelClose();
-    if (anchor() === a && open()) return;
+    if (anchor() === m.el && open()) return;
     cancelOpen();
     openTimer = window.setTimeout(() => {
-      const username = a.getAttribute("data-username");
-      const host = a.getAttribute("data-host");
-      if (!username || !host) return;
       // Update the anchor first so Popper recomputes against the new rect
       // when open flips to true.
-      setAnchor(a);
-      setHandle(`@${username}@${host}`);
+      setAnchor(m.el);
+      setHandle(m.handle);
       setOpen(true);
       openTimer = undefined;
     }, OPEN_DELAY_MS);
@@ -96,10 +128,10 @@ export function useMentionHoverCards(
 
   const onPointerOut = (e: PointerEvent) => {
     if (e.pointerType === "touch") return;
-    const a = findMention(e.target);
-    if (!a) return;
+    const m = resolveMention(e.target);
+    if (!m) return;
     const into = e.relatedTarget as Node | null;
-    if (into && a.contains(into)) return;
+    if (into && m.el.contains(into)) return;
     cancelOpen();
     cancelClose();
     closeTimer = window.setTimeout(() => {
