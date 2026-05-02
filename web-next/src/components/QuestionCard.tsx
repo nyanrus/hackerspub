@@ -228,8 +228,11 @@ function QuestionCardContent(props: QuestionCardContentProps) {
           <PostAvatar $actor={q().actor} />
           <div class="min-w-0 grow">
             <div class="flex items-center gap-1 flex-wrap">
-              <Show when={(q().actor.name ?? "").trim() !== ""}>
-                <ActorHoverCard handle={q().actor.handle}>
+              <ActorHoverCard
+                handle={q().actor.handle}
+                class="min-w-0 grow flex flex-wrap items-baseline gap-x-1"
+              >
+                <Show when={(q().actor.name ?? "").trim() !== ""}>
                   <InternalLink
                     href={q().actor.url ?? q().actor.iri}
                     internalHref={q().actor.local
@@ -238,12 +241,9 @@ function QuestionCardContent(props: QuestionCardContentProps) {
                     innerHTML={q().actor.name ?? ""}
                     class="font-semibold"
                   />
-                </ActorHoverCard>
-                {" "}
-              </Show>
-              <ActorHoverCard handle={q().actor.handle} class="min-w-0 grow">
+                </Show>
                 <span
-                  class="truncate select-all text-muted-foreground"
+                  class="min-w-0 truncate select-all text-muted-foreground"
                   title={q().actor.handle}
                 >
                   {q().actor.handle}

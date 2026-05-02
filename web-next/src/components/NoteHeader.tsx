@@ -42,8 +42,11 @@ export function NoteHeader(props: NoteHeaderProps) {
     <Show when={note()}>
       {(n) => (
         <div class="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
-          <Show when={(n().actor.name ?? "").trim() !== ""}>
-            <ActorHoverCard handle={n().actor.handle}>
+          <ActorHoverCard
+            handle={n().actor.handle}
+            class="min-w-0 grow flex flex-wrap items-baseline gap-x-1"
+          >
+            <Show when={(n().actor.name ?? "").trim() !== ""}>
               <InternalLink
                 href={n().actor.url ?? n().actor.iri}
                 internalHref={n().actor.local
@@ -52,12 +55,9 @@ export function NoteHeader(props: NoteHeaderProps) {
                 innerHTML={n().actor.name ?? ""}
                 class="font-semibold"
               />
-            </ActorHoverCard>
-            {" "}
-          </Show>
-          <ActorHoverCard handle={n().actor.handle} class="min-w-0 grow">
+            </Show>
             <span
-              class="truncate select-all text-muted-foreground"
+              class="min-w-0 truncate select-all text-muted-foreground"
               title={n().actor.handle}
             >
               {n().actor.handle}

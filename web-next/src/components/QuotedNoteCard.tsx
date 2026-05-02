@@ -67,29 +67,27 @@ export function QuotedNoteCard(props: QuotedNoteCardProps) {
                 </Avatar>
               </ActorHoverCard>
               <div class="flex min-w-0 flex-col">
-                <div class="min-w-0">
+                <ActorHoverCard
+                  handle={note().actor.handle}
+                  class="min-w-0 flex flex-wrap items-baseline gap-x-1"
+                >
                   <Show when={(note().actor.name ?? "").trim() !== ""}>
-                    <ActorHoverCard handle={note().actor.handle}>
-                      <InternalLink
-                        href={note().actor.url ?? note().actor.iri}
-                        internalHref={note().actor.local
-                          ? `/@${note().actor.username}`
-                          : `/${note().actor.handle}`}
-                        innerHTML={note().actor.name ?? ""}
-                        class="font-semibold"
-                      />
-                    </ActorHoverCard>
-                    {" "}
+                    <InternalLink
+                      href={note().actor.url ?? note().actor.iri}
+                      internalHref={note().actor.local
+                        ? `/@${note().actor.username}`
+                        : `/${note().actor.handle}`}
+                      innerHTML={note().actor.name ?? ""}
+                      class="font-semibold"
+                    />
                   </Show>
-                  <ActorHoverCard handle={note().actor.handle}>
-                    <span
-                      class="break-all select-all text-muted-foreground"
-                      title={note().actor.handle}
-                    >
-                      {note().actor.handle}
-                    </span>
-                  </ActorHoverCard>
-                </div>
+                  <span
+                    class="min-w-0 break-all select-all text-muted-foreground"
+                    title={note().actor.handle}
+                  >
+                    {note().actor.handle}
+                  </span>
+                </ActorHoverCard>
                 <div class="flex min-w-0 flex-row flex-wrap gap-1 text-muted-foreground">
                   <InternalLink
                     href={note().url ?? note().iri}

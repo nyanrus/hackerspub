@@ -172,34 +172,27 @@ function ArticleCardInternal(props: ArticleCardInternalProps) {
               </Avatar>
             </ActorHoverCard>
             <div class="flex min-w-0 flex-col">
-              <div class="flex min-w-0 items-baseline gap-x-1">
+              <ActorHoverCard
+                handle={article().actor.handle}
+                class="flex min-w-0 items-baseline gap-x-1"
+              >
                 <Show when={(article().actor.name ?? "").trim() !== ""}>
-                  <ActorHoverCard
-                    handle={article().actor.handle}
-                    class="shrink-0"
-                  >
-                    <InternalLink
-                      innerHTML={article().actor.name ?? ""}
-                      href={article().actor.url ?? article().actor.iri}
-                      internalHref={article().actor.local
-                        ? `/@${article().actor.username}`
-                        : `/${article().actor.handle}`}
-                      class="shrink-0 font-semibold"
-                    />
-                  </ActorHoverCard>
+                  <InternalLink
+                    innerHTML={article().actor.name ?? ""}
+                    href={article().actor.url ?? article().actor.iri}
+                    internalHref={article().actor.local
+                      ? `/@${article().actor.username}`
+                      : `/${article().actor.handle}`}
+                    class="shrink-0 font-semibold"
+                  />
                 </Show>
-                <ActorHoverCard
-                  handle={article().actor.handle}
-                  class="min-w-0"
+                <span
+                  class="min-w-0 truncate select-all text-muted-foreground"
+                  title={article().actor.handle}
                 >
-                  <span
-                    class="truncate select-all text-muted-foreground"
-                    title={article().actor.handle}
-                  >
-                    {article().actor.handle}
-                  </span>
-                </ActorHoverCard>
-              </div>
+                  {article().actor.handle}
+                </span>
+              </ActorHoverCard>
               <div class="flex flex-row items-center gap-1 text-sm text-muted-foreground/70">
                 <Timestamp value={article().published} capitalizeFirstLetter />
                 <PostActionMenu
