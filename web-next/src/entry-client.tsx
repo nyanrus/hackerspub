@@ -1,5 +1,6 @@
 // @refresh reload
 import * as Sentry from "@sentry/solidstart";
+import { solidRouterBrowserTracingIntegration } from "@sentry/solidstart/solidrouter";
 import { mount, StartClient } from "@solidjs/start/client";
 import "solid-devtools";
 import packageJson from "../package.json" with { type: "json" };
@@ -18,6 +19,13 @@ if (sentryDsn) {
     // Vite plugin uploads source maps under the matching release name
     // (vite.config.ts), so symbolication lines up.
     release: packageJson.version,
+    integrations: [
+      // Tracks client-side navigations as transactions — pairs with the
+      // `withSentryRouterRouting(Router)` wrapper in app.tsx so the
+      // generated transaction names match the Solid Router routes the
+      // user actually visits.
+      solidRouterBrowserTracingIntegration(),
+    ],
     // Send default PII (e.g. IP address) so we can correlate errors with
     // users where useful.
     sendDefaultPii: true,
