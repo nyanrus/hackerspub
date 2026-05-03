@@ -40,18 +40,13 @@ RUN pnpm install --frozen-lockfile
 RUN deno install
 
 COPY . /app
-RUN cp .env.sample .env && \
-  sed -i '/^INSTANCE_ACTOR_KEY=/d' .env && \
-  echo >> .env && \
-  echo "INSTANCE_ACTOR_KEY='$(mise run keygen)'" >> .env && \
-  deno task -r codegen && \
-  deno task build && \
-  pnpm --filter @hackerspub/web-next build && \
-  rm .env
 
 ARG GIT_COMMIT
 ENV GIT_COMMIT=${GIT_COMMIT}
 
+# Append "+<git_commit>" to each manifest's version *before* the build so the
+# built artifacts that inline the version (notably web-next, where Vite bakes
+# package.json into the SSR bundle) carry the commit hash too.
 RUN if [ -n "$GIT_COMMIT" ]; then \
   jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" federation/deno.json > /tmp/deno.json && \
   mv /tmp/deno.json federation/deno.json && \
@@ -64,6 +59,15 @@ RUN if [ -n "$GIT_COMMIT" ]; then \
   jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" web-next/package.json > /tmp/package.json && \
   mv /tmp/package.json web-next/package.json \
   ; fi
+
+RUN cp .env.sample .env && \
+  sed -i '/^INSTANCE_ACTOR_KEY=/d' .env && \
+  echo >> .env && \
+  echo "INSTANCE_ACTOR_KEY='$(mise run keygen)'" >> .env && \
+  deno task -r codegen && \
+  deno task build && \
+  pnpm --filter @hackerspub/web-next build && \
+  rm .env
 
 # Drop devDependencies from node_modules. A clean reinstall in --prod mode
 # is more reliable than `pnpm prune --prod` against a workspace that's

@@ -11,6 +11,7 @@ import { join } from "@std/path/join";
 import { count, eq } from "drizzle-orm";
 import { Msg, Translation, TranslationSetup } from "../components/Msg.tsx";
 import { db } from "../db.ts";
+import metadata from "../deno.json" with { type: "json" };
 import { drive } from "../drive.ts";
 import { NotificationIcon } from "../islands/NotificationIcon.tsx";
 import { kv } from "../kv.ts";
@@ -419,6 +420,23 @@ export default async function App(
                             </a>
                           }
                         />
+                      </span>{" "}
+                      &middot;{" "}
+                      <span class="text-black dark:text-white">
+                        v{metadata.version.split("+")[0]}
+                        {metadata.version.includes("+") && (
+                          <>
+                            +
+                            <a
+                              href={`https://github.com/hackers-pub/hackerspub/commit/${
+                                metadata.version.split("+")[1]
+                              }`}
+                              class="underline"
+                            >
+                              {metadata.version.split("+")[1].slice(0, 8)}
+                            </a>
+                          </>
+                        )}
                       </span>
                     </nav>
                   </footer>

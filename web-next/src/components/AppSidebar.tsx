@@ -30,6 +30,7 @@ import type {
   AppSidebar_signedAccount$key,
 } from "./__generated__/AppSidebar_signedAccount.graphql.ts";
 import { Avatar, AvatarImage } from "./ui/avatar.tsx";
+import metadata from "../../package.json" with { type: "json" };
 
 const AppSidebarSignOutMutation = graphql`
   mutation AppSidebarSignOutMutation($sessionId: UUID!) {
@@ -716,7 +717,23 @@ function AppSidebarFooter() {
               </a>
             ),
           }}
-        />
+        />{" "}
+        v{metadata.version.split("+")[0]}
+        {metadata.version.includes("+") && (
+          <>
+            +
+            <a
+              href={`https://github.com/hackers-pub/hackerspub/commit/${
+                metadata.version.split("+")[1]
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >
+              {metadata.version.split("+")[1].slice(0, 8)}
+            </a>
+          </>
+        )}
       </p>
     </SidebarFooter>
   );
