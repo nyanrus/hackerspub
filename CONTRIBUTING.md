@@ -264,7 +264,7 @@ To run web-next, the new web frontend for Hackers' Pub, follow these steps:
     run `pnpm codegen` manually whenever GraphQL files change.
 
  3. Run the development server with the command
-    `VITE_API_URL=http://localhost:8000/graphql pnpm dev`.
+    `API_URL=http://localhost:8000/graphql mise run dev:web-next`.
     The legacy server must be running at this point, as it also serves as
     the GraphQL API server for web-next.
 

@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       NO_WATCHMAN: "1"
-      VITE_API_URL: http://app:8000/graphql
+      API_URL: http://app:8000/graphql
       HOST: "0.0.0.0"
     ports:
       - "3000:3000"

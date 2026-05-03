@@ -9,3 +9,7 @@ function getRequiredEnv(name: string): string {
 }
 
 export const CANONICAL_ORIGIN_URL = new URL(getRequiredEnv("ORIGIN"));
+
+export function getApiUrl(): string {
+  return getRequiredEnv("API_URL");
+}

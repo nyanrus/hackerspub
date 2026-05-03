@@ -77,8 +77,10 @@ underlying command needing an explicit `--env-file` flag.
 - Relay codegen: `pnpm codegen` (Vite runs this automatically when watchman is installed)
 - Extract translations: `pnpm extract`
 
-Note: `mise run dev:web-next` may need `VITE_API_URL=http://localhost:8000/graphql`
-set in your environment, depending on where the GraphQL server is running.
+Note: `mise run dev:web-next` requires `API_URL` set to the GraphQL endpoint
+(e.g. `API_URL=http://localhost:8000/graphql` when running against the legacy
+web server, or `http://localhost:8080/graphql` against the standalone GraphQL
+server). web-next reads this at runtime — no rebuild needed when it changes.
 
 ## Code Style Guidelines
 

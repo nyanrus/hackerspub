@@ -1,5 +1,6 @@
 import { getCookie } from "@solidjs/start/http";
 import { getRequestEvent } from "solid-js/web";
+import { getApiUrl } from "~/lib/env.ts";
 
 export interface ImageUploadResult {
   url: string;
@@ -27,7 +28,7 @@ async function uploadMediaOnServer(
     ? null
     : getCookie(event.nativeEvent, "session");
 
-  const response = await fetch(import.meta.env.VITE_API_URL, {
+  const response = await fetch(getApiUrl(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

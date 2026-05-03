@@ -2,6 +2,7 @@ import type { FetchFunction, IEnvironment } from "relay-runtime";
 import { getCookie } from "@solidjs/start/http";
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
 import { getRequestEvent } from "solid-js/web";
+import { getApiUrl } from "~/lib/env.ts";
 
 const fetchFn: FetchFunction = async (
   params,
@@ -16,7 +17,7 @@ const fetchFn: FetchFunction = async (
     ? null
     : getCookie(event.nativeEvent, "session");
 
-  const response = await fetch(import.meta.env.VITE_API_URL, {
+  const response = await fetch(getApiUrl(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
