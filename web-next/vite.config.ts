@@ -64,10 +64,6 @@ export default defineConfig(() => ({
   build: { sourcemap: "hidden" },
   plugins: [
     solidStart({
-      // Registers `src/middleware.ts` so SolidStart calls our
-      // `sentryBeforeResponseMiddleware` on every response (used for
-      // distributed tracing — see src/middleware.ts).
-      middleware: "./src/middleware.ts",
       solid: {
         babel: {
           plugins: ["@lingui/babel-plugin-lingui-macro"],
