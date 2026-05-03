@@ -5,11 +5,27 @@ import { transport as email } from "./email.ts";
 import { federation } from "./federation.ts";
 import { kv } from "./kv.ts";
 import { createYogaServer } from "./mod.ts";
+import assetlinks from "./static/.well-known/assetlinks.json" with {
+  type: "json",
+};
 
 const yogaServer = createYogaServer();
 
 Deno.serve({ port: 8080 }, async (req, info) => {
+  const url = new URL(req.url);
   const disk = drive.use();
+  if (url.pathname === "/.well-known/assetlinks.json") {
+    return new Response(JSON.stringify(assetlinks), {
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (
+    url.pathname.startsWith("/.well-known/") ||
+    url.pathname.startsWith("/ap/") ||
+    url.pathname.startsWith("/nodeinfo/")
+  ) {
+    return federation.fetch(req, { contextData: { db, kv, disk, models } });
+  }
   return yogaServer.fetch(req, {
     db,
     kv,

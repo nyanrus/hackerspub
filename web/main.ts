@@ -30,7 +30,7 @@ import { makeQueryGraphQL } from "./graphql/gql.ts";
 import { kv } from "./kv.ts";
 import "./logging.ts";
 import type { State } from "./utils.ts";
-import assetlinks from "./static/.well-known/assetlinks.json" with {
+import assetlinks from "../graphql/static/.well-known/assetlinks.json" with {
   type: "json",
 };
 
