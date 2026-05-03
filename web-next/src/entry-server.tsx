@@ -13,7 +13,17 @@ import { Temporal as TemporalPolyfill } from "temporal-polyfill";
 (globalThis as { Temporal?: typeof TemporalPolyfill }).Temporal ??=
   TemporalPolyfill;
 
+// Aliased to avoid clashing with the auto-injected `import process`.
+import nodeProcess from "node:process";
 import { createHandler, StartServer } from "@solidjs/start/server";
+
+// Read the Sentry DSN from the runtime environment, NOT at build time —
+// the Docker image is public, so a baked-in DSN would leak. The value
+// is rendered into an inline script below so the client picks it up
+// before entry-client.mjs runs (deferred module scripts).
+const SENTRY_DSN_SCRIPT = `window.__SENTRY_DSN__=${
+  JSON.stringify(nodeProcess.env.SENTRY_DSN ?? "")
+};`;
 
 export default createHandler(() => (
   <StartServer
@@ -35,6 +45,7 @@ export default createHandler(() => (
           <link rel="apple-touch-icon" href="/apple-icon-180.png" />
           <link rel="manifest" href="/manifest.json" />
           <meta name="theme-color" content="#000000" />
+          <script innerHTML={SENTRY_DSN_SCRIPT} />
           {assets}
         </head>
         <body>
