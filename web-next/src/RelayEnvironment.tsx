@@ -1,4 +1,8 @@
-import type { FetchFunction, IEnvironment } from "relay-runtime";
+import type {
+  FetchFunction,
+  GraphQLResponse,
+  IEnvironment,
+} from "relay-runtime";
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
 import { getRequestEvent } from "solid-js/web";
 import { getApiUrl } from "~/lib/env.ts";
@@ -41,7 +45,24 @@ const fetchFn: FetchFunction = async (
     body: JSON.stringify({ query: params.text, variables }),
   });
 
-  return await response.json();
+  const body: GraphQLResponse = await response.json();
+  // Relay surfaces upstream GraphQL errors as a generic "Unexpected error"
+  // on the client, which makes them impossible to diagnose from logs.
+  // Log a structured entry on the SSR side whenever the upstream returns
+  // a non-OK status or an `errors` field so we can correlate the failing
+  // operation with whatever the GraphQL server actually said.
+  const errors = "errors" in body ? body.errors : undefined;
+  if (!response.ok || errors != null) {
+    console.error("[RelayNetwork upstream error]", {
+      operation: params.name,
+      operationKind: params.operationKind,
+      query: params.text,
+      variables,
+      status: response.status,
+      errors,
+    });
+  }
+  return body;
 };
 
 export function createEnvironment(): IEnvironment {
