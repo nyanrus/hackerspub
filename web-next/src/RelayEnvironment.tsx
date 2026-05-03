@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/solidstart";
 import type {
   FetchFunction,
   GraphQLResponse,
@@ -50,9 +51,13 @@ const fetchFn: FetchFunction = async (
   // on the client, which makes them impossible to diagnose from logs.
   // Log a structured entry on the SSR side whenever the upstream returns
   // a non-OK status or an `errors` field so we can correlate the failing
-  // operation with whatever the GraphQL server actually said.
+  // operation with whatever the GraphQL server actually said, and forward
+  // the same context to Sentry. (Default Sentry integrations do not
+  // capture Relay errors because Relay catches them internally and only
+  // logs to the console — we have to report them by hand.)
   const errors = "errors" in body ? body.errors : undefined;
   if (!response.ok || errors != null) {
+    const summary = `GraphQL upstream error: ${params.name ?? "<unnamed>"}`;
     console.error("[RelayNetwork upstream error]", {
       operation: params.name,
       operationKind: params.operationKind,
@@ -60,6 +65,16 @@ const fetchFn: FetchFunction = async (
       variables,
       status: response.status,
       errors,
+    });
+    Sentry.captureException(new Error(summary), {
+      extra: {
+        operation: params.name,
+        operationKind: params.operationKind,
+        query: params.text,
+        variables,
+        status: response.status,
+        errors,
+      },
     });
   }
   return body;

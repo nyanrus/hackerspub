@@ -25,6 +25,15 @@ const SENTRY_DSN_SCRIPT = `window.__SENTRY_DSN__=${
   JSON.stringify(nodeProcess.env.SENTRY_DSN ?? "")
 };`;
 
+// Sentry's automatic instrumentation (set up in instrument.server.mjs and
+// activated by `node --import` before this module loads) hooks the Node
+// HTTP server, uncaught exceptions, and unhandled rejections via
+// `httpIntegration` / `onUncaughtExceptionIntegration` /
+// `onUnhandledRejectionIntegration`. That covers SSR and server-function
+// errors without needing to wrap `createHandler` here. Errors that get
+// swallowed by Solid (e.g. inside Relay's network layer) are reported
+// explicitly with `captureException` at their source — see
+// RelayEnvironment.tsx.
 export default createHandler(() => (
   <StartServer
     document={({ assets, children, scripts }) => (
