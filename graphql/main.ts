@@ -1,3 +1,6 @@
+// Must be the first import — see instrument.ts for the rationale.
+import "./instrument.ts";
+
 import * as models from "./ai.ts";
 import { db } from "./db.ts";
 import { drive } from "./drive.ts";
