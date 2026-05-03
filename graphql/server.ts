@@ -1,3 +1,4 @@
+import { useSentry } from "@envelop/sentry";
 import type {
   Account,
   AccountEmail,
@@ -15,6 +16,8 @@ import {
 } from "graphql-yoga";
 import type { ServerContext, UserContext } from "./builder.ts";
 import { schema as graphqlSchema } from "./mod.ts";
+
+const sentryEnabled = Deno.env.get("SENTRY_DSN") != null;
 
 export function createYogaServer(): YogaServerInstance<
   ServerContext,
@@ -64,19 +67,31 @@ export function createYogaServer(): YogaServerInstance<
         ...ctx,
       };
     },
-    plugins: [{
-      onExecute: ({ setExecuteFn, context }) => {
-        const isNoPropagate =
-          new URL(context.request.url).searchParams.get("no-propagate") ===
-            "true" ||
-          context.request.headers.get("x-no-propagate") === "true";
-        setExecuteFn((args) =>
-          execute({
-            ...args,
-            onError: isNoPropagate ? "NO_PROPAGATE" : "PROPAGATE",
-          })
-        );
-      },
-    } as EnvelopPlugin],
+    plugins: [
+      {
+        onExecute: ({ setExecuteFn, context }) => {
+          const isNoPropagate =
+            new URL(context.request.url).searchParams.get("no-propagate") ===
+              "true" ||
+            context.request.headers.get("x-no-propagate") === "true";
+          setExecuteFn((args) =>
+            execute({
+              ...args,
+              onError: isNoPropagate ? "NO_PROPAGATE" : "PROPAGATE",
+            })
+          );
+        },
+      } as EnvelopPlugin,
+      // Capture unhandled resolver exceptions in Sentry. Yoga otherwise
+      // catches throws and folds them into the response `errors[]`, so
+      // they never bubble up to the HTTP boundary where the SDK's default
+      // integrations would see them. Pothos's ErrorsPlugin-handled errors
+      // (declared `errors.types`) are already converted to result unions
+      // before this point, so they don't show up as `errors[]` either.
+      // The plugin's default `skipError` (`isOriginalGraphQLError`) skips
+      // intentionally-thrown GraphQLErrors (validation, not-found, …) and
+      // only reports errors whose `originalError` is a real exception.
+      ...(sentryEnabled ? [useSentry()] : []),
+    ],
   });
 }
