@@ -31,12 +31,16 @@ if (dsn) {
       // latency, etc. Inputs/outputs default to recorded because
       // sendDefaultPii is on.
       Sentry.vercelAIIntegration(),
-      // Periodically reports Deno process memory and uptime metrics
-      // (rss / heap_used / heap_total / uptime, every 30s by default).
-      Sentry.denoRuntimeMetricsIntegration(),
       // `Sentry.denoContextIntegration` is included automatically by
       // the SDK's default integrations, so we don't list it here —
       // it tags every event with Deno runtime / OS / V8 / TS context.
+      //
+      // `Sentry.denoRuntimeMetricsIntegration()` was here too but crashes
+      // at startup with `TypeError: expected f64` from
+      // `Deno.unrefTimer(intervalId)` — the npm-shipped build receives
+      // Node's `Timeout` object from `setInterval` instead of the f64 the
+      // Deno runtime expects. Re-enable once @sentry/deno fixes this
+      // (tracked upstream).
     ],
   });
 }
