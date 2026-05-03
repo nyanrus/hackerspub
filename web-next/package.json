@@ -47,6 +47,7 @@
     "solid-relay": "1.0.0-beta.15",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
+    "temporal-polyfill": "^0.3.0",
     "tinyld": "catalog:",
     "tw-animate-css": "^1.3.5",
     "vite": "^7.3.2"

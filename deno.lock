@@ -248,6 +248,7 @@
     "npm:tailwindcss@3.4.3": "3.4.3_postcss@8.5.6",
     "npm:tailwindcss@^3.4.1": "3.4.3_postcss@8.5.6",
     "npm:tailwindcss@^4.1.11": "4.1.12",
+    "npm:temporal-polyfill@0.3": "0.3.2",
     "npm:tinyld@^1.3.4": "1.3.4",
     "npm:tw-animate-css@^1.3.5": "1.3.5",
     "npm:unified@^11.0.5": "11.0.5",
@@ -11808,6 +11809,15 @@
         "streamx"
       ]
     },
+    "temporal-polyfill@0.3.2": {
+      "integrity": "sha512-TzHthD/heRK947GNiSu3Y5gSPpeUDH34+LESnfsq8bqpFhsB79HFBX8+Z834IVX68P3EUyRPZK5bL/1fh437Eg==",
+      "dependencies": [
+        "temporal-spec"
+      ]
+    },
+    "temporal-spec@0.3.1": {
+      "integrity": "sha512-B4TUhezh9knfSIMwt7RVggApDRJZo73uZdj8AacL2mZ8RP5KtLianh2MXxL06GN9ESYiIsiuoLQhgVfwe55Yhw=="
+    },
     "terracotta@1.1.0_solid-js@1.9.10__seroval@1.3.2": {
       "integrity": "sha512-kfQciWUBUBgYkXu7gh3CK3FAJng/iqZslAaY08C+k1Hdx17aVEpcFFb/WPaysxAfcupNH3y53s/pc53xxZauww==",
       "dependencies": [
@@ -12799,6 +12809,7 @@
             "npm:storybook@^10.3.5",
             "npm:tailwind-merge@^3.3.1",
             "npm:tailwindcss@^4.1.11",
+            "npm:temporal-polyfill@0.3",
             "npm:tw-animate-css@^1.3.5",
             "npm:unplugin-icons@^22.5.0",
             "npm:vite-plugin-cjs-interop@^2.2.0",
