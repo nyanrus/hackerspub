@@ -105,4 +105,6 @@ COPY --from=builder /app /app
 RUN mise trust /app/mise.toml
 
 EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD ["mise", "run", "prod:hc:web"]
 CMD ["mise", "run", "prod:web"]

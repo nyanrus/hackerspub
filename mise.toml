@@ -38,6 +38,18 @@ run = "cd graphql && deno task start"
 description = "Start the web-next stack in production"
 run = "cd web-next && node .output/server/index.mjs"
 
+[tasks."prod:hc:web"]
+description = "Health check the legacy web stack"
+run = '''deno eval 'if (!(await fetch("http://127.0.0.1:8000/search")).ok) Deno.exit(1)' '''
+
+[tasks."prod:hc:graphql"]
+description = "Health check the GraphQL server with a __typename query"
+run = '''deno eval 'const r = await fetch("http://127.0.0.1:8080/graphql", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: "{__typename}" }) }); if (!r.ok) Deno.exit(1); const j = await r.json(); if (j.errors || j.data?.__typename !== "Query") Deno.exit(1)' '''
+
+[tasks."prod:hc:web-next"]
+description = "Health check the web-next stack"
+run = '''deno eval 'if (!(await fetch("http://127.0.0.1:3000/search")).ok) Deno.exit(1)' '''
+
 [tasks."migrate"]
 description = "Run database migrations"
 run = "deno run -A drizzle-kit migrate"
