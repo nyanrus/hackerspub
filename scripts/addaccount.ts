@@ -13,7 +13,7 @@ export async function main() {
   const email = Deno.args[0];
   if (!email) {
     console.error("Error: Please provide an email address.");
-    console.error("Usage: deno task addaccount EMAIL");
+    console.error("Usage: mise run addaccount EMAIL");
     Deno.exit(1);
   }
   try {

@@ -42,7 +42,7 @@ COPY . /app
 RUN cp .env.sample .env && \
   sed -i '/^INSTANCE_ACTOR_KEY=/d' .env && \
   echo >> .env && \
-  echo "INSTANCE_ACTOR_KEY='$(deno task keygen)'" >> .env && \
+  echo "INSTANCE_ACTOR_KEY='$(mise run keygen)'" >> .env && \
   deno task -r codegen && \
   deno task build && \
   pnpm --filter @hackerspub/web-next build && \
@@ -65,4 +65,4 @@ RUN if [ -n "$GIT_COMMIT" ]; then \
   ; fi
 
 EXPOSE 8000
-CMD ["deno", "task", "prod:web"]
+CMD ["mise", "run", "prod:web"]

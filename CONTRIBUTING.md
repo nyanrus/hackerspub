@@ -134,7 +134,7 @@ and set the values of the variables according to your environment.
 >     generate a new key using the following command:
 >
 >     ~~~~ sh
->     deno task keygen
+>     mise run keygen
 >     ~~~~
 >
 >     Warn that you should quote the key value with single quotes in the *.env*
@@ -176,7 +176,7 @@ Before running the server, you need to create the database schema.  To do this,
 you need to run the database migrations:
 
 ~~~~ sh
-deno task migrate
+mise run migrate
 ~~~~
 
 
@@ -186,7 +186,7 @@ Creating the first account
 To create the first account, you need to run the following command:
 
 ~~~~ sh
-deno task addaccount your@email.com
+mise run addaccount your@email.com
 ~~~~
 
 This command creates a sign up token for the first account.  You can use any
@@ -200,7 +200,7 @@ Running the server
 To run the server, execute the following command:
 
 ~~~~ sh
-deno task dev
+mise run dev:web
 ~~~~
 
 This command starts the server on port 8000.

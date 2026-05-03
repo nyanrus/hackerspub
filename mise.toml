@@ -2,3 +2,58 @@
 deno = "2.7.4"
 node = "24"
 pnpm = "10.12.4"
+
+[env]
+_.file = ".env"
+
+[tasks."dev:web"]
+description = "Run the legacy web stack in development mode"
+run = "cd web && deno task dev"
+
+[tasks."dev:graphql"]
+description = "Run the GraphQL server in development mode"
+run = "cd graphql && deno task dev"
+
+[tasks."dev:web-next"]
+description = "Run the web-next stack in development mode"
+run = "cd web-next && pnpm dev"
+
+[tasks."build:web"]
+description = "Build the legacy web stack"
+run = "cd web && deno task build"
+
+[tasks."build:web-next"]
+description = "Build the web-next stack"
+run = "cd web-next && pnpm build"
+
+[tasks."prod:web"]
+description = "Start the legacy web stack in production"
+run = "cd web && deno task start"
+
+[tasks."prod:graphql"]
+description = "Start the GraphQL server in production"
+run = "cd graphql && deno task start"
+
+[tasks."prod:web-next"]
+description = "Start the web-next stack in production"
+run = "cd web-next && node .output/server/index.mjs"
+
+[tasks."migrate"]
+description = "Run database migrations"
+run = "deno run -A drizzle-kit migrate"
+
+[tasks."migrate:generate"]
+description = "Generate a new database migration"
+run = "deno run -A drizzle-kit generate"
+
+[tasks."migrate:test"]
+description = "Run database migrations against the test database"
+run = "deno run --env-file=.env.test -A drizzle-kit migrate"
+
+[tasks."keygen"]
+description = "Generate an instance actor key pair (prints a JWK to stdout)"
+run = "deno run --allow-read --allow-env scripts/keygen.ts"
+
+[tasks."addaccount"]
+description = "Create a user account from the command line"
+run = "deno run --allow-all scripts/addaccount.ts"

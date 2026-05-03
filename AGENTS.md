@@ -47,20 +47,38 @@ This project is currently in a transitional phase, migrating from an existing Fr
 
 ## Build/Lint/Test Commands
 
-### Legacy stack (web/) and backend — Deno
-- Build: `deno task build`
-- Lint/Format Check: `deno task check`
-- Run Dev Server: `deno task dev`
-- Run Tests: `deno task test`
-- Database Migration: `deno task migrate`
-- Creating New Migration: `deno task migrate:generate`
-- Pre-commit Hook: `deno task hooks:pre-commit`
+Cross-stack tasks (dev, build, prod, migrate) live in `mise.toml` and are
+invoked with `mise run <task>`. Run `mise tasks` to list everything that's
+available. Tools (Deno, Node.js, pnpm) are pinned in the same `mise.toml`,
+so `mise install` once gets you a reproducible toolchain. mise also
+auto-loads `.env` so tasks pick up `DATABASE_URL` etc. without each
+underlying command needing an explicit `--env-file` flag.
 
-### New stack (web-next/) — Node.js / pnpm
-- Dev Server: `VITE_API_URL=http://localhost:8000/graphql pnpm dev` (run from `web-next/`)
-- Build: `pnpm build` (run from `web-next/`)
-- Relay Codegen: `pnpm codegen` (run from `web-next/`; done automatically via Vite when watchman is installed)
-- Extract Translations: `pnpm extract` (run from `web-next/`)
+### Per-stack tasks (via mise)
+- Dev server: `mise run dev:web` / `mise run dev:graphql` / `mise run dev:web-next`
+- Build: `mise run build:web` / `mise run build:web-next`
+- Production start: `mise run prod:web` / `mise run prod:graphql` / `mise run prod:web-next`
+
+### Database migrations (via mise)
+- Apply: `mise run migrate`
+- Generate a new migration: `mise run migrate:generate`
+- Apply against the test database: `mise run migrate:test`
+
+### Operations (via mise)
+- Generate an instance actor JWK (prints to stdout, paste into `INSTANCE_ACTOR_KEY`): `mise run keygen`
+- Create a user account from the CLI: `mise run addaccount`
+
+### Workspace tasks (still on `deno task`)
+- Lint/format check: `deno task check`
+- Run tests: `deno task test`
+- Pre-commit hook: `deno task hooks:pre-commit`
+
+### web-next helpers (run from `web-next/`)
+- Relay codegen: `pnpm codegen` (Vite runs this automatically when watchman is installed)
+- Extract translations: `pnpm extract`
+
+Note: `mise run dev:web-next` may need `VITE_API_URL=http://localhost:8000/graphql`
+set in your environment, depending on where the GraphQL server is running.
 
 ## Code Style Guidelines
 
