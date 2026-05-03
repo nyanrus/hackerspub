@@ -141,6 +141,15 @@ jobs:
         no-cache: "false"
         build-args:
           GIT_COMMIT=${{ github.sha }}
+        # Pipe the Sentry auth token in as a BuildKit secret so the
+        # `RUN --mount=type=secret,id=sentry_auth_token,...` step in the
+        # Dockerfile can read it during the web-next build (for source-map
+        # upload via @sentry/vite-plugin) without the token ever being
+        # baked into an image layer. Only set on push builds — fork PRs
+        # don't get repo secrets, and PR builds don't need to upload
+        # ephemeral source maps anyway.
+        secrets: |
+          sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
         tags: ghcr.io/${{ github.repository }}:git-${{ github.sha }}-${{ steps.arch.outputs.arch }}
         labels: |
           org.opencontainers.image.revision=${{ github.sha }}
