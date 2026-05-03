@@ -267,7 +267,12 @@ export const Article = builder.drizzleNode("postTable", {
     column: (post) => post.id,
   },
   fields: (t) => ({
+    // articleSource is only present for locally-authored articles. Articles
+    // federated in from remote servers don't have one — the upstream
+    // metadata lives on the post itself, not in our articleSource table —
+    // so the fields below have to be nullable to represent that.
     publishedYear: t.int({
+      nullable: true,
       select: {
         with: {
           articleSource: {
@@ -275,9 +280,10 @@ export const Article = builder.drizzleNode("postTable", {
           },
         },
       },
-      resolve: (post) => post.articleSource!.publishedYear,
+      resolve: (post) => post.articleSource?.publishedYear ?? null,
     }),
     slug: t.string({
+      nullable: true,
       select: {
         with: {
           articleSource: {
@@ -285,9 +291,10 @@ export const Article = builder.drizzleNode("postTable", {
           },
         },
       },
-      resolve: (post) => post.articleSource!.slug,
+      resolve: (post) => post.articleSource?.slug ?? null,
     }),
     tags: t.stringList({
+      nullable: true,
       select: {
         with: {
           articleSource: {
@@ -295,9 +302,10 @@ export const Article = builder.drizzleNode("postTable", {
           },
         },
       },
-      resolve: (post) => post.articleSource!.tags,
+      resolve: (post) => post.articleSource?.tags ?? null,
     }),
     allowLlmTranslation: t.boolean({
+      nullable: true,
       select: {
         with: {
           articleSource: {
@@ -305,7 +313,7 @@ export const Article = builder.drizzleNode("postTable", {
           },
         },
       },
-      resolve: (post) => post.articleSource!.allowLlmTranslation,
+      resolve: (post) => post.articleSource?.allowLlmTranslation ?? null,
     }),
     contents: t.field({
       type: [ArticleContent],
@@ -347,7 +355,12 @@ export const Article = builder.drizzleNode("postTable", {
 
 builder.drizzleObjectField(Article, "account", (t) =>
   t.field({
+    // Federated remote articles don't carry an articleSource (see the
+    // articleSource-backed fields on Article above), so the author has
+    // to be nullable here too — for remote articles, callers should fall
+    // back to the post-level actor.
     type: Account,
+    nullable: true,
     select: (_, __, nestedSelection) => ({
       with: {
         articleSource: {
@@ -357,7 +370,7 @@ builder.drizzleObjectField(Article, "account", (t) =>
         },
       },
     }),
-    resolve: (post) => post.articleSource!.account,
+    resolve: (post) => post.articleSource?.account ?? null,
   }));
 
 export const ArticleDraft = builder.drizzleNode("articleDraftTable", {

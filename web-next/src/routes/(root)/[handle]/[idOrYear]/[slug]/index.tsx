@@ -872,15 +872,18 @@ function ArticleLanguageSwitcher(props: ArticleLanguageSwitcherProps) {
 }
 
 interface ArticleTagsProps {
-  tags: readonly string[];
+  // Nullable because federated remote articles can come through without
+  // a tag list at all (the articleSource-backed `tags` field on the
+  // GraphQL Article type is nullable for the same reason).
+  tags: readonly string[] | null | undefined;
   class?: string;
 }
 
 function ArticleTags(props: ArticleTagsProps) {
   return (
-    <Show when={props.tags.length > 0}>
+    <Show when={(props.tags?.length ?? 0) > 0}>
       <div class={`flex flex-wrap gap-1.5 ${props.class ?? ""}`}>
-        <For each={props.tags}>
+        <For each={props.tags ?? []}>
           {(tag) => (
             <span class="bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-full text-sm text-stone-600 dark:text-stone-400">
               #{tag}
@@ -990,7 +993,9 @@ function ArticleReplies(props: ArticleRepliesProps) {
 
 interface ArticleAsideProps {
   toc: Toc[];
-  tags: readonly string[];
+  // Same nullability as the GraphQL Article.tags field — federated remote
+  // articles can come through without a tag list.
+  tags: readonly string[] | null | undefined;
   hidden: boolean;
 }
 
@@ -1009,7 +1014,7 @@ function ArticleAside(props: ArticleAsideProps) {
           </div>
         </Show>
 
-        <Show when={props.tags.length > 0}>
+        <Show when={(props.tags?.length ?? 0) > 0}>
           <div class="mt-6">
             <p class="font-bold text-sm uppercase text-stone-500 dark:text-stone-400 mb-2">
               {t`Tags`}
