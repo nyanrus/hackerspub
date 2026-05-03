@@ -1,4 +1,11 @@
 .env
+.git
 Dockerfile
+Dockerfile.dev
 node_modules
+web-next/node_modules
+web-next/.nitro
+web-next/.output
+web-next/dist
+web-next/storybook-static
 web/_fresh
