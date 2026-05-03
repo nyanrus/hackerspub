@@ -53,11 +53,15 @@ const sentryPlugins = sentryAuthToken
   : [];
 
 export default defineConfig(() => ({
-  // Source maps must be generated for the Sentry plugin to upload them.
-  // Vite produces hidden source maps in production by default; this just
-  // makes the intent explicit so a future config tweak doesn't silently
-  // disable Sentry symbolication.
-  build: { sourcemap: true },
+  // 'hidden' emits .map files for the Sentry plugin to upload but omits
+  // the trailing `//# sourceMappingURL=` comment from the .js bundles.
+  // Without that comment the browser doesn't try to fetch the maps —
+  // which matters because the maps get deleted from the build output
+  // after upload (see `filesToDeleteAfterUpload` below), so the browser
+  // would otherwise log "Source map error" warnings on every page load.
+  // Sentry still gets the maps because the plugin reads them from disk
+  // during the build, before the deletion step runs.
+  build: { sourcemap: "hidden" },
   plugins: [
     solidStart({
       solid: {
