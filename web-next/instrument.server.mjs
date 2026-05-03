@@ -4,10 +4,17 @@
 // configured stay quiet.
 import * as Sentry from "@sentry/solidstart";
 import nodeProcess from "node:process";
+import packageJson from "./package.json" with { type: "json" };
 
 if (nodeProcess.env.SENTRY_DSN) {
   Sentry.init({
     dsn: nodeProcess.env.SENTRY_DSN,
+    // Tag events with the same release identifier the client and the
+    // Sentry Vite plugin use, so Sentry can match the source maps it
+    // received during the build with the stack traces it receives at
+    // runtime. See entry-client.tsx and vite.config.ts for the matching
+    // configuration.
+    release: packageJson.version,
     sendDefaultPii: true,
   });
 }

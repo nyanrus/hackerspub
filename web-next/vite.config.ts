@@ -10,6 +10,7 @@ import Icons from "unplugin-icons/vite";
 import { cjsInterop } from "vite-plugin-cjs-interop";
 import { defineConfig } from "vite";
 import relay from "vite-plugin-relay-lite";
+import packageJson from "./package.json" with { type: "json" };
 
 try {
   process.loadEnvFile(resolve(process.cwd(), "../.env"));
@@ -30,6 +31,12 @@ const sentryPlugins = sentryAuthToken
       org: process.env.SENTRY_ORG ?? "hackerspub",
       project: process.env.SENTRY_PROJECT ?? "web-next",
       authToken: sentryAuthToken,
+      // Tag the uploaded source maps with the same release identifier the
+      // SDK reports at runtime (entry-client.tsx and instrument.server.mjs
+      // both pass packageJson.version). The Dockerfile bumps version to
+      // `0.2.0+<git_commit>` *before* the web-next build, so Sentry sees
+      // a unique release per deployed commit.
+      release: { name: packageJson.version },
       sourcemaps: {
         // Strip .map files from the production output after they have
         // been uploaded to Sentry, so they don't ship in the public
