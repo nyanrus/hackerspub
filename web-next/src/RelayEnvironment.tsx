@@ -26,22 +26,9 @@ const fetchFn: FetchFunction = async (
   if (!params.text) throw new Error("Operation document must be provided");
 
   const event = getRequestEvent();
-  const cookieHeader = event?.request?.headers.get("cookie") ?? null;
   const sessionId = readSessionCookie(event?.request);
-  const apiUrl = getApiUrl();
 
-  // [DEBUG] Remove once login flow is verified.
-  console.log("[fetchFn]", {
-    operation: params.name,
-    apiUrl,
-    hasEvent: event != null,
-    hasNativeEvent: event?.nativeEvent != null,
-    hasRequest: event?.request != null,
-    cookieHeader,
-    sessionId: sessionId == null ? null : sessionId.slice(0, 8) + "...",
-  });
-
-  const response = await fetch(apiUrl, {
+  const response = await fetch(getApiUrl(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -54,14 +41,7 @@ const fetchFn: FetchFunction = async (
     body: JSON.stringify({ query: params.text, variables }),
   });
 
-  // [DEBUG] Remove once login flow is verified.
-  const text = await response.text();
-  console.log("[fetchFn response]", {
-    operation: params.name,
-    status: response.status,
-    body: text.slice(0, 500),
-  });
-  return JSON.parse(text);
+  return await response.json();
 };
 
 export function createEnvironment(): IEnvironment {
