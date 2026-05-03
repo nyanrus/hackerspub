@@ -37,7 +37,17 @@ const sinks: Record<string, Sink> = {
     },
   ),
 };
-if (sentryEnabled) sinks.sentry = getSentrySink();
+if (sentryEnabled) {
+  sinks.sentry = getSentrySink({
+    // Surface lower-level records as Sentry breadcrumbs so they show up
+    // alongside captured events for context.
+    enableBreadcrumbs: true,
+    // (Logs API forwarding — `enableLogs: true` — is documented on the
+    // LogTape site but not yet shipped in the latest stable
+    // @logtape/sentry 2.0.6; only 2.1.0-dev.* prereleases include it.
+    // Add it here once 2.1.0 lands as a stable release.)
+  });
+}
 const loggerSinks = sentryEnabled ? ["console", "sentry"] : ["console"];
 
 await configure({

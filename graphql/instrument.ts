@@ -15,6 +15,11 @@ if (dsn) {
     // web-next uses (`<base>+<git_commit>` after the Dockerfile's jq
     // step) so Sentry can match symbols and group across deploys.
     release: metadata.version,
+    // Turn on Sentry's structured Logs API at the SDK level so the
+    // @logtape/sentry sink (graphql/logging.ts) can actually deliver
+    // records through it; without this they'd be dropped on the
+    // client side before reaching Sentry.
+    enableLogs: true,
     sendDefaultPii: true,
   });
 }
