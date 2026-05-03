@@ -1,29 +1,42 @@
-FROM docker.io/denoland/deno:2.7.4
+FROM docker.io/debian:13-slim
 
-RUN apt-get update && apt-get install -y build-essential curl ffmpeg jq && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x -o nodesource_setup.sh && \
-  bash nodesource_setup.sh && \
-  apt-get install -y nodejs && \
-  rm nodesource_setup.sh && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y --no-install-recommends install \
+  build-essential ca-certificates curl ffmpeg jq && \
+  rm -rf /var/lib/apt/lists/*
+
+ENV MISE_DATA_DIR="/mise"
+ENV MISE_CONFIG_DIR="/mise"
+ENV MISE_CACHE_DIR="/mise/cache"
+ENV MISE_INSTALL_PATH="/usr/local/bin/mise"
+ENV PATH="/mise/shims:$PATH"
+
+RUN curl https://mise.run | sh
 
 WORKDIR /app
+COPY mise.toml /app/mise.toml
+RUN mise trust && mise install
+
 COPY web/fonts /app/web/fonts
 
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml /app/
 COPY deno.json /app/deno.json
+COPY deno.lock /app/deno.lock
 COPY ai/deno.json /app/ai/deno.json
+COPY ai/package.json /app/ai/package.json
 COPY federation/deno.json /app/federation/deno.json
+COPY federation/package.json /app/federation/package.json
 COPY graphql/deno.json /app/graphql/deno.json
 COPY models/deno.json /app/models/deno.json
+COPY models/package.json /app/models/package.json
 COPY web/deno.json /app/web/deno.json
 COPY web-next/deno.jsonc /app/web-next/deno.jsonc
 COPY web-next/package.json /app/web-next/package.json
-COPY deno.lock /app/deno.lock
 COPY patches /app/patches
 
-RUN ["deno", "install"]
+RUN pnpm install --frozen-lockfile
+RUN deno install
 
 COPY . /app
 RUN cp .env.sample .env && \
@@ -32,19 +45,24 @@ RUN cp .env.sample .env && \
   echo "INSTANCE_ACTOR_KEY='$(deno task keygen)'" >> .env && \
   deno task -r codegen && \
   deno task build && \
+  pnpm --filter @hackerspub/web-next build && \
   rm .env
 
 ARG GIT_COMMIT
 ENV GIT_COMMIT=${GIT_COMMIT}
 
-RUN jq '.version += "+" + $git_commit' --arg git_commit $GIT_COMMIT federation/deno.json > /tmp/deno.json && \
+RUN if [ -n "$GIT_COMMIT" ]; then \
+  jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" federation/deno.json > /tmp/deno.json && \
   mv /tmp/deno.json federation/deno.json && \
-  jq '.version += "+" + $git_commit' --arg git_commit $GIT_COMMIT graphql/deno.json > /tmp/deno.json && \
+  jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" graphql/deno.json > /tmp/deno.json && \
   mv /tmp/deno.json graphql/deno.json && \
-  jq '.version += "+" + $git_commit' --arg git_commit $GIT_COMMIT models/deno.json > /tmp/deno.json && \
+  jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" models/deno.json > /tmp/deno.json && \
   mv /tmp/deno.json models/deno.json && \
-  jq '.version += "+" + $git_commit' --arg git_commit $GIT_COMMIT web/deno.json > /tmp/deno.json && \
-  mv /tmp/deno.json web/deno.json
+  jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" web/deno.json > /tmp/deno.json && \
+  mv /tmp/deno.json web/deno.json && \
+  jq '.version += "+" + $git_commit' --arg git_commit "$GIT_COMMIT" web-next/package.json > /tmp/package.json && \
+  mv /tmp/package.json web-next/package.json \
+  ; fi
 
 EXPOSE 8000
-CMD ["deno", "task", "start"]
+CMD ["deno", "task", "prod:web"]

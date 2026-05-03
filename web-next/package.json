@@ -1,5 +1,6 @@
 {
   "name": "@hackerspub/web-next",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "codegen": "relay-compiler",
