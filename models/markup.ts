@@ -20,7 +20,7 @@ import {
 } from "@shikijs/transformers";
 import { deadline } from "@std/async/deadline";
 import { encodeAscii85 } from "@std/encoding/ascii85";
-import { ASCII_DIACRITICS, slugify } from "@std/text/unstable-slugify";
+import { ASCII_DIACRITICS_REGEXP, slugify } from "@std/text/unstable-slugify";
 import { load } from "cheerio";
 import { arrayOverlaps, eq } from "drizzle-orm";
 import katex from "katex";
@@ -246,7 +246,7 @@ export async function renderMarkup(
 
 function slugifyTitle(title: string, docId?: string | null): string {
   return (docId == null ? "" : docId + "--") +
-    slugify(title, { strip: ASCII_DIACRITICS });
+    slugify(title, { strip: ASCII_DIACRITICS_REGEXP });
 }
 
 interface InternalToc {

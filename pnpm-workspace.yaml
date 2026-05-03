@@ -11,7 +11,7 @@ catalog:
   "@fedify/markdown-it-mention": "jsr:^0.3.0"
   "@fedify/vocab": "jsr:2.1.5"
   "@hackerspub/markdown-it-texmath": "^1.0.1"
-  "@logtape/logtape": "jsr:2.0.0"
+  "@logtape/logtape": "jsr:2.0.6"
   "@mdit-vue/plugin-title": "^2.1.4"
   "@opentelemetry/api": "^1.0.15"
   "@searking/markdown-it-cjk-breaks": "2.0.1-0"

@@ -2,7 +2,7 @@ import { preprocessContentHtml } from "@hackerspub/models/html";
 import { POSSIBLE_LOCALES } from "@hackerspub/models/i18n";
 import type { RenderedMarkup } from "@hackerspub/models/markup";
 import type { Actor, ArticleDraft } from "@hackerspub/models/schema";
-import { DIACRITICS, slugify } from "@std/text/unstable-slugify";
+import { DIACRITICS_REGEXP, slugify } from "@std/text/unstable-slugify";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Button } from "../components/Button.tsx";
@@ -482,5 +482,5 @@ export function Editor(props: EditorProps) {
 }
 
 function makeSlug(title: string): string {
-  return slugify(title, { strip: DIACRITICS });
+  return slugify(title, { strip: DIACRITICS_REGEXP });
 }
