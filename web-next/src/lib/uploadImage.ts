@@ -1,4 +1,3 @@
-import { getCookie } from "@solidjs/start/http";
 import { getRequestEvent } from "solid-js/web";
 import { getApiUrl } from "~/lib/env.ts";
 
@@ -17,6 +16,20 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+function readSessionCookie(request: Request | undefined): string | null {
+  const cookieHeader = request?.headers.get("cookie");
+  if (!cookieHeader) return null;
+  for (const part of cookieHeader.split(";")) {
+    const eq = part.indexOf("=");
+    if (eq < 0) continue;
+    const name = part.slice(0, eq).trim();
+    if (name !== "session") continue;
+    const raw = part.slice(eq + 1).trim();
+    return raw ? decodeURIComponent(raw) : null;
+  }
+  return null;
+}
+
 async function uploadMediaOnServer(
   mediaUrl: string,
   draftId?: string,
@@ -24,9 +37,7 @@ async function uploadMediaOnServer(
   "use server";
 
   const event = getRequestEvent();
-  const sessionId = event == null
-    ? null
-    : getCookie(event.nativeEvent, "session");
+  const sessionId = readSessionCookie(event?.request);
 
   const response = await fetch(getApiUrl(), {
     method: "POST",
