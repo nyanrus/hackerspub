@@ -76,6 +76,15 @@ RUN cp .env.sample .env && \
 RUN rm -rf node_modules web-next/node_modules && \
   pnpm install --frozen-lockfile --prod
 
+# Re-populate /app/node_modules entries that Deno needs but pnpm doesn't
+# track. The previous step (rm -rf node_modules + pnpm install --prod)
+# wipes everything Deno had pulled in via deno.json (drizzle-kit, the
+# graphql server's npm dependencies like graphql-yoga / pothos / fedify,
+# etc.). Without this re-population the first `mise run prod:graphql`
+# at deploy time spends minutes rebuilding the directory; with it the
+# server starts in seconds.
+RUN deno install
+
 # --- Runtime stage ---------------------------------------------------------
 FROM docker.io/debian:13-slim
 
