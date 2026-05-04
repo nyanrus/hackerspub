@@ -107,13 +107,16 @@ RUN if [ -n "$GIT_COMMIT" ]; then \
   mv /tmp/package.json web-next/package.json \
   ; fi
 
-# `--mount=type=secret,id=sentry_auth_token,...` exposes
-# SENTRY_AUTH_TOKEN to this RUN step only. The value is never written to
-# any image layer, so the public image stays free of the secret. CI
-# provides the secret via docker/build-push-action's `secrets:` input
-# (see .github/workflows/main.yml). Without the secret the build still
-# succeeds — the Sentry Vite plugin (vite.config.ts) just skips its
-# source-map upload when SENTRY_AUTH_TOKEN is unset.
+# `--mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN` exposes
+# the secret directly as $SENTRY_AUTH_TOKEN for this RUN step only. The
+# value is never written to any image layer, so the public image stays
+# free of the secret. CI provides the secret via docker/build-push-action's
+# `secrets:` input (see .github/workflows/main.yml). Fork PRs have no
+# access to the secret, so the var simply stays unset and the Sentry Vite
+# plugin (vite.config.ts) skips its source-map upload.
+#
+# Requires BuildKit ≥0.13 (the `env=` key was added there). CI's docker
+# buildx is well past that; older local daemons may need to be upgraded.
 RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
   cp .env.sample .env && \
   sed -i '/^INSTANCE_ACTOR_KEY=/d' .env && \

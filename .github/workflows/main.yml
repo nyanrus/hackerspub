@@ -35,8 +35,16 @@ jobs:
         path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
         key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-${{ runner.os }}-
+    # Deno re-downloads every npm/jsr/https module on each cold runner;
+    # caching DENO_DIR (default ~/.cache/deno on Linux) keyed on the deno
+    # manifests cuts the codegen + tests cold-start cost noticeably.
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/deno
+        key: deno-${{ runner.os }}-${{ hashFiles('deno.lock', '**/deno.json', '**/deno.jsonc') }}
+        restore-keys: deno-${{ runner.os }}-
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
     - name: Run codegen
       run: npx @dotenvx/dotenvx run -f .env.ci -- deno task -r codegen
     - name: Build web-next
@@ -46,9 +54,6 @@ jobs:
     - name: Run tests
       if: always()
       run: npx @dotenvx/dotenvx run -f .env.ci -- deno task test
-    - name: Run checks
-      if: always()
-      run: deno task check
     - name: Check for untranslated messages
       if: always()
       run: |
@@ -106,8 +111,24 @@ jobs:
           exit 1
         fi
 
+  # `deno task check` (lint + format) doesn't need Postgres or any build
+  # artifacts, so it runs in parallel with `test` to take ~30s off the
+  # critical path.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jdx/mise-action@v4
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/deno
+        key: deno-${{ runner.os }}-${{ hashFiles('deno.lock', '**/deno.json', '**/deno.jsonc') }}
+        restore-keys: deno-${{ runner.os }}-
+    - name: Run checks
+      run: deno task check
+
   image:
-    needs: [test]
+    needs: [test, lint]
     permissions:
       contents: read
       packages: write
