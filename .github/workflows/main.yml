@@ -47,8 +47,6 @@ jobs:
       run: pnpm install --frozen-lockfile
     - name: Run codegen
       run: npx @dotenvx/dotenvx run -f .env.ci -- deno task -r codegen
-    - name: Build web-next
-      run: mise run build:web-next
     - name: Run database migrations
       run: npx @dotenvx/dotenvx run -f .env.ci -- mise run migrate
     - name: Run tests
@@ -141,8 +139,43 @@ jobs:
     - name: Run checks
       run: deno task check
 
+  # `pnpm build` for web-next (Vite + SolidStart + Sentry/Lingui/Relay
+  # plugins) is the slowest step that doesn't need Postgres. Splitting it
+  # into its own job runs it in parallel with `test` and shaves the build
+  # off the test critical path.
+  #
+  # `NO_WATCHMAN=1` flips vite-plugin-relay-lite's `codegen` flag off so
+  # the build doesn't redo the relay-compiler pass that the previous
+  # `Run codegen` step already produced.
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NO_WATCHMAN: "1"
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jdx/mise-action@v4
+    - name: Get pnpm store directory
+      id: pnpm-store
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+        key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-${{ runner.os }}-
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/deno
+        key: deno-${{ runner.os }}-${{ hashFiles('deno.lock', '**/deno.json', '**/deno.jsonc') }}
+        restore-keys: deno-${{ runner.os }}-
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    - name: Run codegen
+      run: npx @dotenvx/dotenvx run -f .env.ci -- deno task -r codegen
+    - name: Build web-next
+      run: mise run build:web-next
+
   image:
-    needs: [test, lint]
+    needs: [test, lint, build]
     permissions:
       contents: read
       packages: write
