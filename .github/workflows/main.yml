@@ -111,19 +111,33 @@ jobs:
           exit 1
         fi
 
-  # `deno task check` (lint + format) doesn't need Postgres or any build
-  # artifacts, so it runs in parallel with `test` to take ~30s off the
-  # critical path.
+  # `deno task check` (lint + typecheck) doesn't need Postgres, web-next's
+  # production build, or test execution — but it *does* need codegen output
+  # (e.g. web/graphql/__generated__/index.ts) for the typecheck pass to
+  # resolve module imports. So this job mirrors the test job up through
+  # codegen, then runs check in parallel with the rest of test.
   lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: jdx/mise-action@v4
+    - name: Get pnpm store directory
+      id: pnpm-store
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+        key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-${{ runner.os }}-
     - uses: actions/cache@v4
       with:
         path: ~/.cache/deno
         key: deno-${{ runner.os }}-${{ hashFiles('deno.lock', '**/deno.json', '**/deno.jsonc') }}
         restore-keys: deno-${{ runner.os }}-
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    - name: Run codegen
+      run: npx @dotenvx/dotenvx run -f .env.ci -- deno task -r codegen
     - name: Run checks
       run: deno task check
 
