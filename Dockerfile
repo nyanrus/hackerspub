@@ -32,8 +32,6 @@ RUN mise trust && mise install
 # changes do not.
 FROM builder-base AS manifests
 
-COPY web/fonts /app/web/fonts
-
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml /app/
 COPY deno.json /app/deno.json
 COPY deno.lock /app/deno.lock
