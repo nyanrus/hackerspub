@@ -1,4 +1,6 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
+# `env=` for `--mount=type=secret` was added in dockerfile frontend 1.10
+# (Sep 2024); pinning to `:1` follows the latest stable major.
 # --- Builder base ----------------------------------------------------------
 # Tools + apt deps that builder/manifests/deps-prod/builder all share. Keeping
 # this stage cache-stable (apt list never changes mid-PR) means downstream
@@ -115,8 +117,9 @@ RUN if [ -n "$GIT_COMMIT" ]; then \
 # access to the secret, so the var simply stays unset and the Sentry Vite
 # plugin (vite.config.ts) skips its source-map upload.
 #
-# Requires BuildKit ≥0.13 (the `env=` key was added there). CI's docker
-# buildx is well past that; older local daemons may need to be upgraded.
+# Requires dockerfile frontend ≥1.10 (the `env=` key was added there) — the
+# `# syntax=docker/dockerfile:1` directive at the top of this file pins to
+# the latest stable major, so this resolves to a compatible version.
 RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
   cp .env.sample .env && \
   sed -i '/^INSTANCE_ACTOR_KEY=/d' .env && \
