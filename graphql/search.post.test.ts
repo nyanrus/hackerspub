@@ -4,11 +4,19 @@ import test from "node:test";
 import { encodeGlobalID } from "@pothos/plugin-relay";
 import { eq } from "drizzle-orm";
 import { execute, parse } from "graphql";
-import { accountTable, postTable } from "@hackerspub/models/schema";
+import {
+  accountTable,
+  actorTable,
+  blockingTable,
+  followingTable,
+  postTable,
+} from "@hackerspub/models/schema";
+import { generateUuidV7 } from "@hackerspub/models/uuid";
 import { schema } from "./mod.ts";
 import { postgres } from "../test/database.ts";
 import {
   insertAccountWithActor,
+  insertMention,
   insertNotePost,
   insertRemoteActor,
   insertRemotePost,
@@ -371,5 +379,152 @@ test("searchPost rejects invalid search syntax and respects hidden foreign langu
       invalidQuery.errors?.[0].message,
       "Invalid search query format",
     );
+  });
+});
+
+test("searchPost shows a signed-in viewer exactly what their visibility allows", async () => {
+  await withRollback(async (tx) => {
+    const viewer = await insertAccountWithActor(tx, {
+      username: "searchvisviewer",
+      name: "Search Visibility Viewer",
+      email: "searchvisviewer@example.com",
+    });
+    const mk = (username: string) =>
+      insertAccountWithActor(tx, {
+        username,
+        name: username,
+        email: `${username}@example.com`,
+      });
+    const author = await mk("searchvisauthor");
+    const followed = await mk("searchvisfollowed");
+    const stranger = await mk("searchvisstranger");
+    const blocksViewer = await mk("searchvisblocksviewer");
+    const blockedByViewer = await mk("searchvisblockedbyviewer");
+    const banned = await mk("searchvisbanned");
+
+    await tx.insert(followingTable).values({
+      iri: `http://localhost/follows/${generateUuidV7()}`,
+      followerId: viewer.actor.id,
+      followeeId: followed.actor.id,
+      accepted: new Date("2026-04-01T00:00:00.000Z"),
+    });
+    await tx.insert(blockingTable).values({
+      id: generateUuidV7(),
+      iri: `http://localhost/blocks/${generateUuidV7()}`,
+      blockerId: blocksViewer.actor.id,
+      blockeeId: viewer.actor.id,
+    });
+    await tx.insert(blockingTable).values({
+      id: generateUuidV7(),
+      iri: `http://localhost/blocks/${generateUuidV7()}`,
+      blockerId: viewer.actor.id,
+      blockeeId: blockedByViewer.actor.id,
+    });
+    await tx
+      .update(actorTable)
+      .set({ suspended: new Date("2026-04-02T00:00:00.000Z") })
+      .where(eq(actorTable.id, banned.actor.id));
+
+    const term = "searchvisbranches";
+    const day = (n: number) =>
+      new Date(`2026-04-${String(n).padStart(2, "0")}T00:00:00.000Z`);
+    const post = async (
+      who: typeof author,
+      published: number,
+      visibility: "public" | "unlisted" | "followers" | "direct",
+    ) =>
+      (
+        await insertNotePost(tx, {
+          account: who.account,
+          contentHtml: `<p>${term} ${who.actor.id.slice(0, 8)} ${visibility}</p>`,
+          visibility,
+          published: day(published),
+        })
+      ).post;
+
+    // Visible to the viewer, one per way of being visible, newest first.
+    const ownFollowers = await post(viewer, 28, "followers");
+    const publicNewest = await post(author, 27, "public");
+    const mentioned = await post(author, 26, "direct");
+    await insertMention(tx, { postId: mentioned.id, actorId: viewer.actor.id });
+    const followedFollowers = await post(followed, 25, "followers");
+    const unlisted = await post(author, 24, "unlisted");
+    const ownDirect = await post(viewer, 23, "direct");
+    const publicMiddle = await post(author, 22, "public");
+    const publicOldA = await post(author, 21, "public");
+    const publicOldB = await post(author, 20, "public");
+    const ownOlderThanPublicCutoff = await post(viewer, 5, "followers");
+    // Not visible to the viewer.
+    await post(author, 19, "followers"); // not followed
+    await post(author, 18, "direct"); // not mentioned
+    await post(stranger, 17, "followers");
+    await post(blocksViewer, 16, "public");
+    await post(blockedByViewer, 15, "public");
+    await post(banned, 14, "public");
+
+    const search = async (first: number) => {
+      const result = await execute({
+        schema,
+        document: searchPostQuery,
+        variableValues: { query: term, first },
+        contextValue: makeUserContext(tx, viewer.account),
+        onError: "NO_PROPAGATE",
+      });
+      assert.equal(result.errors, undefined);
+      const data = toPlainJson(result.data) as {
+        searchPost: {
+          edges: Array<{ node: { id: string } }>;
+          pageInfo: { hasNextPage: boolean };
+        };
+      };
+      return {
+        ids: data.searchPost.edges.map((edge) => edge.node.id),
+        hasNextPage: data.searchPost.pageInfo.hasNextPage,
+      };
+    };
+    const ids = (...posts: Array<{ id: string }>) =>
+      posts.map((p) => encodeGlobalID("Note", p.id));
+
+    const everything = ids(
+      ownFollowers,
+      publicNewest,
+      mentioned,
+      followedFollowers,
+      unlisted,
+      ownDirect,
+      publicMiddle,
+      publicOldA,
+      publicOldB,
+      ownOlderThanPublicCutoff,
+    );
+
+    // Everything the viewer may see, in time order across all the ways of
+    // being visible, and nothing else.
+    assert.deepEqual(await search(20), { ids: everything, hasNextPage: false });
+
+    // A page that ends mid-way merges the alternatives the same way, whether
+    // or not the public alternative alone fills the page.
+    assert.deepEqual(await search(3), {
+      ids: everything.slice(0, 3),
+      hasNextPage: true,
+    });
+    assert.deepEqual(await search(6), {
+      ids: everything.slice(0, 6),
+      hasNextPage: true,
+    });
+    // The public alternative fills this page (4 + 1 rows) and its oldest row
+    // bounds the other alternatives; a viewer's own older post must not leak in.
+    assert.deepEqual(await search(4), {
+      ids: everything.slice(0, 4),
+      hasNextPage: true,
+    });
+    assert.deepEqual(await search(9), {
+      ids: everything.slice(0, 9),
+      hasNextPage: true,
+    });
+    assert.deepEqual(await search(10), {
+      ids: everything,
+      hasNextPage: false,
+    });
   });
 });

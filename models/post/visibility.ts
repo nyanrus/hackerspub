@@ -536,6 +536,11 @@ export function getSanctionVisibleActorFilter(
   } satisfies RelationsFilter<"actorTable">;
 }
 
+/**
+ * The inclusion form of {@link getActorContentHiddenFilter}: authors whose
+ * content the viewer may see.  Prefer the hidden form negated with `NOT`
+ * when filtering posts by their author (see its comment for why).
+ */
 function getActorContentExclusionFilter(
   actorId: Uuid,
 ): RelationsFilter<"actorTable"> {
@@ -552,6 +557,78 @@ function getActorContentExclusionFilter(
       getSanctionVisibleActorFilter(),
     ],
   } satisfies RelationsFilter<"actorTable">;
+}
+
+/**
+ * The positive matcher for authors whose content is hidden from the viewer:
+ * the author blocks the viewer, the viewer blocks the author, or the author
+ * is hidden by a moderation sanction.  It is the exact complement of
+ * {@link getActorContentExclusionFilter}.
+ *
+ * Callers negate it at the relation level (`NOT: { actor: ... }`), which
+ * compiles to `NOT EXISTS (...)`.  That form matters for performance: asking
+ * for "a *visible* author exists" makes the planner start from the whole
+ * `actor` table, while asking for "no *hidden* author exists" lets it keep
+ * walking `post` in index order and probe the tiny hidden set per row, so
+ * `ORDER BY published DESC LIMIT n` stops early.
+ */
+function getActorContentHiddenFilter(
+  viewerActorId: Uuid,
+): RelationsFilter<"actorTable"> {
+  return {
+    OR: [
+      { blockees: { blockeeId: viewerActorId } },
+      { blockers: { blockerId: viewerActorId } },
+      getSanctionHiddenActorFilter(),
+    ],
+  } satisfies RelationsFilter<"actorTable">;
+}
+
+/**
+ * A signed-in viewer's post visibility, split into the part every visible
+ * post must satisfy and the alternatives of which at least one must hold.
+ *
+ * `getPostVisibilityFilter(viewer)` is `always AND (anyOf[0] OR anyOf[1] ...)`.
+ * The split exists for callers that page through many matches in
+ * `published` order (search): a single query over the `OR` cannot use the
+ * `(visibility, published)` index, so it collects every match and sorts them,
+ * while one query per alternative can each walk an index in order and stop
+ * after a page.  Merging the per-alternative results is equivalent to the
+ * `OR`.
+ *
+ * `anyOf[0]` is the public alternative, the largest one, so a caller can run
+ * it first and use its last row to bound the others.  That order is only a
+ * performance choice: the merged result is the same for any order.
+ */
+export interface PostVisibilityParts {
+  readonly always: RelationsFilter<"postTable">;
+  readonly anyOf: readonly RelationsFilter<"postTable">[];
+}
+
+export function getPostVisibilityParts(viewer: Actor): PostVisibilityParts {
+  return {
+    always: {
+      AND: [
+        { NOT: { actor: getActorContentHiddenFilter(viewer.id) } },
+        { NOT: { sharedPost: { actor: getSanctionHiddenActorFilter() } } },
+      ],
+    },
+    anyOf: [
+      { visibility: "public" },
+      { visibility: "unlisted" },
+      { actorId: viewer.id },
+      { mentions: { actorId: viewer.id } },
+      {
+        visibility: "followers",
+        actor: {
+          followers: {
+            followerId: viewer.id,
+            accepted: { isNotNull: true },
+          },
+        },
+      },
+    ],
+  };
 }
 
 export function getPostVisibilityFilter(
@@ -572,23 +649,10 @@ export function getPostVisibilityFilter(
     } satisfies RelationsFilter<"postTable">;
   }
   if ("accountId" in actorOrPost) {
+    const { always, anyOf } = getPostVisibilityParts(actorOrPost);
     return {
-      actor: getActorContentExclusionFilter(actorOrPost.id),
-      NOT: { sharedPost: { actor: getSanctionHiddenActorFilter() } },
-      OR: [
-        { actorId: actorOrPost.id },
-        { visibility: { in: ["public", "unlisted"] } },
-        { mentions: { actorId: actorOrPost.id } },
-        {
-          visibility: "followers",
-          actor: {
-            followers: {
-              followerId: actorOrPost.id,
-              accepted: { isNotNull: true },
-            },
-          },
-        },
-      ],
+      AND: [always],
+      OR: [...anyOf],
     } satisfies RelationsFilter<"postTable">;
   } else {
     if (

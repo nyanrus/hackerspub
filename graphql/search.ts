@@ -4,6 +4,7 @@ import type { RelationsFilter } from "@hackerspub/models/db";
 import {
   getCensoredPostExclusionFilter,
   getPostVisibilityFilter,
+  getPostVisibilityParts,
 } from "@hackerspub/models/post/visibility";
 import { isPostObject } from "@hackerspub/models/post/core";
 import { persistPost } from "@hackerspub/models/post/remote";
@@ -233,6 +234,57 @@ async function searchAsHandle(ctx: UserContext, query: string) {
   return { url: `/${actor.handle}` };
 }
 
+/**
+ * Finds one page of matching post IDs for a signed-in viewer, newest first.
+ *
+ * The viewer's visibility is "always X, and at least one of A, B, C ...".
+ * Written as a single `OR` the planner cannot walk the `(visibility,
+ * published)` index in order, so it collects every match for a common word and
+ * sorts them (seconds on a large table).  Querying each alternative on its own
+ * lets each walk an index and stop after a page; the merged result is the same.
+ *
+ * The public alternative is the largest, so it runs first.  If it already
+ * filled the page, its oldest row bounds the answer: a row from another
+ * alternative that is older cannot be among the newest `limit` rows overall.
+ */
+async function findVisiblePostPage(
+  db: UserContext["db"],
+  viewer: Actor,
+  filters: readonly RelationsFilter<"postTable">[],
+  limit: number,
+): Promise<{ id: PostRow["id"]; published: Date }[]> {
+  const { always, anyOf } = getPostVisibilityParts(viewer);
+  const find = (alternative: RelationsFilter<"postTable">, since?: Date) =>
+    db.query.postTable.findMany({
+      columns: { id: true, published: true },
+      where: {
+        AND: [
+          ...filters,
+          always,
+          alternative,
+          ...(since == null ? [] : [{ published: { gte: since } }]),
+        ],
+      },
+      orderBy: { published: "desc" },
+      limit,
+    });
+  const [publicPosts, ...others] = anyOf;
+  const first = await find(publicPosts);
+  const since =
+    first.length >= limit ? first[first.length - 1].published : undefined;
+  const merged = new Map(first.map((row) => [row.id, row]));
+  for (const alternative of others) {
+    for (const row of await find(alternative, since)) merged.set(row.id, row);
+  }
+  return [...merged.values()]
+    .sort(
+      (a, b) =>
+        b.published.getTime() - a.published.getTime() ||
+        (a.id < b.id ? 1 : a.id > b.id ? -1 : 0),
+    )
+    .slice(0, limit);
+}
+
 builder.queryFields((t) => ({
   searchPost: t.connection({
     type: Post,
@@ -269,42 +321,49 @@ builder.queryFields((t) => ({
 
       const languages = args.languages ?? [];
 
-      const postFilter: RelationsFilter<"postTable"> = {
-        AND: [
-          searchFilter,
-          getPostVisibilityFilter(signedAccount?.actor ?? null),
-          // Guests only search public posts (not unlisted):
-          ...(signedAccount == null
-            ? [{ visibility: "public" } satisfies RelationsFilter<"postTable">]
-            : []),
-          getCensoredPostExclusionFilter(signedAccount?.actor.id),
-          { sharedPostId: { isNull: true } },
-          languages.length < 1
-            ? signedAccount?.hideForeignLanguages &&
-              signedAccount.locales != null
-              ? { language: { in: expandLocales(signedAccount.locales) } }
-              : {}
-            : {
-                language: {
-                  in: expandLocales(
-                    languages.flatMap((l) =>
-                      l.language !== l.baseName
-                        ? [l.baseName, l.language]
-                        : [l.baseName],
-                    ),
+      const filters: RelationsFilter<"postTable">[] = [
+        searchFilter,
+        getCensoredPostExclusionFilter(signedAccount?.actor.id),
+        { sharedPostId: { isNull: true } },
+        languages.length < 1
+          ? signedAccount?.hideForeignLanguages && signedAccount.locales != null
+            ? { language: { in: expandLocales(signedAccount.locales) } }
+            : {}
+          : {
+              language: {
+                in: expandLocales(
+                  languages.flatMap((l) =>
+                    l.language !== l.baseName
+                      ? [l.baseName, l.language]
+                      : [l.baseName],
                   ),
-                },
+                ),
               },
-          until == null ? {} : { published: { lte: until } },
-        ],
-      };
+            },
+        until == null ? {} : { published: { lte: until } },
+      ];
 
-      const postPage = await ctx.db.query.postTable.findMany({
-        columns: { id: true },
-        where: postFilter,
-        orderBy: { published: "desc" },
-        limit: window + 1,
-      });
+      const postPage =
+        signedAccount == null
+          ? await ctx.db.query.postTable.findMany({
+              columns: { id: true, published: true },
+              where: {
+                AND: [
+                  ...filters,
+                  getPostVisibilityFilter(null),
+                  // Guests only search public posts (not unlisted):
+                  { visibility: "public" },
+                ],
+              },
+              orderBy: { published: "desc" },
+              limit: window + 1,
+            })
+          : await findVisiblePostPage(
+              ctx.db,
+              signedAccount.actor,
+              filters,
+              window + 1,
+            );
 
       const postIds = postPage.map(({ id }) => id);
       const loadedPosts =
